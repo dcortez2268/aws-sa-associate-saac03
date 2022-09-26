@@ -1,0 +1,131 @@
+IAM access keys: long term credentials, used with IAM users only,
+use access keys when using CLI,
+dont change automatically or regularly,
+similar to user name and password, but differences are:
+an IAM user can have two access keys, either 0, 1, or 2,
+can be created, deleted, made inactive or active,
+formed from two parts: access key ID, and secret access key
+access key id is like username, while secret acces key is like password
+
+aws configure: allows us to configure the default configuration for CLI
+aws configure --profile namedProfile: named profiles, allow us to configure multiple aws accounts to our CLI instead of just using one account, whenever running commands append '--profile nameOfProfile' to run from NameOfProfile account
+
+
+NIST definition of cloud computing: 5 characteristics of cloud computing 
+On demand self service: allows you to provision capabilities as needed without requiring human interaction
+broad network access: capabilities are available over the network and accessed through standard mechanisms
+Resource pooling: about abstraction, there is a sens of location independence and resources are pooled to server multiple consumers using a multi tenant model
+Rapid elasticity: resources can be elastically provisioned and released to scale rapidly in real time with no human interaction
+Measured service: Resource usage can be monitored, controlled, reported, and billed 
+
+
+Public vs Private vs Hybrid vs Multi Cloud Models:
+multi-cloud: using multiple public clouds for higher levels of availability and durability
+private: aws outposts, is on premise and still meets 5 requirements of cloud computing, most on premise traditional datacenters do not meet 5 requirements
+hybrid: using both public cloud and private cloud cooperating together as a single environment
+
+hybrid environment: using public cloud on your on premise infrastructure
+
+
+YAML: language for defining data or configuration
+characteristics:
+unordered collection of key-value pairs, (dictionary)
+indentation matters, spaces are like brackets
+
+
+
+Encryption:
+  
+
+Encryption at rest: helps to secure data from physical access, example would be encrypting data stored on a hard drive, and decrypting when it reads.  Secret(password) is used to decrypt the data.
+In cloud computing, data is encrypted while in s3
+encryption at transit: helps to secure data that is being transferred between two place, encrypted with an encryption tunnel
+
+Plaintext: un-encrypted data, data that you can load into an app and use
+algorithm: code that takes plain text and an encryption key and generates encrypted data
+ciphertext: encrypted data
+
+key: "password", decrypts ciphertext
+  different types: symmetric key
+    symmetric key: same key is used for both encryption and decryption processes, used by a single party
+    asymmetric key: comprised of public and private keys, public key is used to encrypt, the private key is used to decrypt, used by two or more parties
+
+signing: allows verification of who sent the encrypted message,
+        requires the sender to sign with private key,
+        requires the receiver to decrypt signature with sender's public key
+
+steganography: allows you to embed data inside other data, like hiding ciphertext in an image
+
+
+
+NETWORKING:
+
+
+OSI 5 LAYER MODEL: networking stack, that includes seven software layers for transporting data
+  physical, data link, network, transport, session, presentation, application layers
+  layer x understands its layer and below, built on top of other layers
+
+  media layers: how data is moved between point A and B
+  physical, data link, network, 
+  
+  host layers: how data is chopped up and reassembled for transport and formatted to be understood by both sides of a network connection,
+  transport, session, presentation, application layers
+
+Physical Layer: Layer 1: defines the transmission and reception of raw bit streams between a device and a shared physical medium.
+
+can be different physical mediums, copper(electrical), fibre(light), or WIFI(RF)
+no device addressing at layer 1, all data is processed by all devices
+if multiple devices transmit at once a collission occurs
+no media access control and no collision detection
+tend to not scale very well
+
+  hub: anything received on any port, is transmitted on every other port, including errors and collisions
+
+
+Data Link Layer: Layer, 2: packages frame to be sent on layer 1, the physical layer
+  ethernet: most popular l2 protocol used generally for local networks 
+
+  MAC address: unique hardware address
+
+  frames: format for sending information over layer 2 network, can be addressed to MAC address or broadcast to all
+    payload: the data the frame carries from source to destination.  It's generally provided by layer 3 and the ET attribute defines which l3 protocol is used
+
+  CSMA/CD: provides controlled access to physical medium via:
+  carrier sense multiple access: checks carrier(to see if anything is transmitting on layer 1), and if no carrier then passes frame to layer 1 to transmit, if there is carrier it waits to send until a carrier is not detected
+  collision detection: detects if there was collision, if there was collision reattempts collision after a certain amount of time
+
+  switch: intelligent layer 2 device that works similarly to a hub but much more efficient because it understands layer 2 
+  HOW IT WORKS:
+  learns which devices are connected at layer 2 and populates a MAC address table with that MAC address's port
+  if it receives frame for MAC address in table, it orders that frame to be sent to that port only on layer 1, unlike a hub which would send to every single port
+  if it receives frame for MAC address not in table, it sends to all ports
+  every x port has X collision domains, meaning if there is a collision on a port, it only occurs on that single port
+
+Network Layer, Layer 3: gets data from one location to another
+uses packets which are similar to frames,
+generally an ip packet doesnt change, while a frame does between each lvl2 destination because a frame has address of next intermediary address and ip packet has source ip address and destination ip address,
+
+contains l4 protocol in packet in protocol field and data received from layer 4 
+
+ipv4 and ipv6 packets, ipv6 packets have larger addresses
+
+ipv4 addressing:
+DHCP: machine that assigns IP addresses
+Ip addresses have a network part and a host part, if they have same network part they are on same network
+subnet masks: divides the host and network part via shorthand prefix(starts from left), letting an IP device know if another device is on same network or not, which influences if it communicates directly with device or default gateway
+
+Every router has one or more route tables, letting router know where to send packet or destination.  Packets are routed, hop by hop across the internet.  
+
+default gateway: IP address on local network that packets are forwarded to if intended desination is not a local ip address 
+
+ARP, Address Resolution Protocol: finds Mac address for a given IP address,
+a protocol that allows us to encapsulate layer 3 packet in a l2 frame, broadcasts to all devices on the ip address network and asks for mac adress, the corresponding device then sends mac address and frame is created
+ipv6: 
+
+
+
+How to convert decimal to binary for IPv4 addressing: 
+133.33.33.7 <=> 10000101.00100001.00100001.00000111
+Each number in dotted decimal notation maps to 8 bits
+
+
