@@ -116,16 +116,231 @@ subnet masks: divides the host and network part via shorthand prefix(starts from
 
 Every router has one or more route tables, letting router know where to send packet or destination.  Packets are routed, hop by hop across the internet.  
 
-default gateway: IP address on local network that packets are forwarded to if intended desination is not a local ip address 
+default gateway: IP address on local network that packets are forwarded to if intended desination is not a local ip address, typically a router
 
 ARP, Address Resolution Protocol: finds Mac address for a given IP address,
 a protocol that allows us to encapsulate layer 3 packet in a l2 frame, broadcasts to all devices on the ip address network and asks for mac adress, the corresponding device then sends mac address and frame is created
 ipv6: 
 
 
-
 How to convert decimal to binary for IPv4 addressing: 
 133.33.33.7 <=> 10000101.00100001.00100001.00000111
 Each number in dotted decimal notation maps to 8 bits
+
+
+The Transport Layer, Layer 4 and the Session Layer, Layer 5: provides most of the functionality that supports most of the networking of the internet
+
+Transmission Control Protocol, TCP
+User datagram Protocol, UDP
+packages data in segments, encapsulated within IP packets,
+used in same way but TCP adds more reliable architecture,
+
+TCP/IP: TCP running on top of IP, used for most of the important Application Layer protocols like HTTP, HTTPS, SSH, and so on, connection oriented protocol
+has source and destination ports, sequence number
+connection between random port on client and known port on the server, flags set up connection, makes error checking, ordering, and retransmission possible because everything is connection based
+
+statefull firewall: extension of security group, understands TCP/IP connection so only one rule is needed, initiating request source port and destination port and response traffic is automatically allowed
+
+stateless firewall, (Network ACL): two rules will be required, one to define the outbound traffic source and destination port and the other to allow the inbound traffic source and destination port
+
+UDP/IP: faster because it doesn't have the TCP overhead but less reliable, 
+
+
+NAT, Network Address Translation: helps overcome the ipv4 shortages by translating private IPv4 addresses to public ip addresses so packets can go to public internet then translate back in reverse, takeaway is that private ip address needs to initiate communication because if public tries to communicate with private there wont be an entry in NAT table
+
+static NAT: 1 private to 1 fixed public address, use when a private IP needs access to public internet by using a public IP and where these IPs need to be consistent 
+dynamic NAT: 1 private to 1st available public ip in Nat table pool, use when you have less public IPs than private IP addresses and you want to be efficient with how they're used, if there are no available in the pool then public access can fail
+port address Translation: many private to 1 public address, use for home router, use when you have many devices that use a single public address, NAT gateway with AWS use this way, uses ports to identify devices by using a source and destination port for each packet, 
+
+NAT table: maps one to one private Ip to allocated public ip address, not configured though
+
+
+ipv6 addressing:
+340 sextillion address spaces vs 4 billion ipv4 address spaces
+ipv6 doesn't need any network translation because there are so many more addresses
+
+
+CIDR : defines a way of expressing a size of a network,
+subnetting: taking a larger network and breaking down into smaller networks, each of which has a higher prefix
+entire internet: /0
+class a network: /8
+class b network: /16
+class c network: /24
+one ip address: /32
+takeway: larger the subnet mask prefix, the smaller the network
+
+
+
+DDOS attacks: attacks designed to overload websites, 
+compete against legitimate connections,
+distributed and therefore hard to block individual IPs/ranges
+involve large armies of compromised machines (botnets)
+3 types:
+application Layer - HTTP flood: take advantage of imbalance of processing between client and server, send countless requests
+protocol attack - SYN flood: takes advantage of the connection based nature of requests, spoof a source ip address and server can't complete stage 2 of handshake and waits an amount of time before it stops trying consuming resources
+volumetric- DNS amplification: takes advantage of how certain protocols like DNS take only a small amount of data to make request and require large response
+
+
+
+SSL, Secure Sockets Layer AND TLS, Transport Layer Security: provide privacy and data integrity between client and server
+both do the same thing but TLS is newer and more secure version,
+
+provides private communications that are encrypted first asymmetric and then symmetric
+provides identity verification two ways possible, but generally client verifying server
+provides reliable connection, detects data alteration
+
+TLS phases that occur after TCP connection is made between client and server:
+Cipher suites: set of protocols used by TLS that are agreed on for communications, server sends server certificate that contains public key
+authentication: client needs to validate server certificate and public key is valid,  verifies via the CA, verifies the server has the private key
+key exchange: moves from assymetric encryption to symmetric encryption
+
+
+
+Hash Functions and Hashing:
+hashing: process where algorithm is used to turn any kind of data into a fixed length representation of that data
+hash function: input is data and output is fixed length representation called hash, unique data results in unique hash value, is one way because you can't use hash as input for hash function to get original data
+collision: when different inputs result in same hash value, if there are collisions encryption is unreliable and less secure
+MD-5: not reliable because data can be manipulated to cause collisions
+SHA-256: modern and reliable hashing algorithm
+
+
+Public vs Private Services:
+refers to networking only
+public aws service: something which is accessed using public endpoints
+private aws service: something which is accessed within a VPC or endpoints in a VPC 
+
+Three Different Network Zones:
+public internet zone: internet services, anyone can access
+aws public zone: aws public services like s3, operates in between public internet zone and aws private zone, users access public aws zone using internet as transit
+aws private zone: where VPCs reside,  VPCs are isolated unless configured otherwise, nothing from the internet can access the VPC unless you allow it, can be accessed via AWS VPN or Direct Connect
+  internet gateway: 
+  allows VPC service access to public internet with an allocated public ip address, 
+  allows VPC service access to public aws service as long as data does not touch public internet at any point, 
+  allows VPC service to be accessed via public internet by projecting VPC service into AWS public zone and makes part of or whole VPC service accessible as long as VPC service has an allocated public ip address 
+
+
+
+AWS GLOBAL INFRASTRUCTURE:
+region: 
+a physical geographic location that is a collection of availability zones,
+geographic separation allows isolated fault domain,
+geopolitical seperation allows different governance that is dicted by that region and data stays within that region,
+reference by: region code, ap-southeast-2, or region name, Asia Pacific (Sydney)
+location control allows increased performance
+
+edge locations: 
+generally only have content distribution services, and edge computing, allow us to cache content and lower latency 
+
+availability zone: 
+single data center or a collection of data centers within a region
+provides redundant networking, low latency, bc if one availability zone is affected the others most likely wont
+
+service resilience:
+globally resilient: 
+service operates globally with a single database and its data is replicated across several regions, is highly available because it is always available unless every single region fails, ex route53 and IAM
+region resilient:
+service that operates in a single region with one set of data per region.  replicates data across multiple availability zones within that region.
+AZ resilient:
+service that operates in a single availability zone, if availability zone fails then that service fails
+
+
+
+VIRTUAL PRIVATE CLOUD BASICS:
+virtual private cloud, allows you to create a secure virtual private network in the AWS cloud where you secure your services and resources
+connects:
+allows you to connect your on premise data center to your AWS VPCs, and also allows you to connect to other cloud platforms when you're creating a multi cloud deployment
+
+is within 1 account and 1 region, regionally resilient
+private and isolated unless you decide otherwise
+
+Default VPC: 
+max of 1 per region, come preconfigured by aws, a lot less flexible than custom VPCs, you can remove and redeploy if you want
+DEFAULT VPC CIDR: 172.31.0.0/16
+to replicate across availabity zones: the CIDR range is broken into subnets so that there is a subnet for each availability zone
+Subnets assign public IPv4 addresses: anything deployed in their subnets get deployed with public addresses
+preconfigured with: IGW, SG, & NACL
+
+Custom VPCs: 
+can have many in 1 region, configure them in any way that you want, require you to configure everything end to end and private by default,
+
+
+
+EC2 BASICS:
+default compute service within AWS
+allows you to rent and manage virtual servers in the cloud elastically, ec2 instances are the virtual servers running on the physical servers
+instance: operating system configured in a certain way with a certain set of allocated resources
+private service by default: uses VPC networking
+resiliency: AZ resilient
+features:
+different instance sizes and capabilities, you can set when you provision or some settings can be changed even after deployment,
+on demand billing, per second,
+different types of storage: many, including on host storage or Elastic Block Store, EBS
+states:
+running and stopped:can toggle between states, like off/on switch
+terminated:fully deleted once you move to termination state
+charges:
+cpu, memory, disk, and networking, charged per second,
+charged for all four while running, 
+charged for disk only while stopped,
+
+AMIS:
+AMI => EC2 => AMI:
+ec2 instance can be generated from an amazon machine image, or generate an ami from ec2
+
+ami: like a server image which can be used to create virtual machines or a usb device to install OS
+permissions: which allow or deny access to the ami,
+public: everyone allows
+owner: private, implicitly allows the owner to create ami from ec2,
+explicit: owner explicitly allows access to specific aws accounts
+
+root volume: the c drive in windows, the drive that boots the OS
+block device mapping: determines which volume is root volume and which volume is a data volume
+
+CONNECTING TO AN EC2:
+since we have different OS available for instances, we connect to different ports based on the OS
+3389: Remote Desktop Protocol, windows instances
+22: SSH Protocol, Linux instances
+
+
+
+S3 Basics:
+global object storage service that is regional based because data is stored inside a specific region and never moves unless you explicitly move it,
+default storage service for AWS,
+Regional resilient,
+public service, unlimited data and multi-user,
+economical
+accessed via: UI, CLI, API, HTTP
+
+objects: 
+data that s3 stores, like a file
+composed of key: like a fileName
+composed of value: data or value of the object, can range from 0 bytes to 5TB
+other components: version ID, metadata, access control, and subresources
+
+buckets: 
+containers that store objects
+deployed in a specific aws region
+blast radius: region
+name needs to be globally unique
+unlimited number of objects
+structure: flat, all objects are stored at the root level.  However, displayed like there is a file structure in UI
+configurations: most configurations for s3 are set at bucket level
+
+exam powerup: 
+bucket names are globally unique
+3-63 characters, all lower case, no underscores
+start with a lowercase letter or a number
+can't be IP formatted
+buckets have 100 soft limit, 1000 hard limit per account
+unlimited objects in bucket, 0 bytes to 5 TB
+key=name, value = data
+
+Patterns and Antipatterns:
+s3 is an object store, not file or block
+you can't mount an s3 bucket as K:\ or /images, block storage has a single user limitation and s3 does not have that limitation
+great for large scale data storage, distribution, or upload
+great for offload, which deals with storing data on s3 bucket rather that ec2 instance
+should be default input for any aws services or output to most aws products
+
 
 
