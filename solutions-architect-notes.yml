@@ -510,11 +510,121 @@ iam user can be a member of 10 groups
 therefore: if you have a system which requires more than 5000 identities then you cant use one IAM user for each identity, IAM roles and Identity Federation fix this 
 
 
+IAM Roles:
+roles allow user or group to temporarily assume permissions via policies,  
+two types of policies:
+trust policy:
+controls which identities can assume that role, can ref identities in same or diff acount, 
+if idenity has access to role then temporary security credentials are made available that expire after a given amount of time
+permissions policy:
+allows or denies permissions for aws resources and services
+sts:AssumeRole is policy given to access temporary security credentials and perform whatever permissions it was granted
+WHEN TO USE?:
+generally used when an unknown number of users is uncertain
+use when a set of credentials are needed, bc we dont want to hard code into code or on service because it is security risk as well as problematic if we ever need to change or rotate keys (roles use temporary security credentials)
+emergency or out of the usual situations
+when you're adding aws into an existing corporate network, external accounts or external identities can't be used to interact with AWS directly, instead assign the external identities a  role for them to interact with aws
+users > 5000, use Web identity federation that uses roles
+give users from one account access to resources in another aws account via roles
+service linked roles:
+it is a IAM role linked to a specific aws service
+predefined by a service that provide permissions that a service needs to interact with other AWS services on your behalf, service might create or delete the role or allow you to during setup or within IAM
+you can't delete the role until it's no longer required!
+ListRoles and passRole permissions: 
+when you want a group the ability to use roles but not create them
 
 
+Organizations: allows you to centrally manage multiple AWS accounts under one umbrella,
+benefits:
+consolidated billing, cost effective with little to no overhead (has volume discounts), account governance
+comprised of:
+member accounts and management account
+oranizational root:
+top level of hiearichal structure, container which contains member accounts, management account, and Organizatinal Units, OUs
+OUs: organization units, contains member accounts or other OUs
+SCPs: service control policies, help you restrict permissions you want everyone in org to follow
+best practice:
+have single account to handle logins with identities or identity federation, then identities use roles to access the other member accounts
+
+SCPS:
+policy document that limits what the account can do, including root users.  They do not grant permissions.
+they grant access to what can and cant be allowed, but identities still need identity policies in to grant that permission.  So an identity needs SCPs to allow and also identity policies to allow to access resources.
+They can be attached to individual accounts, OUs, and the organizational root.  they inherit down the organization tree.
+management account is never affected by SCPs
+Allow list:
+block everything by default, and allow certain services
+Removes FullAWSAccess policy and add any services that can be allowed access for users for account
+more overhead but more secure
+Deny List:
+allow everything by default via FullAWSAccess policy, and deny certain services
+default, when you enable SCPS applied to entire organization
 
 
+Cloudwatch Logs:
+public service
+store, monitor, and access logging data
+many aws integrations
+can generate metrics based on logs via metric filter
+contains log events, log streams, log groups put defn in from building demo
 
+CloudTrail:
+logs api actions which effect aws accounts
+not realtime, there is a delay!
+cloudtrail event:
+logged api call/activity
+event history:
+events stored for 90 days by default, no cost
+Different types of events:
+management, data, and insight events
+by default only logs management events
+management: logs management operations performed on resource 
+data: logs the resource operations performed on or within a resource
+insight: logs any unusual activity, errors, or user behavior in your account
+
+Trails:
+customize the service
+regional service, logs events for the region it's created in
+two types: 
+one region trail: only ever in region it was created in and logs these events only
+all regions trail: collection of trail in every region but managed as single logical trail
+global service events:
+some global services like IAM, STS, Cloudfront log their events only to one region, need to have this enabled to log these events
+event storage:
+stores events in a definable s3 bucket, can be stored indefinately
+can store events in cloudwatch logs as well to use metric filter or search through data
+organizational trail:
+single management point for every api call made across the organization
+
+
+AWS Control Tower:
+allows the quick and easy setup of multi-account environments
+orchestrates other AWS services to provide its functionality including: 
+Organizations, IAM Identity Center, CloudFormation, Config, and more...
+Landing zone:
+multi-account environment, what most people interact with
+provides SSO/ID federation, centralized logging and auditing
+home region:
+region you initially provision into, always available
+contains two OUs: the foundational OU named Security and the custom OU named sandbox
+foundational: 
+contains two accounts, the Audit Account and Log Archive account
+custom:
+generally used for testing and for account factory
+Account factory:
+automates creating, updating, and deleting AWS accounts as your business needs them
+changes based on templates and implements Cloudformation to provision 
+automates: account provisioning, identities with appropriate permissions, guardrails, account and network standard configurations, and can be fully integrated with a businesses SDLC
+
+other features:
+guard rails: 
+detect and mandate rules/standards across all acounts
+rule categories:
+mandatory, strongly recommended, or elective
+preventative functional type of rule: stops you from doing things via Organization SCPs
+detective functional type of rule: performs compliance checks via config rules
+dashboard:
+single page oversight of the entire environment
+you can create other OU's and accounts in a real world environment
 
 
 
