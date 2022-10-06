@@ -206,8 +206,8 @@ SHA-256: modern and reliable hashing algorithm
 
 Public vs Private Services:
 refers to networking only
-public aws service: something which is accessed using public endpoints
-private aws service: something which is accessed within a VPC or endpoints in a VPC 
+public aws service: something which is accessed using public endpoints, located in the AWS public zone and anyone can connect, but permissions are required to access the service
+private aws service: something which located within a VPC and is accessed within a VPC or endpoints in a VPC 
 
 Three Different Network Zones:
 public internet zone: internet services, anyone can access
@@ -341,6 +341,182 @@ you can't mount an s3 bucket as K:\ or /images, block storage has a single user 
 great for large scale data storage, distribution, or upload
 great for offload, which deals with storing data on s3 bucket rather that ec2 instance
 should be default input for any aws services or output to most aws products
+
+
+Cloudformation Basics:
+allows you to create templates to provisions AWS resources using IAC
+written either in YAML or JSON
+
+template: tells stack what logical resources to contain and their properties 
+contains:
+  resources: containes at least one logical resource, they have type and properties
+  description: gives some details about the template, decription has to immediately follow AWSTemplateFormatVersion if there is one
+  metadata: controls how resources look in the UI, and other things
+  parameters: fields that prompt user for more information
+  mappings: optional, it allows you to create lookup tables
+  conditions: allow decision making in template that only occur if conditions are met
+  outputs: once the template is finished, it can produce outputs
+
+!Ref fnReferenceName : references another part of the Cloudformation template
+!GetAtt : references another part of the Cloudformation template, and gets attibutes as well 
+
+stack: created by template and contains all of the logical resources the template tells it to contain, then builds a physical resource in your account for each corresponding logical resource.
+if you update the stack, it updates the corresponding physical resources
+if you  delete the stack, it deletes the physical resources
+
+
+Cloudwatch Basics:
+what is it: collection of services that help you monitor and observe your cloud resources
+and it allows you to collect logs, metrics, events, and set alarms
+characteristics:
+Metrics:AWS Products, apps, on premises
+Logs:AWS Products, apps, on premises
+Events:AWS services and schedules, 
+Namespace:
+container for monitoring data
+metric:
+time ordered set of data points, ex CPUUtilization
+Datapoint:
+measurement that contains time stamp and value
+dimension:
+separate datapoints for different things or perspectives with the same metric, ex one ec2 instance cpu utilization
+alarms:
+takes an action based on a specific metric
+ok state and alarm state: once in alarm state it sends trigger to event
+
+
+High Availability vs Fault Tolerance vs Disaster Recovery:
+
+High Availability:
+highly available systems are designed so that when it fails, it is designed to be fixed as quickly as possible.  
+maximizes the system's online time, generally measured in percent of uptime of year, like 99.9%
+fault tolerance: 
+a fault tolerant system operates properly even while faults, which are failures of a system, are present.  Much more expensive than high availability because redundancies are put into place.
+disaster recovery:
+multiple stage of processes designed to keep the crucial and non replaceable parts of your system safe so when disaster occurs you don't lose anything irreplaceable and can rebuild after disaster
+
+
+DNS Fundamentals:
+discovery service
+allows us to translate machine ip addresses into readable language and vice versa
+www.amazon.com => 104.98.34.131
+it's a huge database and has to be distributed
+zone: 
+a part of the DNS database that corresponds to a domain, think of it as logical domain, ex amazon.com, contains zone files
+zone file:
+physical database for a zone that contains the DNS info for a domain, contains the DNS records which has the mapping of website name to IP address
+DNS SERVER:
+nameserver (NS), server that hosts the zonefiles
+DNS resolver Server:
+located on your client, or router, or server within your IP, finds the NS you are looking for, then queries the server for the zone file
+ROOT OF DNS, or DNS ROOT ZONE:
+starting point of the DNS lookup
+database hosted on 13 Root servers, 12 large companies manage the servers but not database
+delegates authority to top level domains authoritative servers
+Root Hints file:
+installed on OS'S, pointer to root servers which allows your device to trust root servers
+
+authoritative: trusted
+delegated: authoritative entity passes trust to other entity so now other entity is trusted 
+top level domains:
+part of domain that is immediately left of last . ex:.com .org .uk
+registries: organizations that are delegated from IANA to help manage top level domains
+registrars: organizations that have relationship with registry that allow you to create a domain registration with them
+
+DNS Record Types:
+nameserver: allow delegation to occur in DNS
+A, AAAA: map hostnames to IP, a maps to ipv4, aaaa maps to ipv6
+CNAME: host to host records, lets you create the equivalent of DNS shortcuts, reduces admin overhead by pointing various services to same A record, so you will only have to update single A record, can only point to names not ips
+MX: finds a mail server (SMTP) for a domain
+TXT: allow you to add arbitrary text to a domain allowing further functionality, in some cases used to prove domain ownership
+
+TTL: numerical value that can be set on DNS records, once a DNS record from zonefile is recovered by NS, records are cached on resolver server for TTL seconds, caching it so resolver server does not have to perform lookup again for TTL seconds
+
+
+Route 53 Fundamentals:
+allows us to register domains
+allows us to host zones files on managed nameservers which it provides
+global service with a single database
+globally resilient
+
+when registering a domain:
+checks with TLD to see if domain is available
+creates a zone file for registered domain, known as hosted zone
+allocates 4 nameservers for the zone,
+adds nameserver records to TLD that indicate that the namerservers are authoritative for domain
+
+hosted zone:
+zone files in AWS
+hosted on four managed NS
+can be public or private linked to VPCs
+stores records, known as recordsets
+
+
+
+*******************************************
+IAM ACCOUNTS AND AWS ORGANIZATIONS:
+*******************************************
+
+IAM policies:
+JSON document that allows or denies permissions for IAM users, groups, and roles
+1 or more statements
+Sid: statement id, optional field, allows you to provide summaryName of statement to quickly identify what it does, 
+Action: can provide a wildcard * which means "all", list of multiple independent actions, or a specific individual action 
+["service: operationName"]
+Resource: same options above as action, 
+["arnResourceNames"]
+Effect: either allow or deny, controls what aws does if action and resource match
+
+Every interaction you have with AWS, is a combination of resource you're interacting with and the actions that your attempting to perform on that resource
+Policy precedence when two policies overlap permissions(ordered in highest precedence vs least):
+1. Explicit deny 
+2. explicit allow
+3. default deny (implicit), aws identities have no access to any resources (besides root)
+
+Inline Policies:
+applying JSON to each account individually
+use only when you need a special or exceptional allow or deny for a single user
+Managed Policies: 
+create policy, then attach to any identity that wishes to use it
+reusable, low management overhead
+aws managed policies: managed and created by AWS
+custom managed policies: created and managed by you specific to your needs
+
+
+IAM Users and ARNs:
+entities you create in IAM to represent the person or application needing to access your aws resources
+principal: 
+represents an entity trying to access aws account
+authenticates via username and password or access keys
+authenticated identity:
+principal that's proved it is who it says it is, aws performs authorization once the authenticated identity tries to access a resource
+
+ARNS:
+uniquely identify resources within any AWS accounts
+formats differ depending on what your trying to do:
+arn:partition:service:region:account-id:resource-id
+arn:partition:service:region:account-id:resource-type/resource-id
+arn:partition:service:region:account-id:resource-type:resource-id
+
+fields are split by a colon, if you see ::: the field does not have to be specified, like for s3 buckets region or account id do not have to be specified because buckets are globally unique
+
+ex of similar looking arn accessing different things:
+arn:aws:s3:::catgifs : accesses bucket
+arn:aws:s3:::catgifs/* : objects in the bucket
+
+EXAM POWERUP:
+5000 IAM users per account
+iam user can be a member of 10 groups
+therefore: if you have a system which requires more than 5000 identities then you cant use one IAM user for each identity, IAM roles and Identity Federation fix this 
+
+
+
+
+
+
+
+
+
 
 
 
