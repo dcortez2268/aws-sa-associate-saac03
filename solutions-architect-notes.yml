@@ -454,7 +454,7 @@ stores records, known as recordsets
 
 
 *******************************************
-IAM ACCOUNTS AND AWS ORGANIZATIONS:
+IAM, ACCOUNTS, AND AWS ORGANIZATIONS:
 *******************************************
 
 IAM policies:
@@ -479,8 +479,8 @@ use only when you need a special or exceptional allow or deny for a single user
 Managed Policies: 
 create policy, then attach to any identity that wishes to use it
 reusable, low management overhead
-aws managed policies: managed and created by AWS
-custom managed policies: created and managed by you specific to your needs
+  aws managed policies: managed and created by AWS
+  customer managed policies: created and managed by you specific to your needs
 
 
 IAM Users and ARNs:
@@ -629,4 +629,155 @@ you can create other OU's and accounts in a real world environment
 
 
 
+*******************************************
+S3:
+*******************************************
+private, by default, account root user is only idenity which can access the bucket
 
+bucket policies:
+form of resource policy
+resource policy:
+like identity policies, but are attached to resources instead of identities.  You are controlling who has access to that resource. 
+resource policies have principal field, whereas an identity policy does not have one because it is implied
+benefit:
+allow/deny access to identies in same or DIFFERENT accounts (diff than identity policies)
+allow/deny anonymous principals
+
+ACLS, Access Control Lists:
+allow a way to provide security on objects and bucket
+used less often, aws recommends you do not use them and instead use bucket policies
+subresources
+inflexible and simple permissions because you cannot apply conditions like bucket policies and you cannot apply a certain ACL on a group of objects, you would need to apply several ACLs
+
+Block Public Access:
+adds a further level of security so that if you do accidentally allow public and anonymous access to bucket via resource policy, then access is still blocked
+
+EXAM PowerUP:
+when to use resource policies, identity policies, or ACLs:
+identity: controlling access to multiple resources because not every service supports resource policies, you have a preference for a single place to control permissions, working with permissions in same account
+resource policies: managing permissions on a single service, allow anonymous or cross account access
+ACLs: never, unless you must!
+
+
+static website hosting:
+normal access is via AWS APIs
+this feature allows access via HTTP
+index and error documents are set
+website endpoint is created
+you can have custom domains via R53 and bucket name matters
+use cases for s3 static website hosting:
+offloading and out of band pages
+offloading:
+store static data from website on s3, have compute service handle dynamic content and then retrieve static data from s3 to save money on storage
+out-of-band-pages:
+show error or other notification pages on static s3 site in case server is offline or ec2 service as a whole
+
+pricing:
+cost to store data on s3 expressed as GB/month fee
+data transfer fee from out of s3 expressed in GB
+cost for requesting data, diff operations have different costs per 1000 operations
+
+Object Versioning and MFA Delete:
+versioning:
+lets you store multiple versions of objects within a bucket.  operations which would modify objects generate a new version.
+states: disabled, enabled, and suspended
+originally disabled, once you enable you can never disable again but can suspend and reenable
+implementation:
+each object has a key(name) and an id attribute.  
+disabled: all ids are set to null.  Whenever changes are made to object, the original object is overwritten.
+enabled: ids are given to each object.  Whenever changes are made to object, the original object stays in bucket with same id, while a new object with same key but diff id is generated.  When you access objects from bucket with key the current version is returned.  You can specify which version you want returned with key and id.   
+When deleting, if you specify key and id the corresponding object is deleted and the current version marker is reset to corresponding object.  If you do not specify id, then all objects are hidden under delete marker.  To undo delete you can delete the delete marker.  
+
+MFA delete:
+enabled in versioning configuration of a bucket
+MFA is required to change bucket versioning state or to delete versions
+implementation:
+serial number of MFA + code are passed with API calls
+
+
+S3 Performance Optimization:
+problem for Single PUT upload:
+single data stream to s3 requires full restart if any part of stream fails, then upload fails
+speed and reliability is limited in a limit of 1 stream
+limited to transferring up to 5GB
+solution for Single PUT upload:
+Multipart Upload
+data is broken up, and each individual part is treated as a single stream, if parts fails, then those individual parts are restarted
+minimum data size is 100MB
+
+How global transfer of data to s3 buckets work:
+without s3 accelarated transfer, we have to use public internet to route data from source to destination, doesn't usually take an optimal route, 
+with s3 transfer acceleration:
+transfers data to closest edge location, then transfers data from there directly to closest edge location to s3 destination bucket, 
+much faster because the aws network is built for performance between regions
+by default, disabled, so you have to enable if you wish to use
+
+
+KMS, Key management service:
+allows you to create, store, and manage keys
+both symmetric and asymmetric keys
+can perform cryptographic operations, including encrypt and decrypt and others
+keys never leave KMS or by default, region, provides FIPS 140-2 L2
+regional and public service
+support rotation
+can create aliases
+aws owned & customer owned
+customer owned:
+aws managed or customer managed keys
+aws managed: service default key
+customer managed keys:
+created explicitly by customer to use in application or service
+more configurable, 
+
+KMS keys:
+logical key that has ID, data, policy, desc, and state
+backed by physical key material (backing key) that is managed by KMS service, we use logical key to have KMS generate, import, or encrypt or decrypt data up to 4 kb in size
+implementation:
+identity performs call, provides data, KMS creates key and performs operations and always returns data only, not key
+role separation:
+individual permissions are needed for different operations, like creating key, managing KMS, encrypt, decrypt
+
+DEKs, Data Encryption Keys:
+generated by KMS keys via GenerateDataKey call and can be used to encrypt and decrypt data on data greater than 4KB in size
+KMS doesn't store the DEK in any way, provides to you or service using KMS to perform crypto operations\
+implementation:
+when DEK is created, KMS provides you with two versions of that key
+plaintext version:
+used to encrypt data then discarded
+ciphertext version:
+encrypted via KMS key
+then the encrypted key is stored with encrypted data
+when decrypting, you send encrypted key to KMS, it decrypts it and then you decrypt data with the key and then discard key
+
+Key Policies and Security:
+key policy:
+type of resource policy that has to explicitly grant permission to account owner access to KMS
+every key has one
+typical way of accessing key:
+broad key policy for account + IAM policies
+granular key policies
+or key policies + grants
+
+
+s3 Encryption:
+buckets aren't encrypted, objects are
+each object inside bucket could be using different encryption settings
+encryption at rest: client side encryption and server side encryption:
+client:
+data is encrypted by client, sent as ciphertext to s3 endpoint, then sent to s3 storage
+provides you a lot of control, but you do everything when it comes to management
+server:
+data is sent as plaintext to s3 endpoint, then encrypted by s3 endpoint, and sent to s3 storage 
+implementation:
+2 components, 
+encryption and decryption
+generation and management of cryptographic keys
+three types available:
+differences referenced in slides
+SSE-C: ss encryption with customer provided keys
+SSE-S3: ss encryption with s3 managed keys
+SSE-KMS: ss encryption with KMS keys stored in KMS, best 
+
+Bucket Default Encryption:
+allows you to set default encrytion method used if not specified on object level,
+you can set bucket default at object level when uploading object via header x-amz-server-side-encryption or you can set bucket default in the console at bucket level
