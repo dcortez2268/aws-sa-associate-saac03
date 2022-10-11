@@ -644,7 +644,7 @@ allow/deny access to identies in same or DIFFERENT accounts (diff than identity 
 allow/deny anonymous principals
 
 ACLS, Access Control Lists:
-allow a way to provide security on objects and bucket
+allow a way to provide security on objects and bucket, basically limited resource policies
 used less often, aws recommends you do not use them and instead use bucket policies
 subresources
 inflexible and simple permissions because you cannot apply conditions like bucket policies and you cannot apply a certain ACL on a group of objects, you would need to apply several ACLs
@@ -775,9 +775,137 @@ generation and management of cryptographic keys
 three types available:
 differences referenced in slides
 SSE-C: ss encryption with customer provided keys
-SSE-S3: ss encryption with s3 managed keys
+SSE-S3: ss encryption with s3 managed keys, uses AES256 encryption
 SSE-KMS: ss encryption with KMS keys stored in KMS, best 
 
 Bucket Default Encryption:
 allows you to set default encrytion method used if not specified on object level,
 you can set bucket default at object level when uploading object via header x-amz-server-side-encryption or you can set bucket default in the console at bucket level
+
+
+S3 object storage classes:
+s3 standard: 
+default
+objects are stored across at least 3 AZs
+when objects are stored a HTTP/1.1 200 OK respose is provided via s3 api endpoint
+no minimums, you are charged per GB for data transferred out and per 1000 requests
+recommended for frequently accessed data which is important and non replaceable
+s3 standard infrequent access: 
+architecture is mostly the same as s3 standard except that it is cheaper to store data but more expensive to retrieve the data
+has minimum duration of 30 days for storage and min billing size per object, 128KB
+recommended for long lived data, which is important but where access is infrequent
+s3 one zone-infrequent access: 
+cheaper than s3 or s3-IA
+architecture mostly the same as s3-IA, but data is only stored in one AZ
+recommended for long lived data, which is non critical and replaceable and infrequently accessed
+s3 glacier- instant retrieval:
+architecture mostly the same as s3-IA, but cheaper storage, more expensive retrieval costs, and longer minimums
+recommended for long lived data, accessed once per quarter with fast, millisecond access
+s3 glacier flexible retrieval: 
+architecture mostly the same as s3-glacier instant retrievel, but cheaper storage, more expensive retrieval costs, and longer access times
+think of objects as chilled state, unable to access immediately
+cannot be made publicly accessible, and requires a retrieval process
+expedited: 1-5 minutes
+standard: 3-5 hours
+bulk: 5-12 hours
+recommended for archival data, accessed once per year, and minutes-hours retrieval
+s3 glacier deep archive: 
+cheapest storage option
+think of objects as frozen state, unable to access immediately
+architecture mostly the same as s3-glacier flexible retrievel, but cheaper storage, much longer access times
+standard: 12 hours
+bulk: up to 48 hours
+recommended for archival data, accessed very rarely if ever, and hours-days retrieval
+s3 intelligent tiering: 
+helps you automatically move data to most cost effective storage tier based on access patterns, tiers are like classes we have frequent access, infrequent access, archive instant access, archive access, and deep archive
+recommended for long lived data with changing or unknown patterns
+
+s3 lifecycle configuration:
+set of rules that consist of actions that can automatically transition or delete objects in the bucket
+transition actions: change storage classes of objects after x amount of time
+can only transition down classes
+expiration actions: can delete objects, or versions after x amount of time
+
+
+s3 replication: 
+allows you to configure replication of objects between a source and destination s3 bucket
+cross-region replication, CRR:
+same-region replication, SRR:
+architecture differs depending whether same account or different account
+same account:
+replication rule is applied to source bucket, dest bucket and IAM role to use
+the role has trust policy for s3 to assume it, and permission policy gives it permission to read objects from s3 source, and replicate to destination bucket, transfer is encrypted with SSL
+different account:
+replication rule is applied to source bucket, dest bucket and IAM role to use
+the role has trust policy for s3 to assume it, and permission policy gives it permission to read objects from s3 source, and replicate to destination bucket, transfer is encrypted with SSL
+additionally, a bucket policy is needed on destination bucket to allow role from different account access
+s3 replication options:
+all objects or subset
+storage class, default is to maintain same class but you can change
+ownership, defualt is source account but you can change
+RTC, replication time control, keeps buckets in sync within 15 mins of each other
+s3 replication considerations:
+not retroactive and versioning for both buckets needs to be on
+one way replication only from source to destination
+can handle unencrypted objects, SSE-S3, AND SSE-KMS with extra config
+source bucket owner needs permissions to objects that will be replicated
+will not replicate system events, glacier, or glacier deep archive objects
+delete markers are not replicated by default
+why use replication?:
+SRR- log aggregation
+SRR- PROD and TEST sync
+SRR- Resilience with strict sovereignty
+CRR- global resilience improvements
+CRR- latency reduction
+
+s3 presigned urls:
+allow you to give an unauthenticated user access to an object inside an s3 bucket using generated credentials from an IAM user in a safe and secure way
+credentials are included in URL
+see slides for architectures
+used when offloading media and access to a private s3 bucket needs to be controlled and you don't want to run application servers to broker that access
+EXAM POWERUPS:
+you can create a URL for an object you have no access to, (which will also have no access lol)
+when using the URL, the permissions match the identity's which generated it CURRENTLY, so if they change so do the URL's permissions
+do not generate URL's with a role!  URL stops working when temporary credentials expire
+
+
+S3 select and Glacier select:
+SQL-like statements that allow you to retrieve parts of object rather than whole object
+formats of data: CSV, JSON, Parquet, BZIP2 compression for CSV and JSON
+why use?:
+you might want to retrieve only parts of object to save on computing costs and for faster performance
+
+
+S3 Events:
+allows you to create event notifications when events occur in a bucket
+can be delivered to SNS, SQS, and Lambda Functions, all need resource policy allowing s3 principal access
+Object created events
+Object Delete events
+Object restore events
+Replication events
+EventBridge:
+alternative and supports more types of events and more services
+would use this instead of s3 events unless you had specific reason not to do so
+
+S3 Access Logs:
+Enable logging on source bucket and sends logs to target bucket
+s3 log delivery group reads permissions you set, the buck acl on target group allows access to s3 log delivery group
+why use?:
+provides detailed information about requests which are made to a source bucket that are useful for
+security functions
+access audits for employees
+customer access patterns
+understand charges
+
+s3 object Lock:
+group of related features that enables Write-Once-Read-Many (WORM) architecture, which means no deletes, no overwrites
+Requires versioning, individual versions are locked
+Bucket can have default object lock settings
+Retention Period and Legal Hold: object lock can have both, one, or none
+Retention Period:
+specifies days and years which object is locked
+compliance mode:can't be adjusted, deleted, overwritten for duration of retention period
+governance mode:special permissions can be granted allowing lock settings to be adjusted
+Legal Hold:
+you set legal hold to be on or off, there is not retention period
+no deletes or changes until removed
