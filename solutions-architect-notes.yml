@@ -168,6 +168,7 @@ class b network: /16
 class c network: /24
 one ip address: /32
 takeway: larger the subnet mask prefix, the smaller the network
+every number (x) you increment in prefix, the number of networks it splits that prior network into goes up by 2^x
 
 
 
@@ -909,3 +910,113 @@ governance mode:special permissions can be granted allowing lock settings to be 
 Legal Hold:
 you set legal hold to be on or off, there is not retention period
 no deletes or changes until removed
+
+
+VPC sizing and structure:
+overview:
+what size should the VPC be?
+are there any networks we can't use, do not overlap networks of VPC's, cloud, on-premises, partners, and vendors
+try to predict the future situation
+vpc structure: tiers and resiliency availability zones
+tiers: 
+seperate application components and allow different security to be applied 
+
+VPC minimum /28 (16 IP), maximum /16 (65536)
+Personal preference for the 10.x.y.z range
+avoid common ranges, like 10.1-10.15
+reserve 2+ networks per region being used per account
+in our scenario, we have 3 US, 1 Europe, 5 australia, x 2 and assuming max 4 accounts = 40 IP
+VPC sizing in depth:
+how many subnets will you need?
+how many IPs total?  How many per subnet?
+formula?:
+a subnet is located in one AZ, so determine how many AZs you will be using, he mentions by default he uses 4, 3 for AZs and one spare
+each tier has its own subnet in each AZ, by default 4 tiers, web, app, db, and spare so now we have 16 subnets by default
+
+
+Custom VPCs:
+regional service, operates from all of the AZs in that region
+allows you to create isolated networks
+nothing IN or OUT without explicit configuration
+flexible configuration, simple or multi-tier
+hybrid networking to other cloud and on premises
+default or dedicated tenancy, allows resources created inside VPC to be provisioned on shared or dedicated hardware
+
+can use IPv4 public and IPv4 private addresses, by default uses private
+public addresses are used when you want resource to communicate with public internet, or aws public zone, or allow access to them from public internet
+allocated one primary private IPv4 CIDR block, configured when you create VPC, optional secondary ipv4 blocks, think of it as a VPC has a pool of private addresses and optionally it can use public addresses
+optional signle assigned ipv6 /56 CIDR block
+
+fully featured DNS:
+provided by r53
+vpc address is base IP + 2
+enableDnsHostnames: gives instances DNS names, if set to true then instances with public ip addresses get public DNS hostnames
+enableDnsSupport: enables DNS resolution in VPC, indicates whether enabled or disabled
+
+
+VPC subnets:
+a subnetwork of a VPC, within a particular AZ
+1 subnet can have only one AZ, one AZ can have zero to many subnets
+allow you to add structure, functionality, and resilience to VPCs
+AZ resilient 
+ipv4 CIDR is a subset of the VPC CIDR, and cannot overlap with any other subnets within VPC
+optional ipv6 CIDR
+subnets can communicate with other subnets in the VPC
+5 reserved ip addresses:
+network address: first starting address in available range
+network + 1: address used for VPC router
+network + 2: address used for Reserved DNS
+network + 3: address used for future requirements
+broadcast address: last IP in subnet
+
+DHCP Options set: dynamic host configuration protocol
+configuration object applied to VPC that allows computing devices to receive IP addresses automatically
+one applied to a VPC at one time
+if you want to change settings you need to create a new one
+two options:
+auto assign public ipv4:
+automatically assigns public ipv4 address to resource that has private ipv4 address
+auto assign ipv6:
+automatically assigns ipv6 address to resource
+
+
+VPC ROUTING AND INTERNET GATEWAY:
+internet gateway: 
+region resilient gateway attached to a vpc
+1 VPC = 0 or 1 IGW, if 0 then it is entirely private
+1 IGW = 0 or 1 VPC
+Runs from within AWS Public zone, or "border between public zone and VPC"
+Gateways traffic between the VPC and internet or between VPC and public aws zone
+Managed by aws for performance
+maintains mappings of ipv4 public addresses for private instances within VPC:
+instances that have ipv4 addressing enabled, have only private ipv4 address
+the igw maintains a public ipv4 address mapping to private ip address
+when private instance sends packet, the igw replaces the private ip address with public ip address
+ipv6 addresses for private instances are natively routable:
+instances that have ipv6 addressing enabled, have both private ipv6 address and public ipv6 address
+igw passes traffic, it doesn't need to do mapping
+
+
+VPC ROUTER:
+routes traffic between subnets
+every vpc has a vpc router, highly available
+in every subnet, the router uses network+1 address
+controlled by route tables, each subnet has one only
+a VPC has a main route table, it is default table for subnet if there hasn't been an explicit association with custom table, when subnet does get associated with custom table the main route table is dissasociated
+route table:
+basically just a list of routes, matches destination ip address on packet with destination field in route table
+if multiple routes match, the most specific, higher prefix route is selected
+target field:
+point to an aws internet gateway or local, which means destination is within vpc itself
+
+
+Bastion Host/Jumpbox:
+allow incoming management connections and then access internal VPC resources
+is instance in a public subnet inside a VPC
+generally used as an entry point for private only VPCs
+historically was only way to implement entry point for private only VPCs but not there are better alternatives
+
+
+
+
+
