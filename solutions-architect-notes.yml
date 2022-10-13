@@ -135,7 +135,7 @@ User datagram Protocol, UDP
 packages data in segments, encapsulated within IP packets,
 used in same way but TCP adds more reliable architecture,
 
-TCP/IP: TCP running on top of IP, used for most of the important Application Layer protocols like HTTP, HTTPS, SSH, and so on, connection oriented protocol
+TCP/IP: TCP is layer 4 protocol running on top of IP, used for most of the important Application Layer protocols like HTTP, HTTPS, SSH, and so on, connection oriented protocol
 has source and destination ports, sequence number
 connection between random port on client and known port on the server, flags set up connection, makes error checking, ordering, and retransmission possible because everything is connection based
 
@@ -1011,10 +1011,63 @@ point to an aws internet gateway or local, which means destination is within vpc
 
 
 Bastion Host/Jumpbox:
-allow incoming management connections and then access internal VPC resources
-is instance in a public subnet inside a VPC
-generally used as an entry point for private only VPCs
+is instance in a public subnet inside a VPC, generally used as an entry point for private only VPCs
 historically was only way to implement entry point for private only VPCs but not there are better alternatives
+allow incoming management connections and then access internal VPC resources
+
+
+STATEFUL VS STATELESS FIREWALLS:
+two things to think about when dealing with firewall rules:
+inbound and outbound:
+request and response
+inbound and outbound rules can be both requests and responses, just depends on client/server relationship
+
+stateless firewalls:
+need rule for each request/response, 2 total
+request is always to well known port, and response is always to ephemeral port and since it does not have state, you have to allow traffic to all ephemeral ports
+stateful firewall:
+recognize connection and treats each request/response as 1 rule, 1 total rule allows/denies request and response is automatically allowed/denied
+lower admin overhead
+
+NACL, NETWORK ACCESS CONTROL LISTS:
+traditional stateless firewall available within aws vpc
+each subnet has one only, NCLS filter traffic crossing the subnet boundary inbound or outbound
+connections between things inside subnet are not affected by ACLs
+contain rules grouped into INBOUND and OUTBOUND
+match IP, port, and allow explicit denies or allow for that match
+matches first rule found in order then stops processing, so first rule matched takes effect
+default NACL is implemented in a VPC with all traffic allowed
+you cannot reference any logical resources, only IPS/CIDR, ports, and protocols
+good practice is to implement together with security groups to allows traffic with security groups and deny traffic with NACLS
+
+VPC SECURITY GROUPS:
+traditional stateful firewall 
+if request is allowed, then response is automatically allowed 
+no explicit deny, only allow or implicit deny by not allowing
+can't block specific bad actors
+support IP/CIDR rules and logical resource references, which includes other security groups and itself, both help scale, you could use self reference to allow intra app communcation 
+attached to ENI's, network interfaces, not instances
+
+NETWORK ADDRESS TRANSLATION, NAT, AND NAT GATEWAYS:
+NAT, Network Address Translation: set of processes that remap source or destination IPs
+static nat: what igw does
+ip masquerading: hiding CIDR blocks behind one IP, helps overcome the ipv4 shortages by translating private IPv4 addresses to public ip addresses so packets can go to public internet then translate back in reverse, takeaway is that private ip address needs to initiate communication because if public tries to communicate with private there wont be an entry in NAT table
+how to implement IP masquerading in AWS, will refer to as ip masquerading as nat:
+nat gateway:
+provision nat gateway into public subnet with route table, diff route table for private subnet, so that packets sent from private go to nat gateway, then get sent to internet gateway
+uses eleastic IP (static ipv4 public address)
+az resilient service, deploy a nat gateway in each az for region resilience!
+2 charges, one per hour and another per gb of data consumed
+nat instance:
+implementing ec2 instance as NAT gateway, not really all that important to know because nat gateways are mostly used, however for exam know that if you do implement nat instance, you need to disable source/destination checks
+differences between two:
+nat instance is managed by you, so you can do other things than just performing nat service, with nat gateway you can only do nat service
+nat gateway is highly available within az, nat instance isn't
+nat gateways only support NACLS, while nat instances support security groups and NACLS
+ipv6:
+NAT isn't required for ipv6 and nat gateways don't work with ipv6
+all ipv6 addresses in aws are publicly reoutable, the igw works with all ipv6 ips directly
+you can enable default ipv6 address route + igw for bi directional connectivity or with egress only igw for outbound only
 
 
 
