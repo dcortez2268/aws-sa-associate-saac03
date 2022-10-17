@@ -1071,5 +1071,203 @@ you can enable default ipv6 address route + igw for bi directional connectivity 
 
 
 
+VIRTUALIZATION 101:
+virtualization: process of running more than one operating system on a piece of physical hardware or server
+user mode and privileged mode
+application needs to make calls to OS(kernel)(privileged state) that makes calls to hardware, apps cannot make system calls directly to hardware
+
+allows multiple privileged programs(os) to make calls to hardware:
+emulated virtualization:
+host os, which runs in privileged mode, has hypervisor, means it has knowledge of the different guest os and can allow privileges 
+virtual machine:
+container that contains applications and guest operating system, logical hardware is allocated by hypervisor which has access to physical hardware
+binary translation:
+guest os not modified, whenever the virtual machine makes call to physical hardware, the hypervisor steps in and makes the call to physical hardware
+Para-virtualization:
+similar architecture to emulated virtualization, but guest os is modified, instead of making calls to physical hardware, it makes calls to hypervisor 
+
+hardware assisted virtualization:
+hardware itself is virtualization aware,
+guest os make calls to physical hardware and hardware does not halt execution, but redirects these calls back to hypervisor
+SR-IOV:
+hardware is split up into several physical hardware pieces available for guest os so no translation has to happen by hypervisor
+Enhanced Networking:
+this process occurs in EC2 with network cards and improves latency, less cpu usage
 
 
+EC2 architecture and resilience:
+ec2 instances are virtual machines running on the ec2 hosts, which is physical hardware 
+ec2 hosts are either shared hosts or dedicated hosts
+az resilient, host runs on a single AZ
+instance store: local storage on ec2 host
+storage networking:
+remote storage can attach to elastic block store service
+EBS, elastic block store: storage device, a volume, that can be attached to or removed from your instance,
+data persists when instance is not running, 
+can only be attached to one instance in same AZ,
+recommended for quickly accessible data, running a database on an instance, long term data storage
+
+data networking:
+elastic network interface, ENI, is provisioned in subnet and maps to physical hardware on ec2 host when an instance is provisioned inside subnet
+
+ec2 instances remain on same host unless host fails or host is stopped and started
+
+What's ec2 good for?:
+when you've got a traditional os+application compute
+long-running compute needs
+server style applications, that are waiting for incoming connections
+either bursts or steady state load requirements
+monolithic application stacks
+migrated application workloads or disaster recovery
+tends to be default compute service within aws
+
+ec2 instance types:
+characteristics:
+raw resources you get, cpu memory, local storage capacity, and type
+resource ratios
+storage and data network bandwidth 
+system architecture/vendor
+additional features and capabilities, like gpus, fpgas
+
+five main categories:
+general purpose:
+default, diverse workloads, equal resource ratio
+compute optimized: 
+have higher cpu than memory ratio
+media processing, HPC, scientific modeling, gaming, machine learning,
+memory optimized:
+higher higher memory than cpu ratio
+processing large in memory datasets, some database workloads
+accelerated computing:
+have additional features and capabilities
+hardware gpu, FGPAs
+storage optimized:
+large amounts of super fast local storage
+sequential and random IO, scale out transacitonal databses, data warehousing, elasticsearch, analytic workloads
+
+Decoding EC2 types:
+check out slide
+[instance family] [instance generation] [additional capabilities]. [instance size]
+
+ec2 instance connect:
+need identity policy permissions 
+your browser connects to aws, then it redirects to connect to ec2 instance
+using the GUI can only connect to public ec2 instances, can connect to private using CLI
+ec2 ssh client:
+need access key
+
+
+Storage Refresher:
+ephemeral storage: temporary storage, instance store volumes
+  direct(local) attached storage: storage on the ec2 host, called instance store volumes
+persistent storage: permanent storages, lives on past the lifetime of the instance, ebs
+  network attached storage: volumes delivered over the network (EBS)
+
+3 main categories of storage available in AWS:
+block storage: 
+Volume presented to the OS as a collection of blocks.  no structure provided. mountable. bootable.  
+implemented via SSDs, (physical storage) or by logical volumes backed by SSDs
+ideal for booting storage, high performance storage inside os
+file storage:
+presented as a file share. has structure. mountable. not bootable.
+ideal for sharing files among multiple servers, clients, services, etc
+object storage:
+collection of objects.  no structure (flat). Not mountable.  Not bootable.  
+ideal for large access to read and write to data at scale
+
+storage performance:
+IO, or block size:
+size of blocks of data that your writing to disk
+think size of wheels of car
+IOPS:
+number of io operations the storage system can support in a second
+think speed of engine of car, power
+throughput: 
+rate of data storage system can store on a particular piece of storage, mb/sec
+think average speed of car
+io x iops = throughput:
+
+EBS, ELASTIC BLOCK STORE:
+provides block storage that can be encrypted using KMS
+instances see block device and create file system on this device
+provisioned in one az, resilient in that AZ
+attached to one ec2 instance over a storage network
+persistent, they can be detached and reattached to same or different instances
+you can perform backups, or snapshots, of data into s3.  You can migrate the data and create volumes from that snapshot.  
+can be provisioned with different physical storage types, different sizes, and different performance profiles
+billed based on gb-month, and in some cases performance
+
+EBS VOLUME TYPES GENERAL PURPOSE SSD:
+up to 16000 IOPS per volume
+GP2:
+default general purpose ssd storage
+high performance storage for fairly low price
+can be as small as 1GB or as large as 16TB
+io credits and baseline performance found on slide
+used for boot volumes, low latency apps, and dev and test environments
+GP3:
+cheaper than GP2
+io credits and baseline performance found on slide
+benefits of GP2 and IO1 
+used for boot volumes, low latency apps, and dev and test environments, virtual desktops, medium sized single instance databases
+
+EVS VOLUME TYPES PROVISIONED IOPS SSD:
+designed for super high performance situations, IOPS can be adjusted independently of size
+low latency and consistent low latency are characteristics
+faster than gp3
+there is a max per instance performance, found on slide
+up to 64,000 IOPS per volume
+io1:
+io2:
+up to 256,000 IOPS per volume
+io2 block express:
+used for high performance, latency sensitive workloads, IO intensive NoSQL and relational databases.  also used when you have small volumes and you need high performance.
+
+EBS VOLUME TYPES HARD DISK DRIVE (HDD) -BASED:
+have moving bits, slower but good for specific situations
+used for larger, cheaper storage that is frequently accessed for throughput intensive sequential workloads.  think big data, data warehouses, and log processing.
+cannot boot
+st1:
+fast hard drive, not agile
+sequentially accessed data
+sc1:
+cold HDD
+designed for infrequently accessed workloads where cheaper storage is priority
+
+INSTANCE STORE VOLUMES:
+provide block storage devices
+physically connected to one EC2 host
+instances on that host can access them
+highest storage performance in aws by much higher levels
+included in instance price
+attached at launch of ec2 instance!
+number of and size of instance store volumes depend on type of instance
+EXAM POWER-UPS:
+local on ec2 host
+add at launch only
+lost on instance move, resize, or hardware failure
+price included in instance
+temporary data
+
+CHOOSING BETWEEN INSTANCE STORE AND EBS:
+EBS: persistant data
+EBS: higher resilience
+EBS: storage isolated from instance lifecycle
+depends: when you need resilience and app supports in built replication of data, instance stores are an option because you can have many ec2 instances with instance store to provide the resilience and the data is persisted within app
+depends: high performance needs
+  RAID0 + EBS: max number of IOPS per instance is 260,000 IOPS, used by combination of high number of volumes and efficient architecture
+instance store: super high performance needs, more than 260,000 IOPS in millions
+instance store: when cost is a primary concern
+
+EBS SNAPSHOTS:
+incremental volume copies to s3, improves az resilience to region resilient
+the first is a full copy of data on the volume, future snaps are incremental
+volumes can be created or restored from snapshots, and can be copied to another region
+billing: GB/month of used data, not allocated data
+
+when you create new EBS volume w/out snapshot: full performance immediately
+when you create new EBS volume w/ snapshot: restores lazily, the blocks are fetched gradually
+to force blocks to be fetched immediately you can implement a forced read of all data immediately with CLI tools or OS tools or you can implement Fast snapshot Restore(FSR)
+FSR: 
+immediately restores data, up to 50 snaps per region
+extra cost
