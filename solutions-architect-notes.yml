@@ -1245,7 +1245,7 @@ number of and size of instance store volumes depend on type of instance
 EXAM POWER-UPS:
 local on ec2 host
 add at launch only
-lost on instance move, resize, or hardware failure
+data lost on instance move, resize, or hardware failure, but not on restart or if instance stays on same host
 price included in instance
 temporary data
 
@@ -1268,6 +1268,132 @@ billing: GB/month of used data, not allocated data
 when you create new EBS volume w/out snapshot: full performance immediately
 when you create new EBS volume w/ snapshot: restores lazily, the blocks are fetched gradually
 to force blocks to be fetched immediately you can implement a forced read of all data immediately with CLI tools or OS tools or you can implement Fast snapshot Restore(FSR)
-FSR: 
+Fast snapshot restore, FSR: 
 immediately restores data, up to 50 snaps per region
 extra cost
+
+EBS ENCRYPTION:
+by default, no encryption is applied
+provides at rest encryption for snapshots and ebs volumes
+implementation:
+KMS generated encrypted DEK key to be stored on instance
+Whenever wanting to read/write data, the volume makes request to KMS, KMS sends response with decrypted DEK key which is stored on the ec2 host and is used to encrypt and decrypt data stored on instance volume.  Whenever instance moves hosts, the key is discared
+Instance retains encrypted DEK key, and whenever wanting to read/write data repeats step 2.  same implementation for snapshots. 
+EXAM POWER-UP:
+accounts can be set to encrypt ebs volumes by default, you can set a default KMS key or choose a custom KMS key to use
+each volume uses 1 unique DEK, 
+snapshots and future volumes use the same DEK
+can't change a volume to not be encrypted once it's encrypted
+OS isn't aware of the encryption, no performance loss
+
+NETWORK INTERFACES, INSTANCE IPS, AND DNS:
+every ec2 instance has one network interface called the primary ENI (elastic network interface)
+optionally, you can attach one or more secondary ENIs (everything needs to be in 1 AZ), only difference is that you can detach secondary ENIs and attach to diff instances
+on the eni:
+mac address
+primary ipv4 private ip
+0 or more, secondary IPs
+0 or 1 public ipv4 address: changes whenever instance is restarted because allocated new host
+1 elastic ip per private ipv4 address: (elastic ips are like public ipv4 addresses but different bc normally you can only have 1 public address per interface while you can have many elastic ips 1 per private ipv4 address)
+o or more ipv6 addresses
+on the network interface:
+security groups
+source/destination check
+
+elastic ip addresses: elastic ips are like public ipv4 addresses but different bc normally you can only have 1 public address per interface while you can have many elastic ips bc 1 elastic ip is associated per private ipv4 address on primary interface or second interface
+allocated to your aws account
+replaces the public ipv4 address
+EXAM POWER-UPS:
+secondary eni + MAC = licensing, and you can then move licenses between ec2 instances
+you can apply different security groups on multiple interfaces to enforce different access permissions for different IP ranges
+the OS doesn't see public ipv4, the private ip is mapped to public via NAT
+0 or 1 public ipv4 address changes whenever instance is restarted, or started and stopped because allocated new host, if you don't want dynamic address then use elastic ip instead
+
+AMI, Amazon Machine Image:
+images that help us launch ec2 instance
+it is template of an instance configuration and then use that template to provision instances using that configuration
+you can create an AMI from an ec2 instance you want to template
+aws, community provided (marketplace), or you can create your custom AMI
+regional so unique id provided per region
+has permissions
+AMI Lifecycle:
+launch: where you use an ami to launch ec2 instance
+configure: add some customization
+create image: create an ami with ec2 default configs + your customization, contains permissions and block device mapping, which references the snapshots created of ebs volumes 
+launch: new instance is launched with resources and configs, snapshots are used to create corresponding ebs volumes in region
+EXAM POWER-UPS:
+AMI = one region, only works in that one region
+AMI Baking = creating an AMI from a configured instance + application
+An AMI can't be edited, you have to create a new one
+can be copied between regions
+permissions by default allow your account only to access
+
+EC2 PURCHASE OPTIONS (LAUNCH TYPES):
+ON-DEMAND:
+instances of different sizes run on the same ec2 hosts, they are isolated but run on shared hardware
+per second billing while an instance is running.  also some resources like storage are always billed, regardless of instance state
+characteristics:
+predictable pricing, no upfront cost, no discounts
+default,
+good for short term, unknown workloads, and apps which can't be interrupted
+
+SPOT:
+selling unused ec2 host capacity for up to 90% discount, the spot price is based on the spare capacity at a given time
+implementation:
+customers set max price they are willing to pay.  if capacity is available and price aws is charging is lower than max price, they are allocated capacity.  However, once the price goes above the customers max price, the customers capacity is terminated.  
+characteristics:
+never use spot for workloads which can't tolerate interruptions, good for anything which is stateless, anything which can be rerun
+if you need burst capacity needs,
+non time critical
+
+RESERVED INSTANCES:
+Standard Reserved:
+committment for long term consumption of ec2 resources
+reduced or no per second price for corresponding on demand instance
+unused reservations are still billed
+can be regional or zonal reservation or neither
+commitments:
+1 year or 3 year terms
+no upfront, partial upfront, and all upfront.  first two reduce /sec fee, while last eliminates
+characteristics:
+known usage, need consistent access to compute, long-term 
+
+Scheduled Reserved:
+ideal for long term usage which doesn't run constantly
+you specify frequency, duration, and time
+minimum of 1200 hours per year for 1 year
+
+
+DEDICATED:
+Dedicated Hosts:
+hosts that are allocated to you entirely
+you pay for the host, no instance charges
+characteristics:
+host affinity, links instances to hosts
+socket and core licensing requirements
+when you have strict regulatory or data requirements
+
+Dedicated Instances:
+instances that are allocated to you entirely, 
+host is not shared between you and other customers
+you do not pay for host, pay for flat hourly charge and for dedicated instances themselves 
+characteristics:
+when you have strict regulatory or data requirements
+
+
+Capacity Reservations:
+from highest to lowest priority:
+reserved purchases
+on demand 
+spot
+types:
+regional reservation: allows you to launch instance in any AZ in region but do not reserve capacity within an AZ, cheaper than on demand
+zonal reservation: only apply to one AZ and reserves capacity within AZ, cheaper than on demand
+on-demand capacity reservation: can be booked to ensure you always have access to capacity in an AZ but not discounted price and you pay even if you dont use it, no commitment requirements
+
+EC2 SAVINGS PLANS:
+hourly commitment for a 1 or 3 year term
+two types:
+general compute $ amounts: ex, 20$ per hour for 3 years, for ec2, fargate, and lambda, saves you money because savings plan rate is lower than on demand rate for these products
+specific ec2 savings plan: you pick size and OS
+
