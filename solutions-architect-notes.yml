@@ -633,6 +633,7 @@ you can create other OU's and accounts in a real world environment
 *******************************************
 S3:
 *******************************************
+
 private, by default, account root user is only idenity which can access the bucket
 
 bucket policies:
@@ -1245,7 +1246,7 @@ number of and size of instance store volumes depend on type of instance
 EXAM POWER-UPS:
 local on ec2 host
 add at launch only
-data lost on instance move, resize, or hardware failure, but not on restart or if instance stays on same host
+data lost on instance move, resize, or hardware failure, but not on restart or if instance stays on same host, data lost when ec2 stops and starts because aws allocates new host
 price included in instance
 temporary data
 
@@ -1396,4 +1397,223 @@ hourly commitment for a 1 or 3 year term
 two types:
 general compute $ amounts: ex, 20$ per hour for 3 years, for ec2, fargate, and lambda, saves you money because savings plan rate is lower than on demand rate for these products
 specific ec2 savings plan: you pick size and OS
+
+INSTANCE STATUS CHECKS AND AUTORECOVERY:
+2 status checks per instance:
+system status: things like loss of system power, ec2 host or service failures
+instance status: things like corrupted file system, incorrect instance networking, os kernel
+autorecovery:
+moves instance to a new host, keeps same configs and reperforms status checks
+allows you to automatically recover from failed status checks,
+termination protection:
+in instance settings, you can enable termination protection which allows you to protect your instance from being accidentally terminated, or terminated by someone without the permission
+
+HORIZONTAL VS VERTICAL SCALING:
+Vertical scaling:
+allows you to resize an ec2 instance,
+benefits:
+no application modification required
+works for all applications, even monoliths
+disadvantages:
+each resize requires a reboot which leads to slower rection times and disruptions
+larger instances often carry a money premium that is more than linear the bigger you get
+there is an upper cap on performance due to set limit on instance size
+
+horizontal scaling:
+allows you to change number of instances,
+how it works:
+a copy of application is stored on each instance and instances work in parallel via load balancer
+load balancer:
+sits between customers and servers and distributes the load
+sessions are everything: requires application support or off-host sessions
+off host sessions:
+session is stored externally somewhere else and servers are stateless
+benefits:
+no disruption when scaling
+no real limits to scaling
+often less expensive than vertical scaling
+allows you to be more granular when you scale with addition or subtraction of smaller instances
+EXAM POWER-UP:
+horizontal vs vertical scaling slide
+
+
+INSTANCE METADATA:
+ec2 services provides data to instances
+accessible inside all instances, anything running inside instance can query the metadata
+no authentication nor encrypted: can and does get exposed
+http://169.254.169.254/latest/meta-data/: IP address to access instance metadata
+ec2-metadata tool allows us to easily query data via cli
+categories:
+environment
+networking
+authentication
+user-data
+
+
+
+
+*******************************************
+CONTAINERS:
+*******************************************
+problem with virtualization: guest os consumes a lot of the available resources that's allocated to each virtual machine
+containers:
+provides an isolated environment which an application can run within
+runs as an application running within host os to solve problem with virtualization
+allows us to run many more applications on top of same hardware than when using virtualization, saves so much space and scales really well
+portable, isolated, very consistent as they always run as expected
+ports are exposed to the host and beyond
+application stacks can be multi container
+so container engines are like guest os and the containers are memory for application and runtime environemnt 
+architecture:
+dockerfile: file used to build docker images. each step creates file system (fs) layers
+stacks of docker images
+images: are created from a base image or scratch
+images contain readonly layers, changes are layered using a differential architecture
+docker container: running copy of a docker image (fs layers), with an addition read/write layer
+read/write layer: allows container to run, any applications store changes in this layer and containers differ only in this area, have same base layers
+container registries: hub or registry of container images, 
+
+
+ECS CONCEPTS, ELASTIC CONTAINER SERVICE:
+allows you to use containers running on infrastructure that aws partially or fully manages to reduce admin overhead of using docker container
+clusters run in one of two modes: ec2 mode and fargate mode
+ec2 mode: uses ec2 instances to run containers
+fargate mode: serverless way of running docker containers
+
+ecs container engine maintains clusters
+ecs allows you to create cluster
+clusters: where your containers run from, tasks or services get deployed into cluster
+container definition: tells ecs information about single container, including pointer reference and which port it uses 
+task definitions: represents a self contained application as a whole, contains one or more container definitions
+store resources used by application like cpu, memory, compatibility, task roles
+task role:
+iam role the tasks can assume to interact with aws resources, 
+task roles are BEST PRACTICE to give ecs containers permissions to access aws services and resouces!
+service definition: defines a service, service is how for ecs we can define how we want task [definitions] to scale, or availability, resiliency, copies, capacity, etc
+
+EC2 MODE:
+ecs management components: uses ec2 instances to run containers
+see slides
+ecs cluster is created and runs within VPC, benefits from many AZs within region
+auto scaling group helps provision isntances
+you generally manage ec2 instances (container host), availabilitiy, capacity,
+ecs will handle tasks and service definitions
+
+FARGATE MODE: serverless way of running docker containers
+aws provides more management of overhead, manages Fargate shared infrastructure
+each cluster runs on Fargate, and ecs tasks and services are injected into VPC and given ENI to access from VPC or public if vpc config allows
+ecs will handle tasks and service definitions
+you pay for resources you consume
+
+CHOOSING BETWEEN EC2 VS ECS... EC2 MODE VS FARGATE MODE
+ecs: if you use containers already
+ec2 mode: large workload, price conscious over effort
+Fargate: large workload, overhead conscious
+Fargate: small/burst workloads
+Fargate: batch/periodic workloads
+
+ECR, ELASTIC CONTAINER REGISTRY:
+managed container image registry service
+like docker hub but for aws
+each aws account has a public and private registry
+each registry can have many respositories and each repository can contain many images, think github
+container images can have several unique tags within your repository
+public repository: anyone has read access but write requires permissions
+private registry: permissions are required for any access
+benefits:
+integrated with IAM
+image scanning via basic and enhanced scan via aws inspector
+provides real time metrics based on authentication, pushing and pulling
+logs all api actions via cloudtrail
+delivers events to eventbridge
+you can replicate cross region and cross account
+
+KUBERNETES, 101:
+it allows you to run containers in a reliable and scalable way and uses resources efficiently and lets you expose containerized apps to outside world
+like docker but automated 
+open source container orchestration system that allows you to automate the scaling, deployment, and management of containerized applications
+kubernetes cluster:
+structure on slide
+key components:
+cluster: a deployment of kubernetes, management, orchestration, and service access
+node: resources, pods are placed on nodes to run
+pod: 1+ containers, smallest unit in jubernetes, often 1 container, 1 pod, nonpermanent
+service: abstraction, service running on 1 or more pods, its what you interact with like application
+job: ad hoc, creates one or more pods until completion
+ingress: how external entity accesses a service, ex would be ingress->routing->service->1+ pods
+ingress controller: used to provide ingress, software that allows hardware to ingress
+important to uses stateless architecture for data stored on pods since they are temporary, 
+persistant storage, pv: volumes whose lifecylces lives beyond any 1 pod using it
+
+ELASTIC KUBERNETES SERVICE, EKS:
+aws managed kubernetes, open source and cloud agnostic
+it can run on aws, outposts, eks anywhere, or eks distro
+control planse scales and runs on multiple AZs
+integrates with AWS services like ECR, ELB, IAM, VPC
+eks cluster: eks control plane and eks nodes
+etcd: distributd across multiple AZs
+Nodes: can be self managed, managed node groups, or fargate pods
+for storage: can use EBS, EFS, FSx Lustre, FSx for NetApp ONTAP
+architecture: on slide
+
+
+
+*******************************************
+ADVANCED EC2:
+*******************************************
+bootstrapping:
+process of running scripts or other configurations when an instance is first launched
+allows ec2 build automation once launched
+enabled via user data, accessed via the meta-data IP + /latest/user-data
+anything in user data is executed by the instance OS
+ec2 doesn't interpret, it passes the data blindly, the os needs to understand the user data and execute, 
+can be done in UI when launching ec2 instance or you can bootstrap via including user data inside cloudformation template that launches ec2 instance
+architecture:
+ec2 bootstrapping slide
+key points:
+user data is not secure, don't use it for passwords or long term credentials
+user data can be modified when instance stopped
+executed only once at launch time
+
+Boot-time-to-service-time: how long it takes to provision ec2 instance and the instance is available to use, generally takes minutes
+ami baking: 
+removes post launch time by putting configurations into AMI
+post launch time:
+configuring the instance after launch before it is available for service
+optimal way:
+ami bake in the installation part, and bootstrap the final configurations
+
+ENHANCED BOOTSTRAPPING WITH CFN-INIT:
+allows you to pass complex bootstrapping instructions into ec2 instance, much more complex than user data instructions
+much more powerful, tells ec2 desired state rather than procedural like user data does and also can run more than once, ex watching for updates to metadata then performing update
+cfn-init: helper script installed on ec2 os, 
+simple configuration management system that tells ec2 desired state, then ec2 performs functionality required to do so
+aws::CloudFormation::Init: where cfn-init configuration is stored in cfn template
+cfn CreationPolicy:
+added to a logical resource inside a cfn template, does not allow resource to move into create complete status until cfn receives signal
+cfn Signals:
+allows ec2 to send confirmation signal to cfn stack if configuration was created successfully
+
+EC2 INSTANCE ROLES:
+roles that an instance can assume and anything running within instance, like CLI 
+should always be used rather than adding access keys into instance
+InstanceProfile: 
+wrapper around an IAM role that allows permissions to get inside of instance
+when you use UI it abstracts the process of wrapping iam instanceProfile but when you use CLI or CFN you need to implement instanceProfile manually
+
+temp credentials are inside instance meta-data:
+http://16.254.169.254/latest/meta-data/iam/security-credentials/role-name
+automatically rotated and always valid
+
+SSM PARAMETER STORE:
+storage for configuration and secrets
+allows 3 different types of parameters: String, StringList, SecureString
+ex: license codes, database strings, full configs and passwords
+hierarchies and versioning
+plaintext and ciphertext, integrates with KMS to encrypt sensitive info and other services need access via IAM permissions 
+public parameters, like latest AMIs per region
+changes can create events
+
+
+
 
