@@ -1614,6 +1614,144 @@ plaintext and ciphertext, integrates with KMS to encrypt sensitive info and othe
 public parameters, like latest AMIs per region
 changes can create events
 
+SYSTEM AND APPLICATION LOGGING ON EC2:
+sysptem and application logs deal with caputuring metrics from within os, cloudwatch by default monitors external metrics
+Cloudwatch Agent (software) is required to captsure system and application logs plus configuration and permissions
+agent configuration: configures which logs and metrics we want to capture
+permissions: roles grant permissions for instance, (and everything running inside of it), the permission to access kms and write to cloudwatch logs
+
+EC2 PLACEMENT GROUPS:
+placement groups allow you to influence placement of ec2 instance within AZ
+cluster: pack instances close together,
+used when you want to achieve the highest possible performance, tradeoff is that low resiliency is achieved bc if hardware fails then it could take down several instances
+best practice to use same type of instance and launch all at the same time in a single AZ
+all members have direct connections to each other and sometimes will share same host
+can span vpc peers, but impacts performance
+requires a supported instance type
+use cases: high performance, fast speeds, low latency, low resiliency
+
+spread: keep instances separated
+ensure maximum availability and resiliency
+can span AZs
+esch instance has its own isolated networking and power supply from other instances
+limit of 7 instances per AZ, (1 in each partition), placement is done by aws
+not supported for dedicated instances or hosts
+use cases: small number of critical instances that need to be kept separated from each other
+
+partion: like a spread placement group but a little different because partition can span AZs divided into partitions, where you have max 7 partitions per AZ, HOWEVER some of the instances can be in same partition wheras in spread they are all separated
+placement is done by you or aws
+use cases: huge scale parallel processing systems where you need to create groupings of instances and need system to be seperated
+
+
+EC2 DEDICATED HOSTS:
+hosts that are allocated to you entirely
+you pay for the host, no instance charges
+host hardware has physical sockets and cores which dictate how many instances can be run and organizations can utilize for socket and core licensing requirements
+use cases: when you have strict regulatory or data requirements
+characteristics:
+AMI limits, some are not supported
+amazon RDS instances are not supported
+placement groups are not supported
+hosts can be shared with other organization accounts
+
+
+ENHANCES NETWORKING AND EBS OPTIMIZED:
+two optimization techniques
+enhanced networking: uses SR-IOV, single root io virtualization, to improve latency of networking
+NIC is virtualization aware
+offers logical card to each instance instead of a single physical card on the host that the host manages which ec2 instance has access to
+characteristics:
+offers higher IO and loswer host cpu usage
+no charge, available on most EC2 types
+more bandwidth, high throughput
+higher packets per second PPS
+consistent lower latency
+
+ebs optimized: means dedicated capacity for EBS
+historically network was shared between data networking(ENIs) and EBS
+most instances support and have enabled by default
+on older instances some support, but enabling costs extra
+
+
+
+
+*******************************************
+ROUTE 53:
+*******************************************
+Route 53 Fundamentals:
+allows us to register domains
+allows us to host zones files on managed nameservers which it provides
+global service with a single database
+globally resilient
+
+ROUTE 53 PUBLIC HOSTED ZONES:
+DNS DB for a domain, (zone files in AWS)
+hosted on four managed NS specific for the zone
+accessible from the public internet and VPCs
+stores RRs, resource records which are actual items of data dns uses
+hosted zones are authoritative for a domain
+you can point to externally registered domains
+architecture differs slightly between public internet access and vpc access, see slide
+
+R53 PRIVATE HOSTED ZONES:
+accessible within VPC it was created in and accessible within associated VPCs
+architecture is similar to public hosted zones via VPC, diff is not publicly accessible
+you can grant access to different users within your account via UI, CLI/API, and grant access to users of different accounts via CLI/API
+split-view is possible where you have overlapping public and private hosted zones for public and internal use with the same zone name
+
+R53 CNAME RECORDS VS ALIAS RECORDS:
+cname records:
+maps a name to another name
+invalid for naked/apex of a domain (domain with no subdomain, like no www., ex catagram.io) and problem is that many aws services use a DNS name so with just cname catagram.io would be invalid
+alias records:
+map a name to an aws resource
+can be used for both apex and normal records
+there is no charge for alias requests pointing at aws resources
+for aws services, default to picking alias
+sub types, so you need to match alias type to corresponding record it is pointing at
+use alias records for services such as gateway, cloudfron, elb, elastic beanstalk, global accelerator, and s3
+
+R53 SIMPLE ROUTING:
+simple routing supports 1 record per name(domain name)
+each record can have multiple values (ips?), all are returned in a random order
+client chooses and uses 1 value
+simple routing does not support health checks-all values are returned for a record when queried
+there are no checks by record to ensure resource being pointed at is actually operational
+EXAM POWER-UP: use when you want to route requests towards one service such as a web server
+
+R53 HEALTH CHECKS:
+seperate from, but are used by records
+health checkers located globally that can check aws targets and anything accessible over public internet
+health checkers check every 30s, every 10s costs extra
+checks can be TCP, HTTP/HTTPS, HTTP/HTTPS with string matching, these checks build upon each other
+results in record being in healthy or unhealthy state, healthy if 18%+ of health checkers report as healthy
+three types:
+endpoint: actual endpoint that you specify
+cloudwatch alarm: check cloudwatch alarms 
+check of checks: check application wide health with lots of individual components
+
+FAILOVER ROUTING:
+we can add multiple records of the same name, a primary and a secondary
+they both point at unique resource
+use case:
+when you want to configure active passive failover, meaning when you want to use the primary record if it passes its health check and the secondary record if primary record is unhealthy
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
