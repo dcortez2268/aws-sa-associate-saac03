@@ -1712,7 +1712,7 @@ sub types, so you need to match alias type to corresponding record it is pointin
 use alias records for services such as gateway, cloudfron, elb, elastic beanstalk, global accelerator, and s3
 
 R53 SIMPLE ROUTING:
-simple routing supports 1 record per name(domain name)
+simple routing supports 1 record per name(like www)
 each record can have multiple values (ips?), all are returned in a random order
 client chooses and uses 1 value
 simple routing does not support health checks-all values are returned for a record when queried
@@ -1735,6 +1735,113 @@ we can add multiple records of the same name, a primary and a secondary
 they both point at unique resource
 use case:
 when you want to configure active passive failover, meaning when you want to use the primary record if it passes its health check and the secondary record if primary record is unhealthy
+
+MULTI VALUE ROUTING:
+like a mixture between simple and failover routing policies
+you can create many records with the same name
+up to 8 healthy records are returned, if more exist, 8 are reandomly selected, client chooses and uses 1 value, any records which fail health checks won't be returned when queried
+EXAM POWER UP: multi value improves availability.  It is not a replacement for load balancing
+used when you have many resources that can service request and you want them all health checked and returned at random
+
+WEIGHTED ROUTING:
+EXAM POWER UP: use when you want simple load balancing or testing new software versions
+implements record weights, where they are returned based on its record weight vs total weight
+if a chosen record is unhealthy, the process of selection is repeated until a healthy record is chosen
+
+LATENCY-BASED ROUTING:
+EXAM POWER UP: use when optimizing for performance and user experience
+records with same name, point to different ips, point to different region
+per region supports one record with same name 
+aws maintains a db of latency between the users general location and the regions tagged in records
+the record returned is the one which offers the lowest estimated latency and is healthy
+
+GEOLOCATION ROUTING:
+similar to latency based routing, location of customers and location of resources are used to influence resolution decisions.  does not return the closest record.  instead returns any that are relevant(same location) or default or 'no answer'. 
+ip check verifies the location of the user
+records are tagged with location.  either us state, country, continent, or default.  
+use case:
+when you want to restrict content to a specific region.  for ex you could list us record and will only be returned if requested from a user in us.  
+when you want to provide language specific content
+when you want to load balance across regional endpoints
+
+GEOPROXIMITY ROUTING:
+returns lowest distance, including bias 
+you define a resource a region is created in via tag or lat and long coordinates
+bias: + increases a regions size, and - descreases a regions size
+
+INTEROPABILITY:
+R53 normally has 2 jobs, domain registrar and domain hosting
+r53 can do both, or either domain registrar or domain hosting
+when registering a domain:
+checks with TLD to see if domain is available
+creates a zone file for registered domain, known as hosted zone
+allocates 4 nameservers for the zone,
+adds nameserver records to TLD that indicate that the namerservers are authoritative for domain
+
+to do this think of r53 having a registrar role and hosting role that are seperate and work together to perform functionality
+see slides for diff architectures of working together, working seperate
+
+IMPLEMENTING DNSSEC USING ROUTE53:
+some text here
+
+
+
+
+*******************************************
+RDS, RELATIONAL DATABASE SERVICE:
+*******************************************
+
+RELATIONAL(SQL) VS NON-RELATIONAL(NOSQL):
+relational:
+use SQL language
+structure in and between tables of data - rigid Schema
+schema is defined in advance before you put any data into the table
+fixed relationship between tables before data is put into the table
+nosql:
+everything which isn't relational
+generally a much more relaxed schema
+relationships handled differently
+
+different types of no-sql databases:
+key-value:
+stores list of key value pairs
+no schema
+scalable and really fast
+
+wide column store:
+variation of key-value
+each row has one or more keys, one of them is partition key (minimum), secondary key is called sort or range key, partition key if no secondary keys or composite key needs to be unique
+no attribute schema: can be all same/different, some empty, or no attributes
+scalable and really fast
+
+document:
+designed to store and query data as documents
+documents: items in db, formatted as json, structure can be different, but id needs to be unique
+provides flexible indexing, which allow really powerful queries
+use cases: order databases, contacts, or collections databases, ie interacting with whole documents or deep attribute interactions(nested data items within a document structure)
+
+
+different styles of databases:
+row store:
+data stored as rows, 
+ideal if you are operating with rows adding, updating, deleting whole row or record at a time
+ideal for Online Transaction Processing, or OLTP
+column store:
+data stored as columns, ie every attribute for each document is stored together
+ideal for analytics and reporting
+graph:
+relationships between things are formally defined and stored in the database as well as data
+relationships aren't rerendered every time you make a query, different from relational database because those relationships are computed every time you make a query
+nodes: objects, can have key-value properties
+edges: relationships between objects, have name and direction, can have name/value pairs
+
+
+
+
+
+
+
+
 
 
 
