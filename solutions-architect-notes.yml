@@ -1835,9 +1835,103 @@ relationships aren't rerendered every time you make a query, different from rela
 nodes: objects, can have key-value properties
 edges: relationships between objects, have name and direction, can have name/value pairs
 
+ACID VS BASE:
+ACID and BASE are DB transaction models
+tradeoff between CAP Theorem: 
+consistency, availability, and partition tolerant(resilience)
+consistency: every read to a database will receive the most recent write or it will get an error
+availability: every request will get a non error response but without the guarantee that it contains the most recent write
+partition tolerance: the system can be made of multiple network partitions and system continues to operate even if there are a number of dropped messages or errors between these network nodes
+CAP theorem: 
+any database product will only be able to deliver a maximum of two of these different factors
+
+ACID:
+focuses on consistency
+atomic: all or no components of a transaction succeeds or fails, 
+consistent: transactions move the database from one valid state to another, nothing in between is allowed, 
+isolated: transactions execute as if its the only one transacting, even if multiple transactions are occurring at once, 
+durable: once committed, transactions are durable.  resilient to power outages or crashes.
+EXAM POWER-UP: rds databases, limits databases to scale 
+
+BASE: 
+focuses on availability
+basically available: read and write operations are available as much as possible, without any consistency guarantees
+soft state: database doesn't enforce consistency, offloaded onto the application/user
+eventually consistent: if we wait long enough, reads from the system will be consistent
+EXAM POWER-UP: dynamoDB or NoSQL databases
 
 
+DATABASES ON EC2:
+generally a bad practice
+why you might want to do it (but still bad practice lol):
+you need access to the db instance OS
+you need advanced db option tuning via dbroot permissions, aws managed db services do offer some of these options without dbroot permissions,
+vendor or decision makers demand it
+you need db, db version, architecture, or specific os/db combination aws doesn't provide, generally the only reason why you would want to run a db on ec2
+if you are going to do it:
+best practice is to split monolithic stack of application, web server, and db running on single instance into two instances where one instance is running application and web server and another instance running the db on it.  This way you can export db to aws managed service if needed.
+why you shouldn't do it:
+adds significant cost of admin overhead of managing ec2 and dbhost
+adds significant cost of backup and disaster recovery management  
+ec2 is single AZ, significant reduction of availability vs having regional availability when using services
+less features, you would be missing out on some amazing features offered by aws db services
+does not offer serverless features or easy scaling
+adds significant cost of replication overhead
+adds significant cost to performance, aws invests time into optimization and features for aws services you would need to spend a lot of time and energy to replicate
 
+
+RDS ARCHITECTURE:
+Database Server as a Service
+provides multiple databases on one DB server(instance)
+range of db engines to use (MySQL, mariaDB, PostgreSQL, Oracle, Microsoft SQL server)
+Amazon Aurora is a different product
+Managed service by aws, no access to OS or SSH access*, rds custom provides low level access
+
+is not a public service, required to operate within a VPC
+EXAM POWER UP: RDS subnet group:
+a list of subnets RDS can use for a given database instance or instances 
+EXAM POWER UP: each RDS instance can have 1+ databases
+EXAM POWER UP: each RDS instance has one dedicated storage EBS volume
+synchronous replication: where each time data is written to primary instance, the data is then copied from primary to standby immediately
+asynchronous replication: read replicas back up data asynchronously to standby instances in same region or different region
+EXAM POWER UP: backups and snapshots of data are transferred to s3
+costs:
+you're billed for resource allocation
+instance size and type
+multi az or not
+storage type and amount
+data transferred 
+backups and snapshots
+licensing if applicable
+
+
+RDS MultiAZ:
+offers high availability, two types 
+
+- multiAZ instance deployments:
+primary rds instance contains all of the database instances and is replicated synchronously to a standby instance in another AZ, 
+synchronous replication: data is written to primary database and replicated to standby before it is viewed as committed
+you always access the primary database instance, all reads and writes
+backups and- snapshots to s3 are implemented via the standby instance 
+not free tier, extra cost for replica
+one standby replica only
+60-120 seconds for failover
+primary and standby have to be in same region
+use cases for failover switch:
+AZ outage, primary failure, manual failover, instance type change, software patching
+historically this used to be the only way
+
+- multiAZ cluster deployments:
+EXAM POWER UP: one writer can implement synchronous replication to 2 readers only
+writer is like primary rds instance
+readers can be read by clients to scale read workloads
+replication is via transaction logs which are more efficient, failover is around 35s
+hardware is much faster, so beenfits from fast writes to local storage, which are then backed up to ebs volume
+EXAM POWER UP: data is committed when data has been replicated to at least one reader
+each instance has its own local storage
+cluster endpoint: like a database CNAME in previous architecture, and points at the writer.  userd for reads, writes, and administration
+reader endpoint: points to any reads at an available reader instance, and in some cases does include writer instance
+instance endpoint: point at a specific instance. generally these are used for testing/ fault finding. each instance has one.  
 
 
 
