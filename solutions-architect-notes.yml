@@ -1934,8 +1934,123 @@ reader endpoint: points to any reads at an available reader instance, and in som
 instance endpoint: point at a specific instance. generally these are used for testing/ fault finding. each instance has one.  
 
 
+RDS BACKUP AND RESTORE:
+RPO: designates the variable amount of data that will be lost or will have to be re-entered during network downtime. good rpo minimizes amount of data that will be lost.
+RTO: designates the amount of “real time” that can pass before the disruption begins to seriously and unacceptably impede the flow of normal business operations.
+two types: automated backups and snapshots
+both are backed up to aws managed s3 buckets, so you can't see the backups in s3 service however you can see backups in the RDS console
+regionally resilient
+backups occur from standy in multi az deployments or from only available instance if not multi az
+snapshots:
+done manually
+like the s3 snapshots because first snap is full size of consumed data then incremental onward 
+live on even after rds instance is deleted, you have to delete manually
+automated backups:
+scheduled backups
+automatically deleted by aws for a retention period of 0 to 35 days
+transaction logs:
+store the actual operations which change the data
+every 5 minutes transaction logs are backed up to s3
+cross-region:
+rds backups can be replicated to another region
+both snapshots and transaction logs
+charges apply for cross region data copy and the storage in destination region, has to be enabled
+rds restores via snapshots or automated backups:
+creates a new rds instance with new address so you will need to update applications to point to this address
+restores aren't fast, we have to think about RTO
+
+RDS READ REPLICAS:
+provide benefits such as:
+performance benefits for read operations:
+able to deploy 5 direct read replicas per db instance
+read replicas can have read replicas but can introduce lag issues
+global performance improvements for read workloads
+help us provide really low RTO, meaning they speed up the process of rds restores:
+snapshots and backups improve RPO but not RTO
+read replicas offer near 0 rpo and near 0 rto but only good for failure and not for corruption
+help us create cross region failover capability:
+global resilience
+characteristics:
+only read operations, unless promoted to rds instance
+aren't part of the primary instance in any way ,have their own db endpoint address
+can be created in same or different region as primary instance
+kept in sync with primary instance via asynchronous replication:
+data is written to primary instance first, viewed as committed, then replicated to read replicas
+
+RDS SECURITY:
+encryption in transit is available:
+EXAM POWER UP: SSL/TLS (in transit) can be mandatory
+EXAM POWER UP: by default, is done via ebs volume encryption via KMS
+handled by host/ebs
+aws or Customer managed CMK generated DEKs (data encryption keys) which are used for encryption operations
+storage, logs, snapshots, and replicas are encrypted
+EXAM POWER UP: encryption can't be removed once it's added
+
+RDS MSSQL and RDS Oracle support TDE:
+transparent data encryption
+encryption handled within the db engine
+EXAM POWER UP: oracle supports integration with CloudHSM which has much stronger key controls because it removes aws from the chain of trust
+
+IAM authentication:
+you can configure rds to allow IAM user authentication against a database
+EXAM POWER UP: policy attached to users or roles maps that IAM identity onto the local RDS user via generating token that cna be used in place of db user password that generates an auth token
+EXAM POWER UP: authentication only! authorization is always controlled by the db engine which grants permissions to lcoal db user
+
+RDS CUSTOM:
+fills gap between rds and ec2 running a db engine of fully managed by you and os access
+works for MSSQL and Oracle and can connect using SSH, RDP, and session manager
+
+AMAZON AURORA (provisioned) ARCHITECTURE:
+is a database engine officially part of RDS but its architecture is radically different than any of the other db engines
+key differences:
+uses a cluster
+consists of a single primary instance + 0 or more replicas, provides benefits of both rds multi az and rds read replicas
+can have a max of 15 replicas
+storage:
+doesn't use local storage for the instances, instead uses shared cluster volume
+faster provisioning, improved availability, and performance
+storage has 6 replicas that spread across AZ, replicated automatically across az's
+all SSD based, high IOPS, low latency
+features:
+backups in aurora work in same way as rds
+restores create a new cluster
+backtrack, can be used which allows in place rewinds to a previous point in time
+fast clones, allow you to make a new database much faster than copying all data, provides reference to unchanged data and copies changed data, known as copy on write
+billing:
+ is different bc storage is billed based on what's used, high water mark so billed for the most used, and replicas can be added and premoved without requiring storage provisioning
+no free tier option
+beyond micro instances, aurora offers better value
+compute charges are hourly charge, per second, 10 minute minimum
+storage charges are gb per month consumer, and io cost per request
+100% db size in backups are included
+access method:
+use endpoint, dns addresses which are used to connect to cluster, they have many available
+cluster endpt: always points to primary instance
+reader endpt: if there are replicas, will load balance reads amongst the replicas
+custom endpts: point to specific subsets of instances within cluster
+unique endpt: each primary and replica isntances have their own endpt, allows customization
 
 
+AURORA SERVERLESS:
+provides a version of the aurora database product where you don't need to statically provision database instances of a certain size or need to manage those database instances
+removes admin overhead of managing database instances, ie easier to use
+same resilience as aurora (6 copies across azs)
+aurora capcacity units (acus):
+represent a certain amount of compute and a corresponding amount of memory
+aurora serverless cluster has a min and max acu
+cluster adjusts based on load, can go to 0 and be paused
+architecture:
+uses acus that are allocated from a shared warm pool used by aws, stateless, no local storage
+acus access shared storage in same way that provisioned instances would
+connections are a little bit more complex:
+shared proxy fleet of instances managed by aws,
+user connects to application via proxy fleet, and fleet brokers connection between acus
+scaling is fluid
+use cases:
+infrequently used applications
+new applications, or unpredictable workloads 
+multi tenant applications
+development and test databases
 
 
 
