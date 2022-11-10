@@ -2038,7 +2038,7 @@ same resilience as aurora (6 copies across azs)
 aurora capcacity units (acus):
 represent a certain amount of compute and a corresponding amount of memory
 aurora serverless cluster has a min and max acu
-cluster adjusts based on load, can go to 0 and be paused
+cluster adjusts based on load, can go to 0 and be paused after consecutive minutes of inactivity
 architecture:
 uses acus that are allocated from a shared warm pool used by aws, stateless, no local storage
 acus access shared storage in same way that provisioned instances would
@@ -2051,6 +2051,88 @@ infrequently used applications
 new applications, or unpredictable workloads 
 multi tenant applications
 development and test databases
+
+
+AURORA GLOBAL DATABASE:
+allow you to create global level replication using aurora from a master region to up to 5 secondary aws regions
+secondary clusters are read only, up to 16
+1s replication
+no impact on db performance
+
+AURORA MULTI-MASTER:
+feature that allows aurora to have multiple instances which are capable of performing both reads and writes
+default aurora mode is single-master
+in multi-master mode all instances are read/write
+no concept of a load balancer, the application connects to one or all of the instances in cluster directly
+benefit is that failover process is much quicker, because it does not need to switch endpts because it is already connected to multiple instances
+when a write occurs:
+an instance proposes a write change to all of the shared storage nodes and all other instance nodes have to agree for write to occur.
+the write is then written to all of the shared storage nodes and then to each instance node's memory cache
+
+RDS PROXY:
+problem it fixes:
+opening and closing connections consume resources and often take bulk of operation time
+with serverless every lambda opens and closes
+handling failure of datbase instances is hard, doing it within your application adds risks
+db proxies help but managing them is somewhat hard 
+what it does:
+maintains a pool of connections that remain open for the database and applications
+multiplexes, so there is a smaller number of connections open to the database than the number of connections open to the applications
+EXAM POWER UP: each lambda function connection to proxy is much quicker to establish vs direct connection to db and no load on db
+EXAM POWER UP: abstracts clients away from db failure or failover events, bc proxy connection is established and waits even if target db is unresponsive
+use cases:
+too many connections errors, db instances using t2/t3, smaller/burst instances
+aws lambda, time saved via connection reuse and iam auth reuse
+long running connections for SAAS apps
+where resilience to db failure is a priority and make it transparent to application
+key facts:
+auto scaling, highly available by default
+fully managed db proxy for rds/aurora
+only accessible from a vpc via proxy endpt
+can enforce ssl/tls connections
+can reduce failover time by 60% and abstracts failure
+
+
+DATABASE MIGRATION SERVICE (DMS):
+managed database migration service
+runs using a replication instance
+source and destination endpts point at source and target databases and one endpt must be on aws
+replication instance:
+can define replication tasks, define all of the options relate to migration
+three types of jobs:
+  -full load migration: migrates existing data, outage until migrated
+  -full load + CDC, change data capture: migrates existing data and replicates any ongoing changes from source to target
+  -CDC only: replicates only data changes 
+implements schema conversion tool: 
+used when converting one database engine to another
+use for larger migrations
+use only when db engines are not compatible
+when converting larger migrations:
+dms can ultilize snowball products
+whenever you utilize snowball products you can use sct when db engines are compatible also bc technically the db is changing
+
+
+
+
+*******************************************
+EFS, ELASTIC FILE SYSTEM:
+*******************************************
+provides network based file systems which can be mounted by within linux ec2 instances and used by multiple instances at once
+EFS is an implementation of NFSv4
+different from EBS because ebs is block storage and EFS is file storage
+private service, 
+access via mount targets inside a VPC, or from outside vpc via hybrid networking if you enable, vpn or direct connect (dx)
+architecture:
+see slide
+posix permissions, standard for interoperability which is used in linux
+mount targets in multiple azs
+key takeaways:
+linux only 
+general purpose and max io performance+ models, general purpose is default for 99.99% of uses
+bursting(default) and provisioned throughput modes
+standard(default) and infrequent access classes
+
+
 
 
 
