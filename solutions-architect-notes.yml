@@ -2133,10 +2133,148 @@ bursting(default) and provisioned throughput modes
 standard(default) and infrequent access classes
 
 
+AWS BACKUP:
+fully managed data protection (backup/restore) service
+consolidate management into one place, across accounts and across regions
+implements a wide range of products perform central management 
+backup plans:
+frequency, window, lifecycle, vault, region copy
+resources: what resources are backed up
+vaults: 
+backup destination (container), you can assign kms key for encryption
+vault lock: enables write once, read many, 72 hour cool off, then even aws can't delete, designed for compliant style situations
+PITR: point in time recovery, you can restore state to a certain point of time within retention window
 
 
 
 
+*******************************************
+HIGH AVAILABILITY AND SCALING:
+*******************************************
+REGIONAL AND GLOBAL AWS ARCHITECTURE:
+global components:
+  -global service location and discovery: how does your machine discover correct reference?
+  -content delivery and optimization: how does data get to users globally?
+  -global health checks and failover: determining if endpoints are healthy and if not how to implement failover?
+regional components:
+  -scaling and resilience:
+  -application services and components:
+
+tiers: high level groupings of functinality or different zones of your application
+web tier: communications from applications will generally enter web tier first, ex application load balancer or api gateway
+compute tier: provides functionality for web tier, ex lambda ec2, ecs
+storage tier: provides file storage, ex ebs, s3, efs
+caching tier: improve performance and reduce costs, ex elasticache, dax
+db tier: provides data storage, ex rds, dynamodb, redshift
+app services tier: provide some type of functionality to applications, sqs, kinesis,
+
+
+EVOLUTION OF ELASTIC LOAD BALANCER (ELB):
+3 types of load balancers available within aws
+there is one v1 type and two v2 types, avoid using v1
+v2 is faster, cheaper, support target groups and rules, truly layer 7 devices
+classic load balancer: v1, 2009, not really layer 7, lacking features, 1 sll cert. per clb limit which limits ability to scale
+application load balancer:
+v2, truly layer 7 device, supports HTTP/ HTTPS / WebSocket
+network load balancers:
+v2, truly layer 7 device, supports TCP/ TLS/ TLS & UDP
+
+ELB ARCHITECTURE:
+accepts connections from customer snad distributes those connections across any registered backend compute, the physical infrastructure is abstracted away from the customer
+without load balancers, everything would have to be tied to everything in a sequential flow and if there is failure, service would be disrupted
+EXAM POWER UPS (ALL):
+need 8+ IPs per subnet and a /27 or larger subnet to allow for scale
+configured to run in 2+ AZs
+1+ elb nodes are placed into a subnet in each AZ and scale with load
+a record: each elb is configured with an A record DNS name that resolves to the ELB nodes
+two different type of elb nodes:
+  -internet-facing: 
+  have public IPs and private IPs, can access public and private ec2 instances
+  -internal: 
+  only have private IPs, generally used to seperate different tiers of applications
+listeners: nodes are configured with listeners which accept traffic on a port and protocol and communicate with targets on a port and protocol
+
+elb's allow each tier to scale independently
+cross zone elb:
+feature that allows elb node to distribute connections across all AZs
+
+
+APPLICATION AND NETWORK LOAD BALANCER (ALB VS NLB):
+v2 load balancers support rules that contain 1 ssl per rule, each rule targets a target group, which contains resources corresponding to ssl
+application load balancer:
+listens on HTTP and/or HTTPS
+can understand l7 content type, custom headers, user location, app behavior
+can't understand any other layer 7 protocols and no TCP/ UDP/TLS listeners
+HTTP HTTPS always terminated on the ALB, no unbroken SSL connection from customer through to your application instances, then a new connection is made from load balancer to the application
+ALBs must have SSL certs if HTTPS is used
+ALBs are slower than NLBs, bc there is more levels of the network stack to process
+ALBs can perform application health checks
+rules:
+direct connections which arrive at a listener
+processed in priority order, there is a default rule 
+  -rule conditions: like host-header, http-header, http-request-method, path-pattern, query-string, source-ip
+  -actions: forward, redirect, fixed-response, authenticate-oidc, authenticate-cognito
+network load balancer:
+layer 4 load balancer, TCP, TLS, UDP, TCP_UDP
+SMTP, SSH, game servers, financial apps or apps that do not use http
+no visibility or understand of HTTP or HTTPS, no headers, no cookies, no session stickiness
+really really really fast, 75% faster than ALBs
+health checks just check icmp/tcp handhsake, they do not provide application health checks
+NLB's can have static IPs which are useful for whitelisting
+can forward TCP to instances, so can you do unbroken end to end encryption
+used with private link to provide services to other VPCs
+NLB or ALB?:
+NLB: unbroken encryption
+NLB: static ip for whitelisting
+NLB: fastest performance
+NLB: protocols not HTTP or HTTPS
+NLB: privatelink
+ALB: any other scenario
+
+
+LAUNCH CONFIGURATIONS AND LAUNCH TEMPLATES:
+allow you to define the configuration of an ec2 instance in advance
+you can define anything you normally define instance type, storage and key pair, networking and security groups, userdata, IAM role
+not editable, launch templates have versions
+lauch templates provide newer features: 
+they provide all of the features launch configurations provide and more, including T2/T3 unlimited, placement groups, capacity reservations, and elastic graphics
+launch configurations have one purpose: provide configuration of ec2 isntances of an auto scaling group
+launch templates purpose: same as launch configuration or can be used to provision ec2 instances from the console UI or CLI
+
+AUTO SCALING GROUPS:
+allows ec2 to scale automatically based on demand placed on the system
+generally used with elbs and launch templates to deliver elastic architectures
+EXAM POWER UP: ASG defines when and where, uses launch templates or launch configurations to define what
+has a minimum size, desired capacity, and maximum size
+self healing for ec2
+can implement cooldown periods to not make changes to avoid high expenses for rapid scaling 
+free to use, only resources created are billed
+more, smaller instances provide granularity vs having bigger instances
+goal: to keep running instances at the desired capacity by provisioning or terminating instances
+scaling policies: automatically adjust the desired capacity between the min and max values based on metrics like cpu load
+    -manual: you manually adjust the desired capacity
+    -scheduled: time based adjustment
+    -dynamic: 
+        -simple: simple if then adjustment
+        -stepped: bigger +- based on difference
+        -target tracking: maintains a desired aggregate metric like keep cpu at 40%
+self healing:
+implements ec2 status checks: monitors health of ec2 instances, and if they do not pass status check, terminates the instance and provisions a new one
+
+scaling processes:
+different process or functions to be performed by asg
+  -LAUNCH and TERMINATE: if set to suspend then won't launch/terminate
+  -AddToLoadBalancer: add instance to lb on launch
+  -alarmNotification: determins if asg reacts to alarms from CW
+  -AZRebalance: balances instances evenly across all AZs
+  -Healthcheck: whether instance health checks across group are on/off
+  -replaceUnhealthy: terminate unhealthy and replace
+  -scheduledActions: scheduled on/off
+  -standby: use this for instances that you don't want to be affected by anuthing the asg does
+
+asg + load balancers:
+LBs give ability app to point to many instances via target group, and ASG provides dynamic number of instances as needed
+ASG can use application LB health checks rather than ec2 status checks but depend on situation as to which u might want to implement
 
 
 
