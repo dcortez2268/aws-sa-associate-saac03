@@ -2180,7 +2180,7 @@ network load balancers:
 v2, truly layer 7 device, supports TCP/ TLS/ TLS & UDP
 
 ELB ARCHITECTURE:
-accepts connections from customer snad distributes those connections across any registered backend compute, the physical infrastructure is abstracted away from the customer
+accepts connections from customer and distributes those connections across any registered backend compute, the physical infrastructure is abstracted away from the customer
 without load balancers, everything would have to be tied to everything in a sequential flow and if there is failure, service would be disrupted
 EXAM POWER UPS (ALL):
 need 8+ IPs per subnet and a /27 or larger subnet to allow for scale
@@ -2252,12 +2252,14 @@ free to use, only resources created are billed
 more, smaller instances provide granularity vs having bigger instances
 goal: to keep running instances at the desired capacity by provisioning or terminating instances
 scaling policies: automatically adjust the desired capacity between the min and max values based on metrics like cpu load
+don't need scaling policies, they can have none
     -manual: you manually adjust the desired capacity
     -scheduled: time based adjustment
     -dynamic: 
         -simple: simple if then adjustment
-        -stepped: bigger +- based on difference
+        -stepped: bigger +- based on difference, recommended by aws bc more flexible
         -target tracking: maintains a desired aggregate metric like keep cpu at 40%
+        -scaling based on SQS queue: ApproximateNumberOfMessagesVisible, scale base on approximate number of messages visible
 self healing:
 implements ec2 status checks: monitors health of ec2 instances, and if they do not pass status check, terminates the instance and provisions a new one
 
@@ -2275,6 +2277,72 @@ different process or functions to be performed by asg
 asg + load balancers:
 LBs give ability app to point to many instances via target group, and ASG provides dynamic number of instances as needed
 ASG can use application LB health checks rather than ec2 status checks but depend on situation as to which u might want to implement
+
+ASG LIFECYCLE HOOKS:
+allow you to configure custom actions on instances during ASG actions
+actions are either instance launch or instance terminate transitions
+whenever you create  scale out (creating instance) lifecycle hook: instance moves to pending:wait state, performs lifecycle hook then moves to a pending:proceed state, then instantiated 
+whenever you create  scale in (terminating instance) lifecycle hook: instance moves to a terminating:wait state, then moves to terminating:proceed state when timeout expires or you can resume with CompleteLifecycleAction code, then performs lifecycle hook, then terminated 
+lifecycle hooks can be integrated with SNS so that notifications for lifecycle hooks can be sent to a SNS topic
+lifecycle hooks can be integrated with EventBridge so that other processes can be initiated based on the hooks
+
+ASG HEALTH CHECKS:
+ASG can use application LB health checks rather than ec2 status checks but depend on situation as to which u might want to implement
+three different types: EC2(default), ELB(can be enabled), and custom 
+EC2 unhealthy:
+stopping, stopped, terminated, shutting down, or impaired(not 2/2 status checks)
+ELB healthy:
+running and passing ELB health check
+they can be more application aware because has knowledge of layer 7 
+custom:
+instaces marked healthy or unhealthy by an external system
+health check grace period: default is 300s, delay before starting checks, allows system launch, bootstrapping, and application start.  make sure you enable a suitable grace period so instances have enough time to be provisioned. 
+
+
+SSL OFFLOAD AND SESSION STICKINESS:
+3 ways an elb can handle secure connections: bridging, pass-through, or offload
+-bridging mode:
+  default mode of an of an application load balancer
+  1 or more clients makes 1 or more connections to a load balancer
+  listener is configured for HTTPS
+  connection is terminated (DECRYPTED) on the ELB and needs a ssl certificate for the domain name the application uses
+  aws does have some level of access to certificate
+  elb decrypts the http then routes to backend based on that http, but before connecting to backend it encrypts data and initiates a new ssl connection to backend instances.
+  instances need ssl certificates and compute required for cryptographic operations
+  benefits:
+  elb gets to decrypt http data and perform actions based on that data, flexible
+  disadvantages:
+  certificate stores on elb and that's a risk and ec2 instances need a copy of certificate which adds admin overhead
+-pass-through: 
+  network load balancer performs this architecture
+  listener is configured for tcp.  no encryption or decryption happens on the NLB.
+  client connects to elb, but elb just passes that connection to backend instances
+  each instance needs to have certificate installed but elb doesn't so no certificate exposure to aws
+-offload:
+  connects to elb via https
+  onnection is terminated (DECRYPTED) on the ELB and needs a ssl certificate for the domain name the application uses
+  elb to instance connections uses HTTP so not certificate or cryptographic requirements
+  benefits:
+  encrypted on public internet to aws
+  disadvantages:
+  not encrypted on aws network
+
+session stickiness:
+first time user makes a request, alb generates a cookie, AWSALB, which locks the device to a single backend instance for a duration
+has to be enabled on an application load balancer for a target group
+
+with no stickiness, connections are distributed fairly equal across all in service backend instances
+if application is stateful, then user would lose session details if resuming on different instance
+if application is stateless, then application could operate ok without stickiness connections
+
+PRACTICAL ARCHITECTURE EVOLUTION DEMO SERIES:
+
+
+
+
+
+
+
 
 
 
