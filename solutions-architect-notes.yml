@@ -2320,7 +2320,7 @@ SSL OFFLOAD AND SESSION STICKINESS:
   each instance needs to have certificate installed but elb doesn't so no certificate exposure to aws
 -offload:
   connects to elb via https
-  onnection is terminated (DECRYPTED) on the ELB and needs a ssl certificate for the domain name the application uses
+  connection is terminated (DECRYPTED) on the ELB and needs a ssl certificate for the domain name the application uses
   elb to instance connections uses HTTP so not certificate or cryptographic requirements
   benefits:
   encrypted on public internet to aws
@@ -2335,7 +2335,165 @@ with no stickiness, connections are distributed fairly equal across all in servi
 if application is stateful, then user would lose session details if resuming on different instance
 if application is stateless, then application could operate ok without stickiness connections
 
-PRACTICAL ARCHITECTURE EVOLUTION DEMO SERIES:
+
+GWLB, GATEWAY LOAD BALANCERS:
+transparent security appliance: scans data after it leaves and before it enters the application instance
+allow to deploy, scale, and manage 3rd party virtual appliances such as firewalls, intrustion detection and prevention systems, and deep packet inspection systems
+flow:
+traffic source => GWLBE => GWLB => appliances => GWLB => GWLBE => aws destination: 
+it combines a transparent network gateway (GWLB endpoint that is single entry and exit point for all traffic) that distributes traffic to GWLB that distributes traffic via a Geneve encapsulation tunnel to your 3rd party appliances on demand, and scales this load,
+then the appliances filter traffic, send back to GWLB, that sends back to GWLB endpt, who then sends to aws destination
+
+
+
+
+
+*******************************************
+EVENT-DRIVEN ARCHITECTURE:
+*******************************************
+
+DIFFERENT TYPES OF ARCHITECTURE:
+  -monolithic:
+  all of the different components of application are coupled together, they fail together, scale together, and bill together because full capacity is needed at all times in case they are all running even if certain components are not running
+  -tiered:
+  different components can be run on different servers,
+  still tightly coupled because specific instances are coupled to other specific instances
+  -tiered w/ internal load balancers:
+  different components can be run on different servers
+  lb in between tiers allows instances to connect to any other instance
+  still coupled bc there is still dependency from one tier to another that expects other tier to be there to answer its request, impossible to scale individual tiers down to 0 bc the communication is synchronous and needs another tier to be running at same time request is sent
+  -tiered with queues, asg:
+  different components can be run on different servers
+  queues in between tiers removes coupling because asynchronous communication can occer, tiers are not tightly coupled anymore because a tier transacts with queue, not tier, then is done
+  auto scaling group, provisions instances in a processing component based on queue length
+  queue: system which accepts messages, messages can be ordered in a FIFO order, but not always the case
+  
+  microservice architecture:
+  collection of microservices
+  microservices:
+  a tiny self sufficient application
+  has its own input, output components, logic, and its own store of data 
+  are small units that do things individually very well, they can be unique services or copies of same service
+  producer, consumer, or both microservices: producer produces data, consumer consumes data, and some do both
+  Microservices produce and consume events
+  
+  event driven architecture:
+  event producers produce events in reaction to something
+  event consumers wait for events to occur and do something with event or in response to event
+  components can be both producers and consumers
+  both producers and consumers are not running or consuming resources unless they have been triggered and resources are required
+    -event routers: highly available, central exchange point for events
+    contains event bus which is like a constant flow of information, producers send events here and event router routes them to consumers
+  takeways:
+  only consumes resources while handling events
+
+
+AWS Lambda:
+  function as a service, SAAS, short running and focused
+  you are billed for the duration that a function runs
+  key part of serverless architectures
+  runtime environment: functions are loaded and run in a runtime environment with defined runtime
+  you directly control the memory allocated for lambda functions whereas vCPU is allocated indirectly, 128MB to 10240 MB
+  lambda function :
+  deployment package service lamba executes
+  contains code, wrappings, and configuration
+  docker:
+  does not support running docker containers, however you can use docker image to spin up a lambda image
+  custom runtimes: allow people to create custom runtimes using layers
+common uses:
+serverless applications, s3, api gateway, lambda
+file processing, s3, s3 events, lambda
+database triggers, dynamodb, streams, lambda
+serverless CRON, eventbridge/cwevents + lambda
+realtime stream data processing, kinesis + lambda
+EXAM POWER-UP: lambda functions have a timeout of 900s, or 15 mins
+
+Lambda function permissions:
+execution permissions and resource-based policies
+execution permissions: 
+define what your lambda functions can do,
+use IAM role based access, do not embed credentials into lambda execution environment
+also needs basic execution permissions in order to do things like posting logs in cloudwatch, AWSLambdaBasicExecutionRole
+resource based policies:
+define who can invoke or manage your lambda function
+you can allow or deny certain entities from interacting with your lambda function
+can only be changed via cli or api
+
+two lambda networking modes: public and VPC networking 
+  -public:
+  default, can access public aws services and the public internet
+  best performance because no customer specific vpc networking is required
+  lambda functions have no access to VPC based services unless public IPs are provided and security controls allow external access
+  -VPC networking:
+  configured to run in private subnet, obey all of the vpc networking rules
+  vpc gateway endpts can provide access to public aws services from private subnet
+  nat gateway and internet gateway are required to access public internet from public subnet
+    creates ENI to run:
+    needs permission
+    creates one ENI per unique set of security group and subnets, for lambda fns
+    takes 90s for initial setup
+
+lambda logging:
+  lambda uses cloudwatch, cloudwatch logs, and xray for logging
+  logs from lambda executions: cloudwatchlogs
+  metrics (invocations, success/failure, retries, latency): cloudwatch
+  distributed tracing: x-ray
+
+
+Three types of lambda invocations: synchronous, asynchronous, and event source mappings
+-synchronous: 
+  cli/api invokes a function, passing in data and waiting for a response
+  EXAM POWER UP: lambda returns response data, whether success or failure 
+  EXAM POWER UP: errors or retries have to be handled within the client
+-asynchronous:
+  typically used when aws services invoke lambda functions
+  asynchronous communication, so not waiting for response 
+  EXAM POWER UP: error handling: incoming events are placed in the queue before being sent to the actual fn, if the fn returns an error to lambda service then lambda will retry fn twice by default or keep event kept in the queue for a certain time period.  If either are reached, then you can have error sent to DLQ, or Lambda destinations
+  EXAM POWER UP: need to be idempotent: reprocessing a result should have the same end state
+  EXAM POWER UP: lambda supports destinations (sqs, sns, lambda, eventbridge) where successful or failed events can be sent
+-event source mapping: EXAM POWER UP: typically used on streams or queues which don't 
+  support event generation to invoke lambda (sqs, kinesis, Dynamodb streams) 
+  event source mapping within lambda service polls queues or streams for new data and gets batches of source data and sends into lambda functions as event batches
+  EXAM POWER UP: permissions from the lambda execution role are used by the event source mapping to interact with event source
+  EXAM POWER UP: lambda supports destinations (sqs, sns, lambda, eventbridge) where successful or failed batches can be sent
+
+Aliases and Versions:
+Versions: 
+  includes:
+  code and dependencies,  runtime setting and env variables, and ARN
+  help manage the deployment of functions, enabling the ability to publish a new version of a function for testing, without affecting stable prod version
+  with every version there are two ARNS, (references), one that points to the published fn and another that points to the copy
+  published fn is immutable
+alias: 
+  like a pointer to a specific lambda function version,
+  has ARN that is a reference to alias
+  implement services within serverless architecture to point to alias so that when a lambda fn changes, you only have to update alias to point to new published version istead of changing all references for your services to point to new published version
+ 
+Lambda Execution Context Reuse:
+all EXAM POWER-UP:
+execution context: 
+container that holds all code and objects declared outside the handler method, like libraries, runtime, etc
+cold start: 
+there is added latency when a function is executed because execution context needs to be "bootstrapped", (created and configured)
+warm start: 
+after a function is executed, lambda maintains the execution context for 15 mins, "warming" the context for reuse so reduced latency when called again because context is reused
+After 15 mins, lambda will terminate the execution context, and if called again will need to be bootstrapped again
+provisioned concurrency:
+feature that allows you to launch the amount of execution contexts you have specified and will keep them warm for you.  can be less expensive than running a Lambda on demand if you are using that capacity you reserved.
+
+
+
+
+  
+    
+
+
+
+
+
+
+  
+
 
 
 
