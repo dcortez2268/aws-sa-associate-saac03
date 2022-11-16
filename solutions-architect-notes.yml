@@ -2482,9 +2482,128 @@ provisioned concurrency:
 feature that allows you to launch the amount of execution contexts you have specified and will keep them warm for you.  can be less expensive than running a Lambda on demand if you are using that capacity you reserved.
 
 
+CLOUDWATCH EVENTS AND EVENTBRIDGE:
+cloudwatch events: allows a near real time stream of system events that describe changes in aws services has visibility of cloudwatch,
+eventbridge: 
+super set of cloudwatch events functionality,
+allows us to handle third party events as well as events from custom applications,
+overview:
+if X happens, or at Y time(s), ... do Z,
+Eventbridge is basically CloudWatch Events v2,
+a default event bus(stream of events which occurs from any supported service) for the account,
+Cloudwatch events has only one implicit bus, eventbridge can have additional event busses,
+rules match incoming events, or schedule based rules, and route events to 1+ targets, ex lambda,
+flow:
+Eventbridge sits over the top of event bus listening for events,
+rules are linked to event bus, match incoming events, and route events to 1+ targets,
 
 
+SERVERLESS ARCHITECTURE:
+main focus is you do not have to manage the servers, or if you do very few,
+applications are smaller than microservices, they are a collection of small and specialized functions,
+run in stateless and ephemeral (short-lived) environment, implements duration billing,
+event driven, consumption only when being used,
+FaaS is used where possible for compute functionality
+managed services are used where possible
   
+
+SNS, SIMPLE NOTIFICATION SERVICE:
+helps coordinate the sending and delivery of messages,
+messages are <=256KB payloads,
+public aws service,
+SNS topics are the base entity of sns, they contain permissions and configurations,
+  publisher: sends messages to a topic
+  subscribers: receive messages from a topic, ex HTTP, email, sqs, mobile push, sms messages, lambda
+sns used across aws for notifications
+characteristics:
+by default, each message published to a topic is received by every subscriber, but you can enable filter on which messages a subscriber receives
+  delivery status: confirm receipt of message by subscribers
+  delivery retries: reliable delivery
+  HA and scalable: regionally resilient service
+  SSE, server side encryption:
+  Cross-acount via TOPIC policy: resource policy for sns topics
+
+
+AWS STEP FUNCTIONS:
+problems/limitations with Lambda:
+  15 min max execution time,
+  lambda chaining gets messy at scale, and not possible to transfer state
+state machine:
+  serverless workflow, has startpt, states, and endpt,
+  states: are things which occur inside state machine, input data, modify data, output data,
+maximum duration:
+  1 year
+two different types of workflows: standard and express
+  standard workflow:
+    default, has a 1 year maximum duration,
+  express workflow:
+    designed for high volume event processing workloads and high transactions
+    has a 5 minute maximum duration
+you can start via: api gateway, iot rules, eventbridge, lambda
+  implements ASL, amazon states language
+  IAM role is used for permissions
+states:
+  are things which occur inside state machine, input data, modify data, output data,
+  succeed and fail states: process succeeded or failed,
+  wait state: pauses processing for a certain period of time,
+  choice state: takes a different path based on input,
+  parallel: allows you to create parallel branches to perform multiple processes at same time,
+  map: accepts a list of things, performs actions for each item,
+  task: represents a single unit of work, coordinates with other services to actually perform that work, can be integrated with Lambda, batch, dynamodb, ecs, sns, sqs, glue, sagemaker, emr, step functions
+
+
+API GATEWAY:
+allows you to create and manage APIs,
+sits between applications and integrations(services which provide the functionality of API to API gateway), ex: http endpts, lambda, step fns, sns, ddb,
+highly available, scalabled, handles authorization, transformations, throttling, caching, CORS, OpenAPI spec, direct integration and more,
+can connect to services/endpts in aws or on premises,
+HTTP APIs, REST APIs, and Websocket APIs,
+integrates with cloudwatch,
+authentication: can natively integrate with cognito,
+
+gateway cache:
+  helps reduce the number of calls made to backend integrates and improves latency,
+  configured per stage
+  cache ttl default is 300 seconds, but can be configured to be 0-3600
+  can be encrypted,
+  cache size is 500MB to 237GB,
+
+endpt types:
+  edge-optimized: 
+    incoming requests are routed to nearest cloudfron POP,
+  regional:
+    used when clients are in the same region,
+  private:
+    accessible only within a VPC via interface endpt
+
+stages:
+  apis are deployed to stages, each stage has one deployment
+  each stage has its unique url as well as its own settings
+  canary deployments: 
+    Deployments are made to the canary (sub part of stage), not stage.
+    can be configured so a certain percentage of traffic is sent to the canary.  This can be adjusted over time, to eventually promoting canary to be new base stage (consuming all of traffic)
+
+3 phases in most api gateway interactions:
+  request phase: 
+    client makes a request to api gateway,
+    authorizes, validates, transforms to data integration can handle,
+  integration phase:
+    request is moved thhrough api gateway to integration,
+  response phase:
+    where response is sent to client,
+    transforms to data client can handle, prepares, returns to client,
+
+facts and figures to remember:
+  4xx errors: client error, invalid request on client side
+    400: bad request, generic
+    403: access denied, 
+    429: exceeded configured throttling amount
+  5xx errors: server error, valid request, backend issue
+    502: bad gateway exception, bad output returned by lambda
+    503: service unavailable, major service issues
+    504: integration failure/timeout, 29s timeout for api gateway
+
+
     
 
 
