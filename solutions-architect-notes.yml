@@ -2554,7 +2554,7 @@ states:
 
 API GATEWAY:
 allows you to create and manage APIs,
-sits between applications and integrations(services which provide the functionality of API to API gateway), ex: http endpts, lambda, step fns, sns, ddb,
+sits between applications and integrations(services which provide the functionality of API gateway), ex: http endpts, lambda, step fns, sns, ddb,
 highly available, scalabled, handles authorization, transformations, throttling, caching, CORS, OpenAPI spec, direct integration and more,
 can connect to services/endpts in aws or on premises,
 HTTP APIs, REST APIs, and Websocket APIs,
@@ -2576,8 +2576,9 @@ endpt types:
   private:
     accessible only within a VPC via interface endpt
 
-stages:
-  apis are deployed to stages, each stage has one deployment
+resource: abstract concept that allows you to expose something to be consumed by a client 
+stage:
+  is a reference to a deployment, or snapshot.  Helps you manage and optimize a particular deployment. every time you make a change to your api, you must deploy to a stage for it to go live. 
   each stage has its unique url as well as its own settings
   canary deployments: 
     Deployments are made to the canary (sub part of stage), not stage.
@@ -2602,6 +2603,57 @@ facts and figures to remember:
     502: bad gateway exception, bad output returned by lambda
     503: service unavailable, major service issues
     504: integration failure/timeout, 29s timeout for api gateway
+
+
+SQS, SIMPLE QUEUE SERVICE:
+public, fully managed, highly available queues,
+messages up to 256 kb in size, if you need bigger message you can store link inside queue
+clients can send messages to queue, and other clients poll the queue
+encryption at rest via KMS can be enabled, in transit encryption is default
+all sqs queues have enqueue timestamps (time when message is received) and retention period 
+EXAM POWER UP: REMEMBER SNS AND SQS FANOUT ARCHITECTURE SLIDE
+visibilityTimeout: 
+  time period that a message is hidden after is it received.  If client (does not delete message or processing fails) after this time period is over, then message reappears back in the queue to be reprocessed
+Dead Letter Queues (DLQ): can be used for problem messages
+implementations:
+  decouple components: one component sends messages to queue, other reads from the queue, that way they do not have to communicate directly
+  scaling: ASGs can scale based on queue length and lambdas can be invoked when messages appear on a queue
+billing:
+  based on requests, request is a single request you make to sqs
+  1 request = 1-10 messages up to 64KB total
+two types of polling:
+  -short: immediate, if 0 messages in queue then returns 0 messages
+  -Long:(waitTimeSeconds): can be as long as 20s, if 0 messages in queue then waits for a message to appear before returning
+two types: 
+  -Standard:
+    at least once delivery, no guarantee on order
+    much faster performance, near unlimited TPS
+    used for decoupling, worker pools, batch for future processing
+  -FIFO:
+    exactly once delivery, guaranteed order
+    slower performance, 3000 TPS with batching, 300 TPS without batching
+    must have a .fifo suffix in name
+    used for workflow ordering, command ordering, price adjustments
+Policies:
+  -Queue policies: (resource policy) grant access to queue only from external accounts
+  -identity polcies: grant access within your account
+
+
+SQS DELAY QUEUES:
+  allow you to postpone the delivery of messages to consumers
+  messages are hidden for a set period of time, DelaySeconds, as soon as they are added to queue
+  can set up to 15 minutes
+  you can set per message setting of delay on standard queues but not FIFO queues
+
+SQS DEAD LETTER QUEUES:
+  help you handle reoccuring failures while processing messages which are within an SQS queue
+  specifically you can analyze data being sent to DLQ, perform seperate processing, or testing
+  each message contains a ReceiveCount, which is number of times it has entered queue
+  allows you to configure an alarm when a message is delivered to a dead letter queue
+  messages are automatically deleted from queue if retention period of DLQ > enqueue timestamp
+  redrive policy:
+    specifies the source queue, the DLQ, and conditions where messages will be moved from one to the other, it defines the maxReceiveCount, if maxReceiveCount > ReceiveCount message is deleted
+
 
 
     
