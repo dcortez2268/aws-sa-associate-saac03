@@ -2654,9 +2654,165 @@ SQS DEAD LETTER QUEUES:
   redrive policy:
     specifies the source queue, the DLQ, and conditions where messages will be moved from one to the other, it defines the maxReceiveCount, if maxReceiveCount > ReceiveCount message is deleted
 
+KINESIS DATA STREAMS:
+  scalable streaming service- allows you to ingest lots of data from a lot of different applications
+  multiple producers can send data into a kinesis stream and multiple consumers can access data from the same stream 
+  streams can scale from low to near infinite data rates
+  public service and highly available
+  kinesis data record:
+    allows streams to store data for 24 hours by default but up to 365 days for cost 
+  shards:
+    streams have 1 to n shards
+    the more shards the more performance and cost
+    each shard has 1 MB/s ingestion capacity and 2 mb/s consumption capacity
+  kinesis data firehose:
+    connects to a stream and moves data from a stream into another aws service, ex s3
+
+KINESIS DATA FIREHOSE:
+  connects to a stream and moves data from a stream into another aws service, ex s3
+  fully managed delivery service to load data for data lakes, data stores, and analytics services
+  automatic scaling, fully serverless, resilient
+  near real time delivery, approximately 60s or when buffer is filled with 1 MB of data
+  exists so that data can be persisted past the set interval for storing data or to pass data to the available services natively, or when kinesis analysis isn't enough
+  billing: volume through firehose
+  architecture:
+    EXAM POWER UP: kinesis data firehose or kinesis data stream can deliver to: 
+      HTTP endpts (third party providers),
+      splunk,
+      redshift (uses s3 as intermediate, then copied to redshift, process is handled by firehose),
+      elasticSearch,
+      s3
+    lambas can be used to transform data to expected format for delivery
+
+KINESIS DATA ANALYTICS:
+  real time processing of data using SQL
+  ingests data from kinises data streams or firehose, or optionally static source like s3
+  destinations: firehose(s3, redshift, elasticSearch, splunk), lambda, kinesis data streams
+  good visual representation of architecture on KINESIS DATA ANALYTICS slide
+  billing: pay for data you process, not cheap
+  use cases:
+    streaming data needing real time SQL processing
+    time series analytics, elections/ e-sports
+    real time dashboards, leaderboards for games
+    real time metrics, security and response teams
+
+KINESIS VIDEO STREAMS:
+  allows you to ingest live video data from producers
+  consumers can access data frame-by-frame or as needed
+  can persist and encrypt data in transit and at rest as a managed service
+  can't access directly via storage, access only via APIs 
+  integrates with other aws services like Rekognition and Connect
+  ex: 
+    security cameras, smartphones, cars, drones, time serialized audio, thermal, depth, radar data
+
+SQS VS KINESIS?:
+SQS: 1 production group, 1 consumption group
+SQS: decoupling and asynchronous communications
+SQS: no persistence of messages, no window
+Kinesis: huge scale ingestion
+Kinesis: mulitple consumers, rolling window
+Kinesis: data ingestion, analytics, monitoring, app clicks
 
 
-    
+AMAZON COGNITO:
+allows authentication, authorization, and user management for web/mobile apps
+USER POOLS:
+  goal is for you to sign in and get a JSON web token, JWT
+  imagine a db of users which can include external identities
+  about login and about managing user identities
+  JWTs can grant access to APIs via Legacy Lambda custom authorizers and API gateway, but not aws credentials
+  features:
+    user directory management and profiles, sign up and sign in (customizable UI), MFA, and other security features
+IDENTITY POOLS:
+  allow you to offer access to temporary aws credentials in exchange for token
+  unauthenticated identities: guest users
+  federated identities:
+    swap external identities for short term aws credentials, ex would be google, facebook, twitter, saml2.0, user pool 
+  process: Identity pool and external identity:
+    token, which can be different types, is passed to identity pool,
+    authenticated or unauthenticated role is granted to cognito, who grants aws temporary credentials to user
+  process: Identity pool and user pool:
+    jwt token is passed to identity pool,
+    authenticated or unauthenticated role is granted to cognito, who grants aws temporary credentials to user
+
+EXAM POWER UP: web identity federation: swapping of any external identity provider token for aws credentials.
+
+
+AWS GLUE:
+  glue jobs:
+    crawls data sources and generates the aws glue data catalog
+    moves and transforms data between source and destination 
+    can be initiated manually or triggered by eventBridge
+  serverless ETL, extract, transform, and load system
+  similar to datapieline but datapipeline uses servers
+  data sources include:
+    stores: s3, rds, jdbc compatible and dynamodb
+    streams: kinesis data stream and apache kafka
+  data targets include:
+    s3, rds, jdbc databases
+  crawlers:
+    connect to data stores, determine schema, and create metadata in data catalog
+  data catalog:
+    persistant metadata about data sources in region
+    improves visbilitiy of data within organization because it is publicized and accessible
+    one unique catalog per region per account
+    some services that use data catalog:
+      athena, redshift spectrum, EMR, Lake Formation
+  AWS warm pool:
+    aws managed compute resources to perform glue jobs
+
+
+AMAZON MQ:
+  solves this problem:
+    EXAM:  helps orgs migrate from an existing system that uses topics or queues into AWS with little to no application change
+  SNS and SQS won't work out of the box
+  need standards compliant solution for migration
+  what is it?:
+  open source message broker based on managed Apache ActiveMQ(popular in enterprise)
+    EXAM: supports JMS API, protocols such as AMQP, MQTT, OpenWire, and Stomp
+  provides queues (one to one communication) and topics (one to many comm)
+  characteristics:
+  single instance available or HA pair
+    EXAM: no aws native integrations...delivers activeMQ product which you manage
+    EXAM: vpc based, not a public service, private networking required
+
+
+AMAZON APPFLOW:
+fully managed integration service,
+like middleware, you can exchange data between applications using flows
+syncs data across applications or aggregrate data from different source
+public endpts, but works with privateLink(privacy)
+appflow custom connector sdk, you can build your own
+
+
+
+
+*******************************************
+GLOBAL CONTENT DELIVERY AND OPTIMIZATION:
+*******************************************
+CLOUDFRONT ARCHITECTURE:
+origin:
+  the source location of your content
+  s3 origin or custom origin
+distribution:
+  the base configuration entity of cloudfront
+  contains behaviors
+  behaviors:
+    like a sub-configuration within a distribution
+    link to origins
+    have default behavior, but you can add more
+    if path pattern of behavior is matched, then it is used
+edge locations:
+  local cache of your data
+regional edge cache:
+  larger version of an edge location.  provides another layer of caching.
+  generally supports a number of local edge locations
+
+cloudfront integrates with aws certificate manager for HTTPS so you can use SSL certificates with cloudfront
+cloudfront performs read-only caching, does not ever write to origin
+
+
+
 
 
 
