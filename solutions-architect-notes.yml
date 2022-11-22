@@ -2810,29 +2810,203 @@ regional edge cache:
 
 cloudfront integrates with aws certificate manager for HTTPS so you can use SSL certificates with cloudfront
 cloudfront performs read-only caching, does not ever write to origin
+EXAM: security policy is defined on the distribution
+EXAM: cache invalidation defined on the distribution
+
+
+CLOUDFRONT BEHAVIORS:
+EXAM: a single distribution can have multiple behaviors
+defines:
+  origin and origin groups
+  viewer protocol policy: which policy is used between viewer and edge location
+  allowed http methods 
+  cache policies:
+  restrict viewer access to a behavior: via trusted key groups or trusted signer, need signed cookies or signed urls to access
+  function associations: lambda@edge
+
+
+CF TTL AND INVALIDATIONS:
+influence how long cf objects are cached and when rejected
+basic process:
+  TTL: determines how long object is valid in cache
+  user requests object from edge location, if object is valid then it is returned.  
+  user requests object from edge location, if not valid then fetched from origin:
+    if versioned filed name of object in edge location is same as version file name in origin, then a 304 not modified is returned
+    if versioned file name of object in edge location is same as versioned file name in origin, then object is returned
+
+EXAM: default TTl is 24 hours, 
+you can change TTL values, minimum TTL and maximum TTL, per object values, the minimum and maximum override a per object value if the per object value is not within the constraints
+
+EXAM: you can set custom per object TTL values via custom origin or S3 via object metadata
+  EXAM: Origin Header: cache-control max-age (seconds), 
+  EXAM: Origin Header: cache-control s-maxage (seconds), 
+  EXAM: Origin Header: Expires (Date and time)
+
+invalidations:
+  invalidates objects based on a path pattern that you specify,
+  applies to all edge locations immediately but times time to invalidate objects
+  a way to corrects errors and has a cost of using
+  EXAM: use versioned file names rather than relying on invalidations
+
+
+AWS CERTIFICATE MANAGER, ACM:
+  ACM lets you run a public or private CA, certificate authority
+  Private CA: applications need to trust your private CA
+  Public CA: browsers trust a list of providers issued within OS, which can trust other providers
+characteristics:
+  can generate or import existing certificates
+  EXAM: if generated, can automatically renew
+  EXAM: if imported, you are responsible for renewal
+  EXAM: can be deployed out to supported services, cloudfront, albs, api gateway
+  EXAM: regional service, cannot leave the region they are generated or imported in, so the certificate needs to be in same region by service accessing it, however cloudfront operates as though its within us-east-1 so use us-east-1 for cloudfront and other global services
+
+
+CLOUDFRONT AND SSL:
+  EXAM: SSL supported by default as long as you use *.cloudfront.net default domain name
+  to use SSL on custom domain name:
+    verify ownership using a matching certificate, HTTPS optional
+    EXAM: generate or import certificate in ACM in us-east-1
+  two SSL connections when using cloudfront:
+    viewer protocol: viewer and cloudfront
+    origin protocol: cloudfront and origin
+    EXAM: both need valid public certificates!
+  ALB can use ACM, customon origin needs to use an external generated cert
+  billing:
+  SNI is free, dedicated host costs around 600$/mo per distribution
+  SNI, server name identification: allows a client to tell a server which domain name its attempting to access, happens at TCP layer
+    allows one IP for edge location to host many HTTPS websites that need their own certificate
+    old browsers don't support SNI
+    you can established a dedicated host ip address for edge location within CF
+
+
+ORIGIN TYPES AND ARCHITECTURE:
+  s3 buckets:
+    EXAM: does not include website hosted on a s3 bucket
+    you can restrict access to only CF, via origin access.  access is granted via trusted key groups or trusted signer
+    protocol for origin protocol and viewer protocol are always the same
+    custom headers available
+  aws media package channel endpts:
+  aws media store container endpts:
+  everything else (web servers):
+    custom origins
+    EXAM: includes website hosted on a s3 bucket
+    minimum origin ssl protocol: minimum ssl protocol that cf uses with the origin
+    can differ from viewer protocol
+    customize http port and https port between origin and edge location
+    custom headers available: custom origins does not have origin access like s3 buckets so if you want to ensure connections only from cf you can do so via custom headers
+
+
+SECURING CD AND S3 USING OAI:
+securing connection between edge locations and origins:
+  for s3 origins:
+    oac, origin access control (new version of oai, origin access identity):
+    type of identity that allows us to control access to s3 origins
+    oac allows cf to sign requests going to s3 origin and need to update s3 bucket policy to allow oac
+      legacy: cf becomes oai when accessing s3 origin and the oai can be used in s3 bucket policies to restrict everything but that or more OAIs
+  for custom origins (2 ways):
+    require custom header 
+    use firewall that only allows IPs of edge locations
+
+PRIVATE DISTRIBUTION AND BEHAVIORS:
+securing connection between edge locations and viewers:
+  behaviors are either public or private
+  EXAM: private behaviors require signer, which is entity that provides signed cookie or url
+  2 ways of configuring private behaviors:
+    EXAM: old way, a cf key is created by an account root user, given to account, the account is added as a trusted signer
+    EXAM: new way, create trusted key groups and add those as signers, gets put on the distribution
+
+  Signed URLS vs cookies:
+    EXAM: urls provide access to one object only
+    use urls if your client doesn't support cookies
+    EXAM: cookies provide access to groups of objects, all files of a type
+    use cookies if you want to keep application url the same, signed urls change url format
+
+
+Lambda@Edge:
+  feature of CF that allows you to run lightweight lambda functions at edge locations
+  allows lambda to adjust data between the viewer and origin
+  currently supports node.js and python
+  you cant access any vpc based resources since it runs in aws public space
+  layers are not supported
+  different limits vs normal lambda fns
+  architecture:
+    lambda fns can run at four different events of architecture (origin req/res, viewer req/res)
+    30s timeout
+  use cases:
+    perform a/b testing with viewer request function
+    migration between s3 origins, origin request
+    different objects based on device, origin request
+    content by country, origin request
+    many more
+
+
+GLOBAL ACCELERATOR:
+  comprised of anycast IP addresses: allow a single IP to be in multiple locations.  routing moves traffic to closest location.
+  traffic initially uses public internet and enters a global accelerator edge location, from the edge data transits globally across the aws global network leading to significantly better performance
+  moves the aws network closer to customers
+  EXAM: customer connections enter at edge, using anycast IPs
+  EXAM: transits over aws backbone to 1+ locations
+  
+  CLOUDFRONT VS GLOBAL ACCELERATOR:
+  GA used for non http/s (TCP/UDP) where CF can cache HTTP/HTTPS content only
+  GA moves your connection/data faster to desired location whereas CF aims to cache content closer to you
+  GA does not cache any content
 
 
 
 
 
+*******************************************
+ADVANCED VPC NETWORKING:
+*******************************************
+VPC FLOW LOGS:
+  helps provide details of of traffic flow within private network
+  captures metadata, not contents, ex srcip, dstip, srcport, dstport, protocol, etc, they can be configured to capture accepted, rejected, or all metadata
 
+  can be attached to:
+  can be attached to a vpc, which monitors every eni in that vpc
+  can be attached to a subnet, which monitors every eni in that subnet
+  can be attached to an eni directly
+ 
+  not real time
+  can be logged to s3 or cloudwatch logs, or athena for querying
 
+EGRESS-ONLY INTERNET GATEWAY:
+  allows connections to be initiated inside vpc to outside only, and allows response traffic back in
+  like NAT for ipv4, but egress only is for ipv6
+  architecture:
+  exactly the same as NAT gateway
 
+VPC ENDPTS GATEWAY:
+  allows a private only resource within a VPC to access s3 or dynamodb
+  allows a resource within a private only VPC to access s3 or dynamodb
+  used in lieue of providing infrastructure like NAT
+ 
+  regional, can't access cross-region services
+  s3 buckets can be set to private only by allowing access only from a gateway endpt 
+  gateway endpts are not accessible outside the VPC
+  implementation:
+  does not get deployed to subnet, instead prefix list added to route table of subnet that points traffic to gateway endpt.  gateway endpt is HA across all AZs in a region by default
+  endpt policy: controls what things can be connected to by that gateway endpt
+
+VPC ENDPTS INTERFACE:
+  allows a private only resource within a VPC to any service but dynamodb
+  allows a resource within a private only VPC to any service but dynamodb
+  used in lieue of providing infrastructure like NAT
+
+  added to specific subnents, to a single ENI, so not HA
+  network access controlled via security groups
+  endpoint policies: controls what things can be connected to by that gateway endpt
+  only support TCP and IPV4 protocols
+  implemented via PrivateLInk:
+    allows external services to be injected into your VPC
+  implementation:
+    endpt provides a new service dns name so services within vpc can access new service via dns name via endpt
+    regional dns
+    zonal dns
+    privateDNS: overrides the default DNS for services so the services can still retain same dns name, however when services within vpc try to access, they do so via endpt interface rather than accessing service directly
 
   
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
