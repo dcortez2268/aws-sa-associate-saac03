@@ -2977,7 +2977,7 @@ EGRESS-ONLY INTERNET GATEWAY:
   architecture:
   exactly the same as NAT gateway
 
-VPC ENDPTS GATEWAY:
+VPC ENDPTS - GATEWAY endpt:
   allows a private only resource within a VPC to access s3 or dynamodb
   allows a resource within a private only VPC to access s3 or dynamodb
   used in lieue of providing infrastructure like NAT
@@ -2989,7 +2989,7 @@ VPC ENDPTS GATEWAY:
   does not get deployed to subnet, instead prefix list added to route table of subnet that points traffic to gateway endpt.  gateway endpt is HA across all AZs in a region by default
   endpt policy: controls what things can be connected to by that gateway endpt
 
-VPC ENDPTS INTERFACE:
+VPC ENDPTS - INTERFACE endpt:
   allows a private only resource within a VPC to any service but dynamodb
   allows a resource within a private only VPC to any service but dynamodb
   used in lieue of providing infrastructure like NAT
@@ -3006,12 +3006,58 @@ VPC ENDPTS INTERFACE:
     zonal dns
     privateDNS: overrides the default DNS for services so the services can still retain same dns name, however when services within vpc try to access, they do so via endpt interface rather than accessing service directly
 
+VPC PEERING:
+  allows you to create a private and encrypted network link between two VPCs
+  works between same/cross region and same/cross account
+  option of public hostnames resolve to private IPs
+  if in same region, security groups can reference peer security groups
+  EXAM: does not support transitive peering, vpcs cannot connect via intermediate vpcs
+  routing configuration is needed on both sides, SGs and NACLs can filter 
+  EXAM: peering connections cannot be created where there is overlap in the VPC CIDrs, so odn't use the same address ranges in multiple VPCs
+
+
   
 
+*******************************************
+HYBRID ENVIRONMENT AND MIGRATION:
+*******************************************
+BGP, BORDER GATEWAY PROTOCOL:
+  routing protocol that control how data flows from different points, based on shortest path of interconnected networks
+  operates over TCP/179, it's reliable
+  not automatic, peering is manually configured
+  made up of many autonomous sytems (AS): 
+    routers controlled by one entity, a network in BGP, details abstracted away from BGP
+    allocated unique ASN via IANA, 16-32 bit numbers, allows BGP to identify networks
+  path vector protocol:
+    exchanges the best path (shortest) to a destination between peers, called the ASPATH
+    by default exchanges the shortest ASPATH, but you can influence via path prepending, which can be used to make a certain path look like multiple paths if the connection is slow or unfavorable
+  iBGP: internal BGP, routing within an AS
+  eBGP: external BGP, routing between AS's, used most often with AWS
 
+IPSEC VPN FUNDAMENTALS:
+  group of protocols that allows you to set up secure tunnels across insecure networks between two routers (peers)
+  provides authentication and data traveling through tunnels is encrypted
+  interesting traffic:
+    traffic that matches certain patterns to be transported via vpn tunnels
+  two main phases:
+    IKE phase one: 
+      slow and heavy, protocol for how keys are exchanged within vpn
+      authenticate with certifice or pre shared authentication
+      uses asymmetric encryption to create a shared symmetric key
+      creates SA, security association, phase 1 tunnel
+    IKE phase two:
+      fast and agile, uses the symmetric keys agreed in phase 1
+      agrees on encryption method, and IPSEC key used for bulk data transfer
+      creates IPSEC SA, phase 2 tunnel running over phase 1
 
-
-
+  policy based VPNS:
+    rules created to match traffic, 
+    traffic for each rule is sent over a pair of SAs with unique IPSEC key
+  route-based VPNS:
+    do target matching based on prefix
+    traffic is sent over a single pair of SAs
+    one IPSEC key
+    provides less functionality but simpler to set up
 
 
 
