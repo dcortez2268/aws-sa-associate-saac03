@@ -3050,14 +3050,47 @@ IPSEC VPN FUNDAMENTALS:
       agrees on encryption method, and IPSEC key used for bulk data transfer
       creates IPSEC SA, phase 2 tunnel running over phase 1
 
-  policy based VPNS:
-    rules created to match traffic, 
-    traffic for each rule is sent over a pair of SAs with unique IPSEC key
-  route-based VPNS:
-    do target matching based on prefix
-    traffic is sent over a single pair of SAs
-    one IPSEC key
-    provides less functionality but simpler to set up
+    policy based VPNS:
+      rules created to match traffic, 
+      traffic for each rule is sent over a pair of SAs with unique IPSEC key
+    route-based VPNS:
+      do target matching based on prefix
+      traffic is sent over a single pair of SAs
+      one IPSEC key
+      provides less functionality but simpler to set up
+
+AWS SITE TO SITE VPN:
+  logical connection between a VPC and on premises network encrypted using IPSec, running over the public internet
+  EXAM: highly available, if you design and implement correctly
+  EXAM: can be provisioned in less than an hour
+  EXAM: speed limitations around 1.25Gbps
+  EXAM: latency inconsistency possible over the public internet
+  can be used as a backup for Direct Connect, DX
+  can be used with Direct Connect, DX
+  cost: aws hourly cost, GB out cost, data cap (on premises)
+  components:
+    virtual private gateway, VGW:
+      has same functionality as internet gateway, except
+      has endpoints located in different AZs
+    customer gateway, CGW:
+      logical gateway that corresponds to customers router
+    VPN connection between the VGW AND CGW:
+      vpn tunnels connect the endpoints and the CGW
+  architecture:  
+    partially highly available design:
+      single point of failure lies with the customer gateway
+    highly available design:
+      having two customer gateways, with two different internet connections and seperate buildings
+  
+  static vs dynamic vpn:
+    static:
+      static routes of the other network are manually configured for each network
+      no load balancing and multi connection failover
+    dynamic:
+      BGP is configured between VGW and CGW using ASN, network info is exchanged via BGP
+      multiple VPN connects are possible providing HA and traffic distribution
+      route propogation: if enabled means routes are added to route tables automatically
+
 
 
 
