@@ -3092,7 +3092,27 @@ AWS SITE TO SITE VPN:
       route propogation: if enabled means routes are added to route tables automatically
 
 
+DIRECT CONNECT, DX:
+  a physical connection (1, 10, or 100 Gbps)
+  aws allocates you a port and authorizes you to use port at a DX location, you need to arrange connection to that port
+  no resilience for physical connection
+  low and consistent latency, highest speeds
+  can access VPCs (private services) and aws public services, not public internet though
+  connection: 
+    business premises => dx location => aws region
+  cost: 
+    port hourly cost and outbound data transfer
+  DX location:
+    EXAM: is a large regional data center not owned by aws, aws rents out space and equipment, the DX endpts called DX routers
+    customer or comms partner cage is space rented out by you or comms partner, your router is called customer DX router
+    EXAM: if you don't have customer cage, then a comms partner can extend the DX port into your business premises
+  AWS DX Router connection to DX port: the port allocated to you is connected to the aws DX router port
+  Cross connect: connection between AWS DX Router port and customer/partner dx router port
 
+
+DX RESILIENCE AND HA:
+  multiple dx routers connect to multiple customer dx routers
+  provision several customer premises with routers
 
 
 
