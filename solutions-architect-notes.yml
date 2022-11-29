@@ -3115,5 +3115,80 @@ DX RESILIENCE AND HA:
   provision several customer premises with routers
 
 
+TRANSIT GATEWAY, TGW:
+  network transit hub that helps connect VPCs to on premise networks
+  allows you to significantly reduce network complexity
+  signle network object,  highly available and scalable
+  allows attachments to other network types:
+    VPC, Site to site VPN, and Direct Connect Gateway
+  benefits:
+    supports transitive routing, very helpful between VPCs
+    can be used to create global networks via connecting to different TGW in different regions and different accounts
+    share between accounts using AWS RAM
 
+
+STORAGE GATEWAY:
+  virtual machine on premises
+  acts as a bridge to share data in storage on premise with aws storage services
+  integrates with EBS, S3, and Glacier
+  presents storage using iSCSI, NFS, or SMB
+  EXAM: helps with migrations, extensions of a data center into AWS, storage tiering, DR and replacement of backups systems
+STORAGE GATEWAY- VOLUME:
+  EXAM: iSCSI raw block devices
+  architecture:
+    cached mode:
+      EXAM: main location for data is not on premises, rather in s3 in aws, 
+      has local cache that stores frequently accessed data
+      EXAM: allows data center extension
+    stored mode: 
+      presents volumes over iSCSI to servers running on premises
+      local storage on storage gatweay VM is source of storage 
+      upload buffer asynchronously copies data to SG endpt in aws, data then sent to EBS snapshots
+      EXAM: great for full disk backups of servers
+      EXAM: great for disaster recovery
+      EXAM: doesn't improve datacenter capacity, many copy of data is stored on the GW
+      32 volumes per gateway, 16TB per volume, 512TB per gateway
+STORAGE GATEWAY- TAPE (VTL, virtual tape library):
+  EXAM: allows you to do tape backups in aws
+  some large backups are written to tape, up to 60TB compressed
+  the tape medium allows write as a whole or read as a whole
+  architecture:
+    has upload buffer and local cache on premise
+    on premise server implements iSCSI to modify virtual tapes, which  sends instructions to endpt, which communicates with virtual tape library in aws running on s3, and archives from s3 into tape shelf with unlimited storage in glacier
+STORAGE GATEWAY - FILE GATEWAY:
+  EXAM: allows you to link local on premise file storage to s3
+  EXAM: mount points (shares) available via NFS or SMB
+  EXAM: primary data is held in s3
+  on premise files map directly onto an s3 bucket, are visible as objects in an s3 bucket and vice versa
+  read and write caching ensures LAN-like performance
+  bucket share:
+    one aws s3 bucket linked to on premise file share
+  10 bucket shares per file gateway
+  use the NotifyWhenUploaded API to notify other gateways when objects are changed 
+  file gateway doesn't support object locking, so if two writes occer at same time there can be data loss.  To prevent this, use read only mode on all shares besides one or tightly control file access
+  when a file share modies a file on premise, it gets replicated to s3, but s3 doesn't notify other fileshares automatically of change
+
+
+SNOWBALL/ EDGE / SNOWMOBILE:
+  allow you to move large amounts of data in and out of aws
+  physical storage devices range from suitcase or truck
+  snowball:
+    ordered from aws, log a job, device delivered
+    any data on device is encrypted using KMS
+    50TB or 80TB capacity
+    1 Gbps or 10 Gbps network
+    EXAM: economical range when to use is 10TB to 10PB
+    EXAM: you can order multiple snowbalss to multiple premises
+    EXAM: helps only with storage
+  snowball edge:
+    EXAM: both storage and compute capability
+    larger capacity vs snowball and faster networking
+    10 Gbps, 10/25 SFP, 45/50/100 Gbps
+    Storage optimized option: with EC2, 1TB SSD
+    Compute optimized option: 100TB + ...
+    Compute with GPU optimized option: same but with a GPU
+    EXAM: ideal for remote sites or where data processing on ingestion is needed
+  snowmobile:
+    portable datacenter within a shipping container on a truck
+    EXAM: economical range when to use is for one location when 10PB - 100PB
 
