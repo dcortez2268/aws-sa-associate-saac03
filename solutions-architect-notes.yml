@@ -3192,3 +3192,50 @@ SNOWBALL/ EDGE / SNOWMOBILE:
     portable datacenter within a shipping container on a truck
     EXAM: economical range when to use is for one location when 10PB - 100PB
 
+
+AWS DIRECTORY SERVICE:
+  aws implementation of directory service
+  runs within a VPC
+  HA by deploying into multiple AZs
+  some aws services need a directory, ex Amazon Workspaces
+  can be isolated, independent of any other directories, or integrated with existing on premises system
+  can act as proxy back to on premises
+  directory:
+    stores objects( users, groups, computers, servers, file shares) with a structure (domain/tree)
+    multiple trees can be grouped into a forest
+    commonly used in windows environments, Microsoft Active Directory Domain Services, AD DS 
+    sign in to multiple devices with same credentials provides centralized management for assets
+  architecture:
+    simple AD mode:
+      standalone directory which uses Samba 4, open source
+      small mode is up to 500 users, large mode is up to 5000 users
+      integrates with aws services
+      not designed to integrate with any existing on premises 
+      use case:
+        default. simple requirements. a directory in aws.
+    managed microsoft AD:
+      full microsoft AD DS running in AWS
+      direct connect or vpn connection set up between aws and on premises
+      primary running location in aws, resilient if the vpn fails
+      use case:
+        applications in aws which need MS AD DS, or you need to trust on premise AD DS
+    AD connector:
+      when you want to use only one aws service that requires you to implement AD service
+      only a proxy to integrate your aws service with your on premise directory via VPN
+      use case:
+        use aws services which need a directory without storing any directory info in the cloud, is a proxy to your on premises directory
+
+      
+AWS DATASYNC:
+  data transfer service to and from aws
+  migrations, data processing transfers and then back out, archival/cost effective storage
+  designed to work at huge scale
+  keeps metadata
+  built in data validation
+  features:
+    scalable, around 100TB per day
+    bandwidth limiters
+    incremental and scheduled transfer options
+    supports compression and encryption
+    automatic recovery from transit errors
+    aws service integration s3, EFS, FSx
