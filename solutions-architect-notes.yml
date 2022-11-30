@@ -3096,8 +3096,9 @@ DIRECT CONNECT, DX:
   a physical connection (1, 10, or 100 Gbps)
   aws allocates you a port and authorizes you to use port at a DX location, you need to arrange connection to that port
   no resilience for physical connection
-  low and consistent latency, highest speeds
+  low and consistent latency, highest speeds, high throughput
   can access VPCs (private services) and aws public services, not public internet though
+  EXAM: not encrypted, a private encryption can be created by using a site to site VPN over public VIF
   connection: 
     business premises => dx location => aws region
   cost: 
@@ -3239,3 +3240,73 @@ AWS DATASYNC:
     supports compression and encryption
     automatic recovery from transit errors
     aws service integration s3, EFS, FSx
+  architecture:
+    communicates beween storage and datasync agent via NFS or SMB
+    connection between on premises DataSync agent and aws datasync endpt is encrypted via TLS
+    from there it can be stored in s3, EFS, or FSx for Windows server, public or VPC
+    schedules can be set for certain time periods
+    customer impact can be minimized by setting a bandwidth limit
+    task: 
+      a job within datasync, what is being synced, how quickly, source and destination locations
+    agent:
+      software used to read or write to on premises data stores using NFS or SMB
+    location:
+      every task has from and to locations
+
+
+FSx FOR WINDOWS FILE SERVER:
+  fully managed native windows file servers/shares (windows shared file system product)
+  designed for integration with windows environments
+  integrates with Directory Service or self managed AD in aws or on premises
+  can be deployed into a single AZ or Multi-AZ in VPC
+  can perform on-demand and scheduled backups
+  accessible using VPC, peering, VPN, direct connect
+  encryption at rest via KMS and enforced encryption in transit
+  supports volume shadow copies (file level versioning)
+  EXAM:
+    VSS, user driven restores: allows user to restore files and folder
+    Native file system accessible over SMB
+    Windows permission model
+    supports DFS, distributed file system, way you natively scale out file systems in windows
+    managed, no file server admin
+    integrates with DS or your own directory
+  
+FSx FOR LUSTRE:
+  managed implementation of Lustre file system (fs designed for high performance workloads)
+  supports Linux based instances, and POSIX style permissions
+  accessible over VPN or direct connect
+  data is lazy loaded from s3 to file system, can be exported back to s3 at any point
+  use cases:
+    machine learning, big data, financial modeling
+  deployment types:
+    persistent:
+      longer term, HA in one AZ, self healing
+    scratch:
+      optimized for high performance, not HA or resilient 
+
+
+AWS TRANSFER FAMILY:
+  managed file transfer service that supports transferring between s3 and EFS
+  provides managed servers which support protocols other than s3 and efs, would be useful when integrating with existing workflows or using MFTW to create new workflows
+  multi az, resilient and scalable
+  cost: provisioned server per hour + data transferred
+    protocols:
+      FTP, file transfer protocol: unencrypted file transfer
+      FTPS, file transfer protocol secure: file transfer with TLS encryption
+      Secure Shell File Transfer protocol, SSH: file transfer over SSH
+      Applicability Statement 2, AS2: structured b2b data
+      Identities: service managed, directory service, custom (lambda/api gateway)
+      managed file transfer workflows, MFTW: serverless file workflow engine
+      *with FTP and FTPS only Directory Service or Custom IDP are supported
+  architecture:
+    transfer family service uses IAM roles to access s3 and efs
+    think of it like the front end access points to backend storage (efs and s3)
+  access via:
+    public: 
+      no configuration required, does not support FTP or AS2
+    VPC<->INTERNET:
+      supports SFTP and FTPS protocols
+      SG and NACL can be used to control access
+    VPC<->INTERNAL:
+      supports SFTP, FTP, and FTPS protocols
+      SG and NACL can be used to control access
