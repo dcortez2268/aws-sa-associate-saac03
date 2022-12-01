@@ -3310,3 +3310,27 @@ AWS TRANSFER FAMILY:
     VPC<->INTERNAL:
       supports SFTP, FTP, and FTPS protocols
       SG and NACL can be used to control access
+
+
+
+
+
+*******************************************
+SECURITY, DEPLOYMENT, AND OPERATIONS:
+*******************************************
+
+AWS SECRETS MANAGER:
+  EXAM: designed for secrets (passwords, API keys...), focuses on storage and rotation
+  it does share functionality with parameok jter store
+  usable via console, CLI, API, or SDKs
+  secrets are encrypted using KMS
+  EXAM: supports automatic rotation, this uses lambda, invoked periodically
+  EXAM: directly integrates with some aws services like RDS
+
+APPLICATION ( LAYER 7 ) FIREWALLS:
+  EXAM: layer 7 firewalls are aware of the layer 7 protocol, ie HTTP, headers, data, DNS, rate
+  EXAM: can identify normal or abnormal requests that focus on protocol specific attacks
+  EXAM: if connection is encrypted, (HTTPS), then it is terminated (decrypted) on the firewall, inspected, then new encrypted connection is sent between l7 firewall and backend
+  EXAM: data can be blocked, replaced, or tagged and allows applications to be blocked .
+
+
