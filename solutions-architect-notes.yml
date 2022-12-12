@@ -3452,7 +3452,7 @@ CLOUDFORMATION PHYSICAL AND LOGICAL RESOURCES:
 template: 
   contains logical resources and their properties and allows us to build a stack with corresponding physical resources 
   written either in YAML or JSON
-  should be portable, ie allow you to create resuable templates
+  should be portable, ie allow you to create resuable templates, avoid naming things explicitly and avoid using region specific values like AMIs
     contains:
       resources: contains at least one logical resource, each resource has type and properties
       description: gives some details about the template, decription has to immediately follow AWSTemplateFormatVersion if there is one
@@ -3461,6 +3461,7 @@ template:
       mappings: optional, it allows you to create lookup tables
       conditions: allow decision making in template that only occur if conditions are met
       outputs: once the template is finished, it can produce outputs
+  
 stack: 
   builds a physical resource in your account for each corresponding logical resource in template
   created by template 
@@ -3511,8 +3512,267 @@ CLOUDFORMATION INTRINSIC FUNCTIONS:
     !Select [ 0, !Cidr[ !GetAtt VPC.CidrBlock, "16", "12" ]]: references the cidr range of a vpc, you can input how many subnets to generate, and bits per CIDR, this select statement 
 
 
+CLOUDFORMATION MAPPINGS:
+  templates can contain a Mappings object which maps keys to values, allowing lookup
+  can have one key, or top and second level
+  !FindInMap [ MapName, TopLevelKey, SecondLevelKey]: intrinsic function
+  common use case:
+    retrieve AMI for given region and architecture
+    EXAM: help you improve template portability 
 
 
+CLOUDFORMATION OUTPUTS:
+  help provide status information or how to access physical resources created by stackHiHi
+  EXAM: values can be declared in this section which will be visible as ouptuts when using the CLI or console UI and can be accessed from a parent stack when using nesting
+  EXAM: values can be exported, allowing cross stack references
+  optional within a template
 
+
+CLOUDFORMATION CONDITIONS:
+  allow you to provide conditions that are evaluated as true or false and processed before resources are created
+  located in optional conditions section of a template
+  When processing resources, if a condition key/value is present, the resource is only created if the condition is true
+  common condition use cases:
+    how many AZs to create resources in
+    size of instances depending on PROD or DEV environment
   
 
+CLOUDFORMATION DependsOn:
+  allows you to explicitly define formal dependencies between resources within templates
+  when creating stack:
+    cf does things in parallel
+    tries to determine a dependency order via references or functions or you can explicitly state dependencies with DependsOn
+  EXAM: 
+    an elastic IP requires an IGW attached to a VPC in order to work, but since there is no explicit !Ref in template defn then there could be an error when provisioning stack
+    solution:
+      implement DependsOn property to explicitly state the dependency
+
+
+CF WaitCondition, Creation Policy, and cfn-signal:
+  configure cf to hold to process a resource
+  wait for X number of success signals within defined timeout period for those signals, 12 hr max and if signals received, then status of resource moves to CREATE_COMPLETE
+  if failure signal or timeout is received/reached, creation fails
+  
+  resources being created implement either a CreationPolicy signal or WaitCondition signal:
+    CreationPolicy: 
+      allows us to appply signal requirement and timeout
+      used for simple creation of ec2, auto scaling groups, and simple creation requirements
+    WaitCondition:
+      is its own resource
+      used to pass data back to cloudformation or implement general wait states in template that does not proceed until after signal has been received
+      can depend on other resources, and other resources can depend on the waitCondition
+      generates a PreSigned URL for resource signals, JSON passed back in signal response
+
+
+NESTED STACKS AND CROSS REFERENCE STACKS:
+  problem of single stack:
+    500 resource limits per stack
+    can't easily reuse resources, ex a VPC that you want to use in diff stacks
+    can't easily reference other stacks
+
+  NESTED STACKS:
+    architecture:
+      EXAM: whole templates can be reused in other stacks!
+        root stack:
+          only stack to be created manually by entity
+          has parameters and outputs just like normal stack
+        parent stack:
+          parent of any stack that it immediately creates, contains its own nested stack
+    benefits:
+      use when you want to overcome the 500 resource limit of one stack
+      code reuse via modular templates, nested stacks can reference resources
+      installation process is easier because nested stacks are created by root stack
+      EXAM: use only when everything is lifecycle linked 
+    
+  CROSS STACK REFERENCES:
+    allow one stack to reference another
+    EXAM: outputs can be exported, making them visible from other stacks
+    EXAM: exports must have a unique name in the region
+    EXAM: !ImportValue resourceName:  can be used instead of Ref to reference region exported values
+    export attribute: used to export the output of a stack to that region's export list
+    Use case:
+      EXAM: service orientated, different lifecycles, stack reuse
+
+
+CLOUDFORMATION STACK SETS:
+  allow you to use CF to deploy CF stacks across many accounts and regions
+  stacksets are containers in an admin account that contain stack instances, which are references to actual stacks
+  stack instances remain even when stack fails
+  target accounts: contain stack instances and stacks 
+  each stack runs in 1 region in 1 account
+  security:
+    self managed roles: manually create roles and use self managed roles to get permissions
+    service managed roles: use CF with aws organizations 
+  terms:
+    concurrent accounts: how many individual aws accounts can be used at same time
+    failure tolerance: amount of individual deployments can fail before stackset as a whole fails
+    retain stacks: option to retain stacks even after stack instances have been deleted
+  use cases:
+    enable aws config 
+    aws config rules
+    create iam roles for cross account access
+
+
+CFN DELETION POLICY:
+  DeletionPolicy attribute: 
+    allows you to preserve or backup a resource when its stack is deleted
+    you specify a deletionPolicy attribute for each resource you want to control
+    only applies to delete operations, not replace operations
+      delete: default behavior without deletionPolicy
+      retain: preserves a resouce if stack is deleted
+      snapshot: if supported, remember that snapshots continue on past stack lifetime so you will have to clean up manually to avoid recurring charges
+
+
+CFN STACK ROLES:
+  EXAM: by default, cfn uses the permissions of the logged in identity so in order to create, update, or delete resources the identity needs those permission
+
+  stack roles: allow an IAM role to be passed in stack via PassRole which allows role seperation
+  PassRole: 
+    EXAM: allows stack to use this role rather than the identity interacting with the stack to create, update, and delete resources
+
+
+CFN-INIT:
+  allows you to provide configuration information to an ec2 instance, alternative to user data
+  allow a desired state configuration management system to be implemented within CFN
+  AWS::CloudFormation::Init : 
+    located in template, this part of logical resource allows you to include metadata on an EC2 instance for the cfn-init helper script
+    states desired state, leaves implementation details up to system
+    defines which configkeys to use and in which order to apply
+  cfn-init script:
+    helper script that is installed on ec2 OS and runs during bootstrapping (user data)
+    looks for resource metadata rooted in cfn stack
+    supports all metadata types for linux and some for windows
+
+
+CFN-HUP:
+  daemon which can be installed that helps detect changes in resource metadata, so when a change in cfn::Init is updated, then cfn-init will be ran again
+  without cfn-hup:
+    cfn-init is run only once, it doesn't rerun if cfn::init in stack is updated
+
+
+CFN CHANGE SETS:
+  allow you to preview how proposed changes to a stack might impact your running resources
+  you can create many different change sets for a stack
+  when you execute a change stack, the template is executed and changes are made
+
+
+CFN CUSTOM RESOURCES:
+  allow to write custom provisioning logic in templates that runs anytime CFN creates, update custom resource, or delete stacks
+  EXAM: are logical resources that allow CFN to integrate with anything it doesn't yet, or doesn't natively support
+  EXAM: CFN passes event data to an endpoint that you define within custom resource, then custom resource passes some data back, called ResponseURL
+
+
+
+
+
+*******************************************
+NOSQL DATABASES AND DYNAMODB:
+*******************************************
+public service
+capable of handling key/value and document databases
+no self managed servers or infrastructure
+manual or automatic provisioned performance, or on-demand
+highly resilient, across AZs and optionally global
+really fast, single digit milliseconds
+backups, point in time recovery, encryption at rest,
+event driven integration, allow you to do things when data changes
+EXAM: if you see NoSQL or key/value on exam, preference DynamoDB
+access via console, CLI, API, but not SQL!
+Billed based on RCU, WCU, storage, and features
+
+  tables:
+    grouping of items with the same primary key
+    partion key can be primary key or composite key comprised of partition and sort key
+    each item must have unique primary or composite key and can have none, all, same, or different attributes
+    item max 400KB
+    capacity:
+      speed
+      WCU: 
+        write capacity units
+        EXAM: 1 wcu = 1kb per second
+      RCU:
+        read capacity units
+        exam: 1 rcu = 4kb per second
+      on demand capacity: 
+        capacity is managed for you
+        use when you have unknown, unpredictable, low admin workloads
+        price per million R or W units
+      provisioned capacity:
+        you explicitly set capacity values on a per table basis
+  
+  backups:
+    on demand backups:
+      EXAM: manual restore and delete required
+      full copy of table retained until removed
+      restores can be same or cross region, with/out indexes, and you can adjust encryption
+    Point in time recover, PITR:
+      not enabled by default, enabled on a table basis
+      continuous record of changes allows replay to any point in the 35 day recovery window
+      1 second granularity
+
+
+DYNAMODB OPERATIONS, CONSISTENCY, AND PERFORMANCE:
+EXAM: every operation consumes at least 1 RCU/WCU
+every table has a RCU and WCU burst pool, 300 seconds, that is available if you run out of desingated RCU or WCU, if you exceed this pool your table will output an error if R or W operation is performed
+
+query operation:
+  allows you to retrieve data from product
+  requires you to query via partion key OR partition key and sort key, allows range for sort key
+scan operation:
+  least efficient operation, but most flexible way to query data
+  consumes the capacity of every item in table
+  allows you to scan range of attributes that are not partition key
+
+consistency:
+  deals with when data is read from database, is the data consistent with the most recent version of write
+  architecture:
+  two types: eventually consistent and strongly consistent
+    one leader storage node is selected out of all storage nodes
+    writes are written to leader node, leader node replicates data to other nodes
+    eventually consistent reads:
+      read from any of the storage nodes, 50% price, data could be stale, faster read
+    strongly consistent reads:
+      reads from leader storage node, not as fast reads
+
+
+DDB LOCAL SECONDARY INDEX AND GLOBAL SECONDARY INDEX, LSI, GSI:
+  indexes: 
+    allow more efficient data retrieval operations
+    allow you to provide alternative views on table data
+
+  LSI and GSI allow for an alternative presentation of data stored in a base table
+  LSI:
+    EXAM: allow for alternative SKs 
+    EXAM: must be created with a table
+    EXAM: shres the RCU and WCU with the table
+    indexes are sparse, capacity is only consumed on corresponding indexes
+  GSI:
+    EXAM: allow for alternative PK and SK
+    EXAM: can be greated at any time
+    EXAM: are allocated their own RCU and WCU allocations
+    indexes are sparse, capacity is only consumed on corresponding indexes
+    are always eventually consistent
+    use as default, use LSI only when strong consistency is required
+  EXAM: for both, some or all attributes can be projected onto view, KEYS_ONLY, INCLUDE, ALL
+
+
+DYNAMODB STREAMS AND LAMBDA TRIGGERS:
+  streams:
+    time ordered list of item changes in a db table
+    24 hour rolling window
+    enabled on a per table basis 
+    4 view types:
+      keys_only, new_image, old_image, new_and_old_images
+
+  triggers:
+    item changes generate an event when added to stream, triggers lambda fn that takes action using the event data
+
+
+DDB GLOBAL TABLES:
+  EXAM: help provide multi-master cross-region replication 
+  tables are created in multiple regions and added to the same global table, the tables in the regions become replica tables
+  EXAM: last writer wins is used for conflict resolution
+  reads and writes can occur to any region
+  EXAM: generally sub second replication between regions
+  EXAM: strongly consistent reads only in the same region as writes, everything else eventually consistent
+  HA, fast performance, and global disaster recover/business continuity (DR/BC)
