@@ -3744,10 +3744,10 @@ DDB LOCAL SECONDARY INDEX AND GLOBAL SECONDARY INDEX, LSI, GSI:
   LSI:
     EXAM: allow for alternative SKs 
     EXAM: must be created with a table
-    EXAM: shres the RCU and WCU with the table
+    EXAM: shares the RCU and WCU with the table
     indexes are sparse, capacity is only consumed on corresponding indexes
   GSI:
-    EXAM: allow for alternative PK and SK
+    EXAM: allow for alternative PK AND SKNo,
     EXAM: can be greated at any time
     EXAM: are allocated their own RCU and WCU allocations
     indexes are sparse, capacity is only consumed on corresponding indexes
@@ -3776,3 +3776,238 @@ DDB GLOBAL TABLES:
   EXAM: generally sub second replication between regions
   EXAM: strongly consistent reads only in the same region as writes, everything else eventually consistent
   HA, fast performance, and global disaster recover/business continuity (DR/BC)
+
+
+DDB ACCELERATOR, (DAX):
+  in memory cache designed for dynamo db
+  dax sdk reduces admin overhead, client can now treat cache and ddb as one entity, perform one api call
+  very fast, cache hits are returned in microseconds, misses returned in milliseconds
+  Primary node supports writes, replicas support reads
+  nodes are HA
+  you can scale up and scale out
+  supports write through, (you can write via dax sdk)
+  dax deployed within a VPC
+
+
+DYNAMODB TTL:
+  EXAM:
+  allows you to define a per item timestamp to determine when an item is no longer needed
+  deletes item from table without consuming any throughput or cost
+
+
+AMAZON ATHENA:
+  serverless querying service that allows for ad-hoc questions
+  billing is based on amount of data consumed
+  capable of working with unstructured, semi-structured, or structured data
+  original data never changed, remains on s3
+  schema on read:
+    table like translation where schema translates data when read
+    it allows sql like queries on s3
+    output can be sent to other services
+    good for querying aws logs, glue data catalog that have been exported to s3
+    you can also query other data sources other than s3 w/ athena federated query
+    demo implementation:
+      use DDL to define database, table schema, and source of data
+      perform query on table
+
+
+ELASTICACHE:
+  in memory database (cache) designed for high performance
+  not persistent
+  EXAM: supports redis or memcached engines
+  use cases:
+    EXAM: read heavy workloads with low latency
+    EXAM: scaling reads in a cost effective way
+    EXAM: allows externally hosted user session state, allowing stateless servers
+      session state is written to cache and loaded when needed
+    EXAM: using elasticache requires application code changes
+  redis vs memcacheD:
+    redis:
+      advanced data structures
+      multi AZ replication
+      replication (scale reads)
+      backup and restore
+      transactions, multiple operations are treated as one
+    memcached:
+      simple data structures
+      no replication
+      multiple nodes (sharding)
+      no backups
+      multi threaded
+
+
+REDSHIFT ARCHITECTURE:
+  allows OLAP products within AWS/on premises to add data for long term processing, aggregration, and trending
+  column based, petabyte scale, data warehousing product
+  integrates with aws tooling like quicksight
+  sql like interface JDBC/ODBC connections
+  server based, not serverless
+  redshift spectrum:
+    allows you to directly query s3 without loading it into redshift in advance
+  federated query:
+    allows you to directly query other DBs without loading it into redshift in advance
+  
+  architecture:
+    one AZ in a VPC, due to network cost and performance
+    has all of the integrations a service in vpc has like security, IAM permissions, KMS, CW
+    automatic snapshots to s3 with option of manual snapshots
+    enhanced vpc routing:
+      EXAM: when enabled, allows redshift to be routed with vpc networking configurations
+    leader node:
+      query input, planning, and aggregation
+    compute node:
+      contains slices that query data assigned by leader node
+    
+
+REDSHIFT RESILIENCE AND RECOVERY:
+  to overcome single AZ risk:
+    automatic snapshots to s3 every 8 hours or 5GB, default 1 day retention period, up to 35d
+    optional manual snapshots can be created and deleted at any time
+    snapshots can be to same region or cross region
+
+
+
+
+
+*******************************************
+MACHINE LEARNING :
+*******************************************
+  
+AMAZON COMPREHEND:
+  NLP service that helps identify valuable insights and connections in text
+  input: document, think text
+  output: entities, phrases, language, PII, sentiments
+  real time analysis for small workloads
+  async jobs for larger workloads
+  implement via console and CLI, or use APIs to build into apps
+
+
+AMAZON KENDRA:
+  intelligent search service that helps mimic interacting with a human expert
+  provides data to apps and also integrates with aws services
+  supports wide range of question types:
+    factoid: who, what, were
+    descriptive: how do I get my cat to stop being a jerk?
+    keyword: what time is the keynote address?  address can have multiple meanings. kendra will determine intent
+  components:
+    index: indexed data is organized in an efficient way
+    data source: 
+      where your data lives, kendra connects and indexes from this location, many options
+    documents:
+      data is either structured like in FAQs or unstructered like HTML, PDFS, text, etc
+
+
+AMAZON LEX: 
+  allows you to build conversational interfaces in applications
+  text or voice conversational interfaces
+  ASR, automatic speech recognition: speech to text
+  NLU, natural language understanding: intent
+  use cases:
+    chatbots, voice assistants, q&a bots, info/enterprise bots
+
+
+AMAZON POLLY:
+  allows you to turn text into lifelike speech
+  allows you to create entirely new categories of speech enabled products
+  modes:
+    standard TTS, text to speech: concatenative (phonemes)
+    neural TTS: more compute but more natural sounding
+  different output formats
+  allows you to implement SSML:
+    allows different emphasis, pronounciation, whispering, etc 
+
+
+AMAZON REKOGNITION:
+  allows extraction of information and insights from images and videos
+  can identify objects, people, text, activities, content moderation, face detection, face analysis, face comparison, pathing, and much more
+  per image or per minute pricing
+  integrates with applications and event driven
+  can even analyze video live streams via kinesis streams
+
+
+AMAZON TEXTRACT:
+  helps automatically extract text, handwriting, and data from scanned input documents
+  it can identify, understand, and extract data from forms and tables
+  input: jpeg, png, pdf, or tiff
+  output: extracted text, structure, analysis
+  use cases:
+    document analysis, like names, address, birthdate
+    receipt analysis, like prices, vendor, line items, dates
+    identity documents, like abstract fields
+
+
+AMAZON TRANSCRIBE:
+  allows you to convert audio to text
+  you can implement as a standalone transcription service or add speech to text to apps
+  features:
+    custom vocabularies and language models
+    language customization, filters for privacy, audience appropriate language, speaker identification
+  use cases:
+    full text indexing of audio, allows searching
+    meeting/gathering notes
+    subtitles/captions, transcripts
+    call analytics 
+    integration with other apps/ aws ml services
+
+
+AMAZON TRANSLATE:
+  allows you to perform fast, high quality, affordable, and customizable language translation
+  allows you to offer a multilingual user experience 
+  commonly integrates with other services/apps/platforms
+
+
+AMAZON FORECAST:
+  allows you to deliver highly accurate time-series forecasts (predicts future demand based on historical data)
+  (retail demand, supply chain, staffing, energy, server capacity, web traffic)
+  output: forecast and forecast explainability
+
+
+AMAZON FRAUD DETECTOR:
+  allows you to automate the detection of potentially fraudulent activities online
+  model types: online fraud, transaction fraud, account takeover
+  actions are scored and rules/decision logic allows a reaction based on business activity
+
+
+AMAZON SAGEMAKER:
+  allows developers to quickly build and train machine learning models, and then deploy into a production ready hosted environment
+  sage maker studio: ide for entire ML lifecylce
+  domain: 
+    container for a particular projects, ex efs volume, users, apps, policies, VPCs
+  containers:
+    docker containers deployed to ML EC2 instance
+  hosting:
+    deploy endpoints for your models
+  cost:
+    sagemaker has no cost, but resources it creates does
+
+
+
+
+*******************************************
+OTHER SERVICES AND FEATURES, EXAM TIPS :
+*******************************************
+
+AWS LOCAL ZONES:
+  type of infrastructure deployment that allows you to place compute, storage, database, and other aws services close to large population and industry centers
+  allow really low latencies bc they are closer to you
+  1 additional zone, so no built in resilience, like an AZ but near your location
+  not all products support them, many are opt in with limitations
+  DX to a local zone is supported
+  utilize parent region for certain services like ebs snapshots
+  use case: when you need the highest performance
+
+
+EXAM TECHNIQUES:
+  exam is comprised of 25% easy, 50% medium, 25% hard
+  phase 1: 
+    answer questions that take you 20 secs or less
+  phase 2:
+    identify hard qs and skip, answer medium qs
+  phase 3:
+    answer difficult qs, finish up with these and if you run out of time guess
+  2 minutes per question, assume you will run out of time
+  don't guess until end
+  use the mark for review feature
+  take all the practice tests you can, aim for 90%+ before you do real exam
+
+  
