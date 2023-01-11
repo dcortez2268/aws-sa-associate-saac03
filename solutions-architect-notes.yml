@@ -3,7 +3,7 @@ IAM access keys:
   doesn't change automatically or regularly:
   use access keys when using CLI:
   similar to user name and password, but differences are:
-    an IAM user can have two access keys, either 0, 1, or 2:
+    an IAM user can have two access keys, either 0, 1, or 2
     can be created, deleted, made inactive or active
   formed from two parts: 
     access key ID, and secret access key
@@ -49,7 +49,7 @@ YAML:
 -----------------------------------------------------------------------------------------------:
 Encryption:
   Encryption at rest: 
-    helps to secure data from physical access, example would be encrypting data stored on a hard drive, and decrypting when it reads.  Secret is used to decrypt the data.:
+    helps to secure data from physical access, example would be encrypting data stored on a hard drive, and decrypting when its read.  Secret is used to decrypt the data.:
   encryption at transit: 
     helps to secure data that is being transferred between two places:
     encrypted with an encryption tunnel:
@@ -120,19 +120,20 @@ NETWORKING:
       payload: 
         the data the frame carries from source to destination.  It's generally provided by layer 3 and the ET attribute defines which l3 protocol is used
 
-    CSMA/CD: provides controlled access to physical medium via:
-    carrier sense multiple access: 
-      checks carrier(to see if anything is transmitting on layer 1), and if no carrier then passes frame to layer 1 to transmit, if there is carrier it waits to send until a carrier is not detected
-    collision detection: 
-      detects if there was collision, if there was collision reattempts collision after a certain amount of time
+    CSMA/CD: 
+      provides controlled access to physical medium via:
+        carrier sense multiple access: 
+          checks carrier(to see if anything is transmitting on layer 1), and if no carrier then passes frame to layer 1 to transmit, if there is carrier it waits to send until a carrier is not detected
+        collision detection: 
+          detects if there was collision, if there was collision reattempts collision after a certain amount of time
 
     switch: 
       intelligent layer 2 device that works similarly to a hub but much more efficient because it understands layer 2:
-    HOW IT WORKS:
-      learns which devices are connected at layer 2 and populates a MAC address table with that MAC address's port:
-      if it receives frame for MAC address in table, it orders that frame to be sent to that port only on layer 1, unlike a hub which would send to every single port
-      if it receives frame for MAC address not in table, it sends to all ports
-      every x port has X collision domains, meaning if there is a collision on a port, it only occurs on that single port
+      HOW IT WORKS:
+        learns which devices are connected at layer 2 and populates a MAC address table with that MAC address's port:
+        if it receives frame for MAC address in table, it orders that frame to be sent to that port only on layer 1, unlike a hub which would send to every single port
+        if it receives frame for MAC address not in table, it sends to all ports
+        every x port has X collision domains, meaning if there is a collision on a port, it only occurs on that single port
 
 -----------------------------------------------------------------------------------------------:
   Network Layer, Layer 3: 
@@ -150,7 +151,7 @@ NETWORKING:
     ipv6 addressing:
       340 sextillion address spaces vs 4 billion ipv4 address spaces
 
-    Every router has one or more route tables, letting router know where to send packet or destination.  Packets are routed, hop by hop across the internet:  
+    Every router has one or more route tables, letting router know destination where to send packet to.  Packets are routed, hop by hop across the internet:  
 
     default gateway: 
       IP address on local network that packets are forwarded to if intended destination is not a local ip address, typically a router:
@@ -166,7 +167,7 @@ NETWORKING:
 -----------------------------------------------------------------------------------------------:
   The Transport Layer, Layer 4 and the Session Layer, Layer 5: 
     provides most of the functionality that supports most of the networking of the internet:
-    packages data in segments, encapsulated within IP packets:
+    packages data in segments, they are encapsulated within IP packets:
     implements two protocols:
       Transmission Control Protocol, TCP:
       User datagram Protocol, UDP:
@@ -236,7 +237,7 @@ DDOS attacks:
       takes advantage of how certain protocols like DNS take only a small amount of data to make request and require large response
 
 -----------------------------------------------------------------------------------------------:
-SSL, SECURE SOCKETS LAYER AND TLS, TRANSPORT LAYER SECURITY: 
+SSL AND TLS, SECURE SOCKETS LAYER and TRANSPORT LAYER SECURITY: 
   provide privacy and data integrity between client and server:
   both do the same thing but TLS is newer and more secure version:
 
@@ -297,7 +298,7 @@ AWS GLOBAL INFRASTRUCTURE:
     geographic separation allows isolated fault domain
     geopolitical seperation allows different governance that is dicted by that region and data stays within that region
     reference by: 
-      region code, ap-southeast-2, or region name, Asia Pacific (Sydney):
+      region code or region name, ap-southeast-2 or Asia Pacific (Sydney):
 
   edge locations: 
     allow us to cache content and lower latency: 
@@ -310,7 +311,7 @@ AWS GLOBAL INFRASTRUCTURE:
   service resilience:
     globally resilient: 
       service operates globally with a single database and its data is replicated across several regions, is highly available because it is always available unless every single region fails, ex route53 and IAM:
-    region resilient:
+    regionally resilient:
       service that operates in a single region with one set of data per region.  replicates data across multiple availability zones within that region.:
     AZ resilient:
       service that operates in a single availability zone, if availability zone fails then that service fails:
@@ -334,7 +335,7 @@ VIRTUAL PRIVATE CLOUD:
       IGW, SG, & NACL:
 
   Custom VPCs: 
-    can have many in 1 region:
+    you can have many in 1 region:
     require you to configure everything end to end:
     private by default
 
@@ -369,7 +370,7 @@ EC2:
 
 -----------------------------------------------------------------------------------------------:
 AMI:
-    like a server image which can be used to create virtual machines or a usb device to install OS:
+    template of an instance configuration that allows us to provision instances:
     AMI => EC2 => AMI:
     ec2 instance can be generated from an amazon machine image, or generate an ami from ec2:
 
@@ -504,7 +505,7 @@ High Availability vs Fault Tolerance vs Disaster Recovery (KNOW ALL):
   fault tolerance: 
     a fault tolerant system operates properly even while faults, which are failures of a system, are present.  Much more expensive than high availability because redundancies are put into place.
   disaster recovery:
-    multiple stage of processes designed to keep the crucial and non replaceable parts of your system safe so when disaster occurs you don't lose anything irreplaceable and can rebuild after disaster
+    multiple stage of processes are designed to keep the crucial and non replaceable parts of your system safe so when disaster occurs you don't lose anything irreplaceable and can rebuild after disaster
 
 -----------------------------------------------------------------------------------------------:
 DNS Fundamentals:
@@ -515,7 +516,7 @@ DNS Fundamentals:
   zone: 
     a part of the DNS database that corresponds to a domain, think of it as logical domain, ex amazon.com, a zone contains dns namerservers, which contains zone files:
   DNS SERVER:
-    nameserver (NS), server that hosts the zonefiles:
+    nameserver (NS), is a server that hosts the zonefiles:
   zone file:
     physical database for a zone that contains the DNS info for a domain, contains the DNS records which has the mapping of website name to IP address:
   DNS resolver Server:
@@ -560,7 +561,7 @@ Route 53:
     checks with TLD to see if domain is available:
     creates a zone file for registered domain, known as hosted zone:
     allocates 4 nameservers for the hosted zone:
-    adds nameserver records to TLD that indicate that the namerservers are authoritative for domain:
+    adds nameserver records to TLD that indicate that the nameservers are authoritative for domain:
   hosted zone:
     zone file in AWS:
     hosted on four managed NS:
@@ -652,7 +653,7 @@ IAM Roles:
     generally used when an unknown number of users is uncertain:
     use when a set of credentials are needed, bc we dont want to hard code into code or on service because it is security risk as well as problematic if we ever need to change or rotate keys (roles use temporary security credentials):
     emergency or out of the usual situations
-    when you're adding aws into an existing corporate network, external accounts or external identities can't be used to interact with AWS directly, instead assign the external identities a role for them to interact with aws:
+    when you're adding aws into an existing corporate network, external accounts or external identities can't be used to interact with AWS directly, so instead assign the external identities a role for them to interact with aws:
     users > 5000, use Web identity federation that uses roles:
     give users from one account access to resources in another aws account via roles:
     service linked roles:
@@ -683,7 +684,7 @@ Organizations:
 -----------------------------------------------------------------------------------------------:
 SCPS:
     policy document that limits what the account can do, including root users.  They do not grant permissions:
-    they grant access to what can and cant be allowed, but identities still need identity policies in to grant that permission.  So an identity needs SCPs to allow and also identity policies to allow access to resources:
+    they grant access to what can and cant be allowed, but identities still need identity policies in order to grant that permission.  So an identity needs SCPs to allow and also identity policies to allow access to resources:
     They can be attached to individual accounts, OUs, and the organizational root.  they inherit down the organization tree.
     management account is never affected by SCPs
     Allow list:
@@ -726,7 +727,7 @@ CLOUDTRAIL:
 -----------------------------------------------------------------------------------------------:
 TRAILS:
     customize the cloudtrail service:
-    regional service, logs events for the region it's created in:
+    is a regional service, it logs events for the region it's created in:
     two types: 
       one region trail: 
         only ever in region it was created in and logs these events only:
@@ -789,12 +790,12 @@ S3:
       like identity policies, but are attached to resources instead of identities.  You are controlling who has access to that resource: 
       resource policies have principal field, whereas an identity policy does not have one because it is implied
     benefit:
-      allow/deny access to identies in same or DIFFERENT accounts (diff than identity policies):
+      allow/deny access to identities in same or DIFFERENT accounts (diff than identity policies):
       allow/deny anonymous principals:
 
   ACLS, Access Control Lists:
     allow a way to provide security on objects and bucket, basically limited resource policies:
-    used less often, aws recommends you do not use them and instead use bucket policies:
+    aws recommends you do not use them and instead use bucket policies:
     inflexible and simple permissions because you cannot apply conditions like bucket policies and you cannot apply a certain ACL on a group of objects, you would need to apply several ACLs
 
   Block Public Access:
@@ -821,11 +822,10 @@ S3:
     CORS configuration:
       allows you to define a way for client web applications that are loaded in one domain to interact with resources in a different domain:
     use cases for s3 static website hosting:
-      offloading and out of band pages:
-    offloading:
-      store static data from website on s3, have compute service handle dynamic content and then retrieve static data from s3 to save money on storage:
-    out-of-band-pages:
-      show error or other notification pages on static s3 site in case server is offline or ec2 service as a whole:
+      offloading:
+        store static data from website on s3, have compute service handle dynamic content and then retrieve static data from s3 to save money on storage:
+      out-of-band-pages:
+        show error or other notification pages on static s3 site in case server is offline or ec2 service as a whole:
 
   pricing:
     cost to store data on s3 expressed as GB/month fee
@@ -841,16 +841,16 @@ Object Versioning:
     by default disabled, once you enable you can never disable again but can suspend and reenable:
   implementation:
     each object has a key(name) and an id attribute:
-    disabled: 
+    object versioning disabled: 
       all ids are set to null.  Whenever changes are made to object, the original object is overwritten:
-    enabled: 
+    object versioning enabled: 
       ids are given to each object.  Whenever changes are made to object, the original object stays in bucket with same id, while a new object with same key but diff id is generated.  When you access objects from bucket with key the last version is returned.  You can specify which version you want returned with key and id:   
-      When deleting, if you specify key and id the corresponding object is deleted and the current version marker is reset to corresponding object.  If you do not specify id, then all objects are hidden under delete marker.  To undo delete you can delete the delete marker:
+      When deleting, if you specify key and id the corresponding object is deleted(hidden under delete marker) and the current version marker is reset to corresponding object.  If you do not specify id, then all objects are hidden under delete marker.  To undo delete you can delete the delete marker:
 
 -----------------------------------------------------------------------------------------------:
 MFA delete:
   enabled in versioning configuration of a bucket:
-  MFA is required to change bucket versioning state or to delete versions
+  MFA is required to change bucket versioning state or to delete versions:
   implementation:
     serial number of MFA + code are passed with API calls
 
@@ -902,12 +902,15 @@ KMS KEYS:
 implementation:
   identity performs call, provides data, KMS creates key and performs operations
   always returns data only, not key:
-role separation:
+provides role separation:
   individual permissions are needed for different operations, like creating key, managing KMS, encrypt, decrypt:
+custom key store feature:
+  combines controls provided by aws cloudhsm with the integration and ease of use of aws kms:
 
 -----------------------------------------------------------------------------------------------:
 DEKs, DATA ENCRYPTION KEYS:
-  generated by KMS keys via GenerateDataKey call and can be used to encrypt and decrypt data on data greater than 4KB in size:
+  encrypt and decrypt data on data greater than 4KB in size:
+  generated by KMS keys via GenerateDataKey call
   KMS doesn't store the DEK in any way, provides to you or service using KMS to perform crypto operations
   implementation:
     when DEK is created, KMS provides you with two versions of that key
@@ -916,7 +919,7 @@ DEKs, DATA ENCRYPTION KEYS:
     ciphertext version:
       encrypted via KMS key
       then the encrypted key is stored with encrypted data
-      when decrypting, you send encrypted key to KMS, it decrypts it and then you decrypt data with the key and then discard key
+      when decrypting, you send encrypted key to KMS, it decrypts it and then you decrypt data with the key and then discard key:
 
 -----------------------------------------------------------------------------------------------:
 Key POLICIES AND SECURITY:
@@ -936,19 +939,19 @@ Key POLICIES AND SECURITY:
 S3 ENCRYPTION:
   buckets aren't encrypted, objects are:
   each object inside bucket could be using different encryption settings
-  encryption at rest: via client side encryption and server side encryption:
-  client:
-    data is encrypted by client, sent as ciphertext to s3 endpoint, then sent to s3 storage:
-    provides you a lot of control, but you do everything when it comes to management:
-  server:
-    data is sent as plaintext to s3 endpoint, then encrypted by s3 endpoint, and sent to s3 storage:
-    three types available:
-      SSE-C: 
-        ss encryption with customer provided keys:
-      SSE-S3: 
-        ss encryption with s3 managed keys, uses AES256 encryption:
-      SSE-KMS: 
-        ss encryption with KMS keys stored in KMS, best: 
+  provides encryption at rest via:
+    client side encryption:
+      data is encrypted by client, sent as ciphertext to s3 endpoint, then sent to s3 storage:
+      provides you a lot of control, but you do everything when it comes to management:
+    server side encryption:
+      data is sent as plaintext to s3 endpoint, then encrypted by s3 endpoint, and sent to s3 storage:
+      three types available:
+        SSE-C: 
+          ss encryption with customer provided keys:
+        SSE-S3: 
+          ss encryption with s3 managed keys, uses AES256 encryption:
+        SSE-KMS: 
+          ss encryption with KMS keys stored in KMS, best: 
 
   Bucket Default Encryption:
     allows you to set default encrytion method used if not specified on object level:
@@ -1010,12 +1013,12 @@ S3 REPLICATION:
   same-region replication, SRR:
   architecture differs depending whether same account or different account
     same account:
-    replication rule is applied to source bucket, dest bucket and IAM role to use
-    the role has trust policy for s3 to assume it, and permission policy gives it permission to read objects from s3 source, and replicate to destination bucket, transfer is encrypted with SSL
+      replication rule is applied to source bucket, dest bucket and IAM role to use
+      the role has trust policy for s3 to assume it, and permission policy gives it permission to read objects from s3 source, and replicate to destination bucket, transfer is encrypted with SSL
     different account:
-    replication rule is applied to source bucket, dest bucket and IAM role to use
-    the role has trust policy for s3 to assume it, and permission policy gives it permission to read objects from s3 source, and replicate to destination bucket, transfer is encrypted with SSL
-    additionally, a bucket policy is needed on destination bucket to allow role from different account access
+      replication rule is applied to source bucket, dest bucket and IAM role to use
+      the role has trust policy for s3 to assume it, and permission policy gives it permission to read objects from s3 source, and replicate to destination bucket, transfer is encrypted with SSL
+      additionally, a bucket policy is needed on destination bucket to allow role from different account access:
   s3 replication options:
     all objects or subset:
     storage class, default is to maintain same class but you can change
@@ -1083,14 +1086,15 @@ S3 OBJECT LOCK:
   Requires versioning, individual versions are locked:
   Bucket can have default object lock settings
   Retention Period and Legal Hold: 
-    object lock can have both, one, or none:
-    Retention Period:
-      specifies days and years which object is locked:
-      compliance mode:can't be adjusted, deleted, overwritten for duration of retention period:
-      governance mode:special permissions can be granted allowing lock settings to be adjusted:
-    Legal Hold:
-      you set legal hold to be on or off, there is not retention period:
-      no deletes or changes until removed
+      Retention Period:
+        specifies days and years which object is locked:
+        compliance mode:
+          can't be adjusted, deleted, overwritten for duration of retention period:
+        governance mode:
+          special permissions can be granted allowing lock settings to be adjusted:
+      Legal Hold:
+        you set legal hold to be on or off, there is not retention period:
+        no deletes or changes until removed
 
 -----------------------------------------------------------------------------------------------:
 -----------------------------------------------------------------------------------------------:
@@ -1115,19 +1119,19 @@ VPC SIZING AND STRUCTURE:
     how many subnets will you need?
     how many IPs total?  How many per subnet?
   formula?:
-    a subnet is located in one AZ, so determine how many AZs you will be using, he mentions by default he uses 4, 3 for AZs and one spare:
+    a subnet is located in one AZ, so determine how many AZs you will be using, he mentions by default he uses 4, 3 for AZs and one spare
     each tier has its own subnet in each AZ, by default 4 tiers, web, app, db, and spare so now we have 16 subnets by default
 
 -----------------------------------------------------------------------------------------------:
 CUSTOM VPCS:
-  regional service, operates from all of the AZs in that region
+  regional service, operates from all of the AZs in that region:
   allows you to create isolated networks
   allow nothing IN or OUT without explicit configuration:
   flexible configuration, simple or multi-tier
   hybrid networking to other cloud and on premises
   default or dedicated tenancy, allows resources created inside VPC to be provisioned on shared or dedicated hardware
-  can use IPv4 public and IPv4 private addresses, by default they use private addresses:
-  public addresses are used when you want resource to communicate with public internet, or aws public zone, or allow access to them from public internet:
+  can use public ipv4 and private ipv4 addresses, by default they use private addresses:
+  public addresses are used when you want resource to communicate with public internet or aws public zone:
   allocated one primary private IPv4 CIDR block, configured when you create VPC, optional secondary ipv4 blocks, think of it as a VPC has a pool of private addresses and optionally it can use public addresses
   optional single assigned ipv6 /56 CIDR block
   can have many in one region
@@ -1234,7 +1238,8 @@ VPC SECURITY GROUPS:
   if request is allowed, then response is automatically allowed 
   no explicit deny, only allow or implicit deny by not allowing:
   can't block specific bad actors
-  support IP/CIDR rules and logical resource references, which includes other security groups and itself, both help scale, you could use self reference to allow intra app communication: 
+  support IP/CIDR rules and logical resource references, which includes other security groups and itself, both help scale, you could use self reference to allow intra app communication:
+  allows access at instance level: 
   attached to ENI's, network interfaces, not instances
 
 -----------------------------------------------------------------------------------------------:
@@ -1270,7 +1275,7 @@ VIRTUALIZATION 101:
     user mode and privileged mode
     application needs to make calls to OS(kernel)(privileged state) that makes calls to hardware, apps cannot make system calls directly to hardware:
 
-  allows multiple privileged programs(os) to make calls to hardware:
+  virtualization allows multiple os to make calls to hardware:
   emulated virtualization:
    host os, which runs in privileged mode, has hypervisor, means it has knowledge of the different guest os and can allow privileges 
   virtual machine:
@@ -1429,7 +1434,7 @@ EBS VOLUME TYPES HARD DISK DRIVE (HDD) -BASED:
 
 -----------------------------------------------------------------------------------------------:
 INSTANCE STORE VOLUMES:
-  provide block storage devices:
+  provide block storage:
   physically connected to one EC2 host:
   instances on that host can access them:
   highest storage performance in aws by much higher levels:
@@ -1439,8 +1444,8 @@ INSTANCE STORE VOLUMES:
     EXAM:
       local on ec2 host
       add at launch only
-      data lost on instance move, resize, or hardware failure, but not on restart (instance stays on same host):
-      data lost when ec2 stops and starts because aws allocates new host:
+      data lost on instance move, resize, hardware failure, or when ec2 stops and starts because aws allocates new host: 
+      data not lost on restart (instance stays on same host):
       price included in instance:
       temporary data
 
@@ -1451,7 +1456,7 @@ CHOOSING BETWEEN INSTANCE STORE AND EBS:
   depends: when you need resilience and app supports in built replication of data, instance stores are an option because you can have many ec2 instances with instance store to provide the resilience and the data is persisted within app
   depends: high performance needs
     RAID0 + EBS: max number of IOPS per instance is 260,000 IOPS, used by combination of high number of volumes and efficient architecture
-  instance store: super high performance needs, more than 260,000 IOPS in millions:
+  instance store: super high performance needs, more than 260,000 IOPS to millions:
   instance store: when cost is a primary concern:
 
 -----------------------------------------------------------------------------------------------:
@@ -1516,9 +1521,9 @@ NETWORK INTERFACES, INSTANCE IPS, AND DNS:
 
 -----------------------------------------------------------------------------------------------:
 AMI, Amazon Machine Image:
+  template of an instance configuration that allows us to provision instances:
   images that help us launch ec2 instance
-  it is template of an instance configuration and then use that template to provision instances using that configuration:
-  you can create an AMI from an ec2 instance you want to template:
+  you can create an AMI from an ec2 instance you want to template
   aws, community provided (marketplace), or you can create your custom AMI
   regional so unique id provided per region
   has permissions:
@@ -1532,7 +1537,7 @@ AMI, Amazon Machine Image:
     AMI Baking = creating an AMI from a configured instance + application:
     An AMI can't be edited, you have to create a new one
     can be copied between regions:
-    permissions by default allow your account only to access:
+    permissions by default allow only your account to access:
 
 -----------------------------------------------------------------------------------------------:
 EC2 PURCHASE OPTIONS (LAUNCH TYPES):
@@ -1573,8 +1578,6 @@ EC2 PURCHASE OPTIONS (LAUNCH TYPES):
     Convertible Reserved:
       allow you to exchange for another convertible reserved instance of a different instance family, OS types, and tenancies:
       
-
-
   DEDICATED:
     Dedicated Hosts:
       hosts that are allocated to you entirely:
@@ -1619,9 +1622,9 @@ EC2 PURCHASE OPTIONS (LAUNCH TYPES):
 INSTANCE STATUS CHECKS AND AUTORECOVERY:
   2 status checks per instance:
     system status: 
-      things like loss of system power, ec2 host or service failures:
+      things like loss of system power, ec2 host or service failures
     instance status: 
-      things like corrupted file system, incorrect instance networking, os kernel:
+      things like corrupted file system, incorrect instance networking, os kernel
   autorecovery:
     allows you to automatically recover from failed status checks:
     moves instance to a new host, keeps same configs and reperforms status checks:
@@ -1675,7 +1678,7 @@ INSTANCE METADATA:
 *******************************************
 CONTAINERS:
 *******************************************
-problem with virtualization: 
+solve this problem with virtualization: 
   guest os consumes a lot of the available resources that's allocated to each virtual machine because same os is copied for each instance:
 containers:
   allows an application to run within an isolated environment:
@@ -1683,7 +1686,7 @@ containers:
   allows us to run many more applications on top of same hardware than when using virtualization, saves so much space and scales really well:
   portable, isolated, very consistent as they always run as expected:
   ports are exposed to the host and beyond
-  container engines are like shared guest os and the containers are memory for application and runtime environemnt: 
+  container engines are like shared guest os and the containers are memory for application and runtime environment: 
   application stacks can be multi container
   architecture:
     dockerfile: 
@@ -1703,12 +1706,10 @@ containers:
 ECS CONCEPTS, ELASTIC CONTAINER SERVICE:
   allows you to use containers running on infrastructure that aws partially or fully manages to reduce admin overhead of using docker container:
   clusters run in ec2 mode or fargate mode:
-    
     ec2 mode: 
       uses ec2 instances to run containers
     fargate mode: 
       serverless way of running docker containers
-
   ecs container engine maintains clusters
   ecs allows you to create cluster
   cluster: 
@@ -1719,23 +1720,22 @@ ECS CONCEPTS, ELASTIC CONTAINER SERVICE:
     represents a self contained application as a whole, contains one or more container definitions
     store resources used by application like cpu, memory, compatibility, task roles
   task role:
-    iam role the tasks can assume to interact with aws resources 
+    iam role the tasks can assume to interact with aws resources :
     task roles are BEST PRACTICE to give ecs containers permissions to access aws services and resources:
     store sensitive data in aws secrets manager or aws systems manager parameter store, and access via execution task role: 
   service definition: 
     defines a service, service is how for ecs we can define how we want task [definitions] to scale, or availability, resiliency, copies, capacity, etc
 
 -----------------------------------------------------------------------------------------------:
-EC2 MODE:
-  ecs management components: 
-    uses ec2 instances to run containers:
-    ecs cluster is created and runs within VPC, benefits from many AZs within region
-    auto scaling group helps provision instances
-    you generally manage ec2 instances (container host), availability, capacity:
-    ecs will handle tasks and service definitions:
+ECS EC2 MODE:
+  uses ec2 instances to run containers:
+  ecs cluster is created and runs within VPC, benefits from many AZs within region
+  auto scaling group helps provision instances
+  you generally manage ec2 instances (container host), availability, capacity:
+  ecs will handle tasks and service definitions:
 
 -----------------------------------------------------------------------------------------------:
-FARGATE MODE: 
+ECS FARGATE MODE: 
   serverless way of running docker containers:
   aws provides more management of overhead, manages Fargate shared infrastructure:
   each cluster runs on Fargate, and ecs tasks and services are injected into VPC and given ENI to access from VPC or public if vpc config allows:
@@ -1745,11 +1745,9 @@ FARGATE MODE:
 -----------------------------------------------------------------------------------------------:
 CHOOSING BETWEEN EC2 VS ECS EC2 MODE VS ECS FARGATE MODE:
   ec2: if you use containers already
-  ec2 mode: large workload, price conscious over effort
-  Fargate: large workload, overhead conscious
-  Fargate: small/burst workloads
-  Fargate: batch/periodic workloads
-  Fargate: low admin overhead
+  ec2 mode: large workload, price conscious over effort(higher admin overhead)
+  Fargate: large workload, low admin overhead
+  Fargate: small/burst/batch/periodic workloads
   
 -----------------------------------------------------------------------------------------------:
 ECR, ELASTIC CONTAINER REGISTRY:
@@ -1810,7 +1808,7 @@ ADVANCED EC2:
   bootstrapping:
     process of running scripts or other configurations when an instance is first launched:
     allows ec2 build automation once launched
-    enabled via user data, accessed via the meta-data IP + /latest/user-data :
+    enabled via user data, accessed via 169.254.169.254/latest/user-data :
     anything in user data is executed by the instance OS:
     ec2 doesn't interpret, it passes the data blindly, the os needs to understand the user data and execute, 
     can be done in UI when launching ec2 instance or you can bootstrap via including user data inside cloudformation template that launches ec2 instance:
@@ -1834,7 +1832,7 @@ ADVANCED EC2:
 -----------------------------------------------------------------------------------------------:
 ENHANCED BOOTSTRAPPING WITH CFN-INIT:
   allows you to pass complex bootstrapping instructions into ec2 instance, much more complex than user data instructions:
-  more powerful, tells ec2 desired state rather than procedural script like user data and also can run more than once, ex watching for updates to metadata then performing update:
+  more powerful because it tells ec2 desired state rather than procedural script like user data and also can run more than once, ex watching for updates to metadata then performing update:
   cfn-init: 
     helper script installed on ec2 os: 
     simple configuration management system that tells ec2 desired state, then ec2 performs functionality required to do so
@@ -1847,7 +1845,7 @@ ENHANCED BOOTSTRAPPING WITH CFN-INIT:
 
 -----------------------------------------------------------------------------------------------:
 EC2 INSTANCE ROLES:
-  roles that an instance can assume and anything running within instance, like CLI :
+  roles that an instance can assume and anything running within instance assumes, like CLI :
   should always be used rather than adding access keys into instance:
   InstanceProfile: 
     wrapper around an IAM role that allows permissions to get inside of instance:
@@ -1862,10 +1860,10 @@ SSM PARAMETER STORE:
   allows 3 different types of parameters: 
     String, StringList, SecureString:
     ex: license codes, database strings, full configs and passwords:
+  changes can create events:
   hierarchies and versioning
   plaintext and ciphertext, integrates with KMS to encrypt sensitive info and other services need access via IAM permissions 
   public parameters, like latest AMIs per region
-  changes can create events:
 
 -----------------------------------------------------------------------------------------------:
 SYSTEM AND APPLICATION LOGGING ON EC2:
@@ -1882,6 +1880,8 @@ SYSTEM AND APPLICATION LOGGING ON EC2:
 -----------------------------------------------------------------------------------------------:
 EC2 PLACEMENT GROUPS:
   placement groups allow you to influence placement of ec2 instance within AZ:
+
+  LEFT OFF HERE
   
   cluster: 
     pack instances close together:
@@ -2366,11 +2366,13 @@ AMAZON AURORA (provisioned) ARCHITECTURE:
     storage charges are gb per month consumer, and io cost per request
     100% db size in backups are included
   access method:
-    use endpoint, dns addresses which are used to connect to cluster, they have many available
-    cluster endpt: always points to primary instance
-    reader endpt: if there are replicas, will load balance reads amongst the replicas
-    custom endpts: point to specific subsets of instances within cluster
-    unique endpt: each primary and replica isntances have their own endpt, allows customization
+    use endpoint, dns addresses which are used to connect to cluster, they have many available and each primary and replica isntances have their own endpt, allows customization
+    cluster endpt: 
+      always points to primary instance:
+    reader endpt: 
+      if there are replicas, will load balance reads amongst the replicas:
+    custom endpts: 
+      point to specific subsets of instances within cluster, allows you to provide connections based on criteria other than read only or write-only capability of the DB instances:
 
 -----------------------------------------------------------------------------------------------:
 AURORA SERVERLESS:
@@ -2406,6 +2408,7 @@ AURORA PROVISIONED DB CLUSTERS (NOT SERVERLESS):
 AURORA GLOBAL DATABASE:
   allow you to create global level replication using aurora from a master region to up to 5 secondary aws regions:
   secondary clusters are read only, up to 16:
+  allows extremely good rp and rto:
   1s replication
   no impact on db performance
 
@@ -2641,16 +2644,21 @@ AUTO SCALING GROUPS:
   scaling policies: 
     automatically adjust the desired capacity between the min and max values based on metrics like cpu load:
     don't need scaling policies, they can have none
-    manual: you manually adjust the desired capacity
+    manual:
+      manually adjust the desired capacity
     scheduled:
       scale based on schedule, performs a scaling action at a certain time which states new minimum, maximum, and desired sizes:
-    dynamic: 
-        simple: simple if then adjustment
-        stepped: bigger +- based on difference, recommended by aws bc more flexible
-        target tracking: maintains a desired aggregate metric like keep cpu at 40%
-        scaling based on SQS queue: ApproximateNumberOfMessagesVisible, scale base on approximate number of messages visible
     predictive:
       scale based on prediction of workload, but diff from scheduled because all instances need to be homogenous:
+    dynamic (know all): 
+        simple: 
+          simple if then adjustment
+        stepped: 
+          bigger +- based on difference, recommended by aws bc more flexible
+        target tracking: 
+          maintains a desired aggregate metric like keep cpu at 40%
+        scaling based on SQS queue: 
+          ApproximateNumbe=OfMessagesVisible, scale base on approximate number of messages visible
   self healing:
     implements ec2 status checks:
       monitors health of ec2 instances, and if they do not pass status check, terminates the instance and provisions a new one:
@@ -2829,6 +2837,11 @@ LAMBDA FUNCTION PERMISSIONS:
     can only be changed via cli or api
 
 -----------------------------------------------------------------------------------------------:
+LAMBDA ENVIRONMENT VARIABLES:
+  are automatically encrypted by default with ksm default encryption key:
+  to have more control over the data, use your own key (encryption helper), to create, rotate, disable, and define access controls:
+
+-----------------------------------------------------------------------------------------------:
 LAMBDA NETWORKING MODES: 
   public and VPC networking 
   public:
@@ -2852,7 +2865,7 @@ LAMBDA LOGGING:
   metrics (invocations, success/failure, retries, latency): 
     cloudwatch
   distributed tracing: 
-    x-ray
+    x-ray:
 
 -----------------------------------------------------------------------------------------------:
 LAMBDA INVOCATIONS (need to know all lines):
@@ -3055,7 +3068,7 @@ SQS, SIMPLE QUEUE SERVICE:
   EXAM POWER UP: 
     REMEMBER SNS AND SQS FANOUT ARCHITECTURE SLIDE:
   visibilityTimeout: 
-    time period that a message is hidden after is it received.  If client (does not delete message or processing fails) after this time period is over, then message reappears back in the queue to be reprocessed:
+    time period that a message is hidden from queue after is it received from client.  If client (does not delete message or processing fails) after this time period is over, then message reappears back in the queue to be reprocessed:
   Dead Letter Queues (DLQ): 
     can be used for problem messages
   implementations:
@@ -3905,7 +3918,7 @@ WEB APPLICATION FIREWALL:
     EXAM: 
       designed to create a feedback loop between logs generated by WAF, Applications (Cloudfront, APIGateway, ALB), or ecosystem data to update WEBACL:
     Web ACL:
-      main unit of configuration within WAF, associated with resources:
+      main unit of configuration within WAF, associated with a set of resources:
       rule groups/rules: 
         allow different reactions to different types of traffic:
       EXAM: 
@@ -3920,6 +3933,7 @@ WEB APPLICATION FIREWALL:
         WCU max capacity 1500, but can raise ticket for more              
       rules:
         EXAM: 
+          each rule contains a statement that defines inspection criteria and an action to take if a web request meets that criteria:
           can match based on body(first 8192 bytes ONLY), origin country, IP, label, header, cookies, query parameter, URI path, query string, HTTP method:
           have a compute requirement based on their complexity:
           WEB ACL CAPACITY UNITS (WCU): 
@@ -3934,7 +3948,10 @@ WEB APPLICATION FIREWALL:
   price: 
     charged 5$ monthly per WEBACL
     charged 1$ monthly per rule
-    charged per requests per WEBACL, 0.60$/1 million    
+    charged per requests per WEBACL, 0.60$/1 million  
+
+  AWS FIREWALL MANAGER:
+    integrates with WAF to centrally and simplify defining your rules and resuse across all the web apps you wish to protect:
 
 -----------------------------------------------------------------------------------------------:
 AWS SHIELD 101:
