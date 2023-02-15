@@ -1361,7 +1361,6 @@ CONNECTING TO EC2 (KNOW ALL):
     not a valid way to log into linux ec2 instance:
     no need for ssh or bastion hosts, aws fully manages the process via secure tunnel:
 
-LEFT OFF HERE
 -----------------------------------------------------------------------------------------------:
 STORAGE REFRESHER:
   3 main categories of storage available in AWS:
@@ -1371,7 +1370,7 @@ STORAGE REFRESHER:
       ideal for applications that require low-level access to storage, such as databases, operating systems, and booting storage:
     file storage:
       presented as a file share. has structure. mountable. not bootable.:
-      can be accessed by servers and virtual machines using file protocols such as NFS or SMB:
+      can be accessed by servers and virtual machines using file protocols such as NFS(linux) or SMB(windows):
       ideal for applications that require shared access to files, such as file servers or content management systems:
     object storage:
       collection of objects.  no structure (flat). Not mountable.  Not bootable.:  
@@ -1458,12 +1457,12 @@ INSTANCE STORE VOLUMES:
 CHOOSING BETWEEN INSTANCE STORE AND EBS:
   EBS: persistant data :
   EBS: higher resilience :
-  EBS: storage isolated from instance lifecycle :
+  EBS: storage isolated from instance lifecycle
   depends: when you need resilience and app supports in built replication of data, instance stores are an option because you can have many ec2 instances with instance store to provide the resilience and the data is persisted within app
   depends: high performance needs
     RAID0 + EBS: max number of IOPS per instance is 260,000 IOPS, used by combination of high number of volumes and efficient architecture
   instance store: super high performance needs, more than 260,000 IOPS to millions:
-  instance store: when cost is a primary concern:
+  instance store: when cost is a primary concern because no cost for instance store:
 
 -----------------------------------------------------------------------------------------------:
 EBS SNAPSHOTS:
@@ -1494,29 +1493,29 @@ EBS SNAPSHOTS:
     each volume uses 1 unique DEK: 
     snapshots and future volumes use the same DEK:
     can't change a volume to not be encrypted once it's encrypted:
-    OS isn't aware of the encryption, no performance loss:
+    OS isn't aware of the encryption, so there is no performance loss:
 
 -----------------------------------------------------------------------------------------------:
 NETWORK INTERFACES, INSTANCE IPS, AND DNS:
   every ec2 instance has one network interface called the primary ENI (elastic network interface):
-  optionally, you can attach one or more secondary ENIs (everything needs to be in 1 AZ), only difference is that you can detach secondary ENIs and attach to diff instances:
+  An ENI can have its own network settings, including IP addresses, a MAC address, and a set of security group rules, which control the traffic that is allowed to and from the ENI:
+  optionally, you can attach one or more secondary ENIs (everything needs to be in 1 AZ), only difference between primary and secondary ENI is that you can detach secondary ENIs and attach to diff instances:
   on the eni:
     mac address
     primary ipv4 private ip
     0 or more, secondary IPs
-  0 or 1 public ipv4 address: 
-    hanges whenever instance is restarted because allocated new host
-  1 elastic ip per private ipv4 address: 
-    (elastic ips are like public ipv4 addresses but different bc normally you can only have 1 public address per interface while you can have many elastic ips 1 per private ipv4 address)
-  0 or more ipv6 addresses:
-  on the network interface:
-    security groups:
+    0 or 1 public ipv4 address: 
+      changes whenever instance is restarted because allocated new host
+    1 elastic ip per private ipv4 address: 
+      (elastic ips are like public ipv4 addresses but different bc normally you can only have 1 public address per interface while you can have many elastic ips 1 per private ipv4 address)
+    0 or more ipv6 addresses:
+    security groups
     source/destination check
 
   elastic ip addresses: 
+    replaces the public ipv4 address:
     elastic ips are like public ipv4 addresses but different bc normally you can only have 1 public address per interface while you can have many elastic ips bc 1 elastic ip is associated per private ipv4 address on primary interface or second interface:
     allocated to your aws account
-    replaces the public ipv4 address:
   EXAM POWER-UPS:
     EIPs have a cost if not associated with anything
     EIPs are per account, per region:
@@ -1549,7 +1548,7 @@ AMI, Amazon Machine Image:
 EC2 PURCHASE OPTIONS (LAUNCH TYPES):
   ON-DEMAND:
     instances of different sizes run on the same ec2 hosts, they are isolated but run on shared hardware:
-    per second billing while an instance is running.  also some resources like storage are always billed, regardless of instance state :
+    per second billing while an instance is running.  also some resources like disk are always billed, regardless of instance state :
     characteristics:
       predictable pricing, no upfront cost, no discounts:
       default:
@@ -1560,19 +1559,19 @@ EC2 PURCHASE OPTIONS (LAUNCH TYPES):
     implementation:
       customers set max price they are willing to pay.  if capacity is available and price aws is charging is lower than max price, they are allocated capacity.  However, once the price goes above the customers max price, the customers capacity is terminated:  
     characteristics:
-      never use spot for workloads which can't tolerate interruptions, good for anything which is stateless, anything which can be rerun:
+      never use spot for workloads which can't tolerate interruptions, good for anything which is stateless or anything which can be rerun:
       if you need burst capacity needs
       non time critical:
 
   RESERVED INSTANCES:
     Standard Reserved:
       committment for long term consumption of ec2 resources:
-      reduced or no per second price for corresponding on demand instance
       unused reservations are still billed:
+      reduced or no per second price for corresponding on demand instance
       can be regional or zonal reservation or neither
       commitments:
         1 year or 3 year terms:
-        no upfront, partial upfront, and all upfront.  first two reduce /sec fee, while last eliminates:
+        no upfront, partial upfront, and all upfront.  first two reduce /sec fee, while last eliminates
       characteristics:
         known usage, need consistent access to compute, long-term: 
 
@@ -1665,7 +1664,7 @@ HORIZONTAL VS VERTICAL SCALING:
     
 -----------------------------------------------------------------------------------------------:
 INSTANCE METADATA:
-  ec2 service provides data to instances:
+  ec2 service that provides data to instances:
   accessible inside all instances, anything running inside instance can query the metadata:
   no authentication nor encrypted, can and does get exposed:
   http://169.254.169.254/latest/meta-data/ is IP address to access instance metadata:
@@ -1734,7 +1733,7 @@ ECS CONCEPTS, ELASTIC CONTAINER SERVICE:
 
 -----------------------------------------------------------------------------------------------:
 ECS EC2 MODE:
-  uses ec2 instances to run containers:
+  uses ec2 instances to run containers (clusters):
   ecs cluster is created and runs within VPC, benefits from many AZs within region
   auto scaling group helps provision instances
   you generally manage ec2 instances (container host), availability, capacity:
@@ -1826,7 +1825,7 @@ ADVANCED EC2:
       user data can be modified when instance stopped
 
   Boot-time-to-service-time: 
-    the time period to provision ec2 instance and when instance is available to use:
+    the time period to provision ec2 instance and when instance is available to use
     generally takes minutes
     ami baking: 
       removes post launch time by putting configurations into AMI
@@ -1845,7 +1844,7 @@ ENHANCED BOOTSTRAPPING WITH CFN-INIT:
   aws::CloudFormation::Init: 
     where cfn-init configuration is stored in cfn template
   cfn CreationPolicy:
-    added to a logical resource inside a cfn template, does not allow resource to move into create complete status until cfn receives signal:
+    added to a logical resource inside a cfn template, it does not allow resource to move into create complete status until cfn receives signal:
   cfn Signals:
     allows ec2 to send confirmation signal to cfn stack if configuration was created successfully:
 
@@ -1873,11 +1872,10 @@ SSM PARAMETER STORE:
 
 -----------------------------------------------------------------------------------------------:
 SYSTEM AND APPLICATION LOGGING ON EC2:
-  system and application logs deal with capturing metrics from within os: 
   cloudwatch by default monitors external metrics:
-    network utilization, cpu utilization, disk performance, and disk reads and writes:
+    network utilization, cpu utilization, disk i/o (reads and writes) and disk i/o performance:
   Cloudwatch Agent (software) is required to capture:
-     system and application logs, configurations, permissions, memory utilization, disk swap utilization, disk space utilization, page file utilization:    
+     system and application logs (capturing metrics from within os), configurations, permissions, memory utilization, disk swap utilization, disk space utilization, page file utilization, and cpu usage:    
   agent configuration: 
     configures which logs and metrics we want to capture
   permissions: 
@@ -1907,7 +1905,7 @@ EC2 PLACEMENT GROUPS:
     use cases: 
       small number of critical instances that need to be kept separated from each other:
 
-  partion: 
+  partion (spread + cluster): 
     like a spread placement group but a little different because you still have 7 max partitions per AZ, HOWEVER some of the instances can be in same partition whereas in spread they are all separated, so this means more than 7 instances are able to be put into a single AZ:
     placement is done by you or aws:
     use cases: 
@@ -1925,7 +1923,7 @@ EC2 DEDICATED HOSTS:
     amazon RDS instances are not supported
     placement groups are not supported
     hosts can be shared with other organization accounts
-    basically remember there are features that are not supported on dedicated hosts:
+    basically remember there are some features that are not supported on dedicated hosts:
 
 -----------------------------------------------------------------------------------------------:
 ENHANCED NETWORKING AND EBS OPTIMIZED:
@@ -2065,7 +2063,7 @@ GEOPROXIMITY ROUTING:
   you define a record a region is created in via tag name or lat and long coordinates:
   bias: 
     + increases a regions size, and - descreases a regions size:
-
+LEFT OFF HERE
 -----------------------------------------------------------------------------------------------:
 INTEROPABILITY:
   R53 normally has 2 jobs, domain registrar and domain hosting:
