@@ -2063,7 +2063,7 @@ GEOPROXIMITY ROUTING:
   you define a record a region is created in via tag name or lat and long coordinates:
   bias: 
     + increases a regions size, and - descreases a regions size:
-LEFT OFF HERE
+
 -----------------------------------------------------------------------------------------------:
 INTEROPABILITY:
   R53 normally has 2 jobs, domain registrar and domain hosting:
@@ -2127,7 +2127,7 @@ DIFFERENT STYLES OF DATABASES (know all lines):
     ideal for analytics and reporting, or OLAP
   graph:
     relationships between things are formally defined and stored in the database as well as data
-    relationships aren't rerendered every time you make a query, different from relational database because those relationships are computed every time you make a query
+    relationships, they aren't rerendered every time you make a query, different from relational database because those relationships are computed every time you make a query
     nodes: 
       objects, can have key-value properties
     edges: 
@@ -2141,7 +2141,7 @@ ACID VS BASE:
     consistency: 
       every read to a database will receive the most recent write or it will get an error
     availability: 
-      every request will get a non error response but without the guarantee that it contains the most recent write
+      every read might get the most recent write but will not get an error
     partition tolerance: 
       the system can be made of multiple network partitions and system continues to operate even if there are a number of dropped messages or errors between these network nodes
   CAP theorem: 
@@ -2152,7 +2152,8 @@ ACID VS BASE:
     atomic: 
       all or no components of a transaction succeeds or fails, 
     consistent: 
-      transactions move the database from one valid state to another, nothing in between is allowed, 
+      enforces most recent write is received or error:
+      transactions move the database from one valid state to another, nothing in between is allowed, enforces most recent write is received or error 
     isolated: 
       transactions execute as if its the only one transacting, even if multiple transactions are occurring at once, 
     durable: 
@@ -2163,7 +2164,7 @@ ACID VS BASE:
   BASE: 
     focuses on availability:
       basically available: 
-        read and write operations are available as much as possible, without any consistency guarantees
+        read and write operations are available, without any consistency guarantees:
       soft state: 
         database doesn't enforce consistency, offloaded onto the application/user
       eventually consistent: 
@@ -2199,7 +2200,8 @@ RDS ARCHITECTURE:
   Amazon Aurora is a different product
   Managed service by aws, no access to OS or SSH access*, rds custom provides low level access
   EXAM: 
-    RDS subnet group: a list of subnets RDS can use for a given database instance or instances: 
+    RDS subnet group: 
+      a list of subnets RDS can use for a given database instance or instances: 
   EXAM: 
     each RDS instance can have 1+ databases:
   EXAM: 
@@ -2222,9 +2224,9 @@ RDS ARCHITECTURE:
 -----------------------------------------------------------------------------------------------:
 RDS ENHANCED MONITORING (KNOW ALL LINES):
   gathers metrics from an agent on the rds instance
-  different from default cloudwatch metrics cloudwatch gathers on rds because cloudwatch gathers metrics about CPU utilization from the hypervisor, 
-  useful when you want to see how different processes or threads on a DB instance use the CPU, more detail on cpu utilization
+  enhanced monitoring is useful when you want to see how different processes or threads on a DB instance use the CPU
   not enabled by default
+  provides more detail on cpu utilization than cloudwatch does by default because cloudwatch gathers metrics from the hypervisor, 
 
 -----------------------------------------------------------------------------------------------:
 RDS MultiAZ:
@@ -2255,6 +2257,7 @@ RDS MultiAZ:
     EXAM: 
       data is committed when data has been replicated to at least one reader:
       each instance has its own local storage:
+      readers have to be in same region as writer:
     cluster endpoint: 
       like a database CNAME in previous architecture, and points at the writer.  userd for reads, writes, and administration
     reader endpoint: 
@@ -2317,7 +2320,7 @@ RDS SECURITY:
     EXAM: 
       SSL/TLS (in transit) can be mandatory:
     EXAM: 
-      by default, encryption done via ebs volume encryption via KMS:
+      by default, encryption is done via ebs volume encryption via KMS:
       handled by host/ebs
       aws or Customer managed CMK generated DEKs (data encryption keys) which are used for encryption operations
       storage, logs, snapshots, and replicas are encrypted
@@ -2338,17 +2341,18 @@ RDS SECURITY:
 
 -----------------------------------------------------------------------------------------------:
 RDS CUSTOM:
-  fills gap between rds and you running a ec2 db engine and being able to access os
+  allows you to access OS so negates the need for running db on an ec2 instance:
   works for MSSQL and Oracle and can connect using SSH, RDP, and session manager:
-  allows you to access OS:
+  fills gap between rds and you running a ec2 db engine and being able to access os
 
 -----------------------------------------------------------------------------------------------:
-AMAZON AURORA (provisioned) ARCHITECTURE:
+AMAZON AURORA (provisioned) (provisioned db clusters) ARCHITECTURE:
   is a database engine officially part of RDS but its architecture is radically different than any of the other db engines
   key differences:
-    uses a cluster:
-    consists of a single primary instance + 0 or more replicas, provides benefits of both rds multi az and rds read replicas:
+    consists of a single primary instance + 0 or more replicas:
     can have a max of 15 replicas:
+    uses a cluster:
+    provides benefits of both rds multi az (restore on failure) and rds read replicas (readers and writers):
   storage:
     doesn't use local storage for the instances, instead uses shared cluster volume:
     storage has 6 replicas that spread across AZ, replicated automatically across az's:
@@ -2384,7 +2388,7 @@ AURORA SERVERLESS:
   provides a version of the aurora database product where you don't need to statically provision database instances of a certain size or need to manage those database instances
   aurora capcacity units (acus):
     represent a certain amount of compute and a corresponding amount of memory:
-    aurora serverless cluster has a min and max acu
+    aurora serverless cluster has a min and max acu:
     cluster adjusts based on load, can go to 0 and be paused after consecutive minutes of inactivity
   architecture:
     uses acus that are allocated from a shared warm pool used by aws, stateless, no local storage:
@@ -2400,19 +2404,11 @@ AURORA SERVERLESS:
       development and test databases
 
 -----------------------------------------------------------------------------------------------:
-AURORA PROVISIONED DB CLUSTERS (NOT SERVERLESS):
-  non-serverless version of aurora:
-  has all of the same features except that instead of a min and max, you set exact sizes and quantity of instances to provision:
-  use cases:
-    use when workload is consistent and predictable:
-
-
------------------------------------------------------------------------------------------------:
 AURORA GLOBAL DATABASE:
   allow you to create global level replication using aurora from a master region to up to 5 secondary aws regions:
   secondary clusters are read only, up to 16:
   allows extremely good rpo and rto:
-  1s replication
+  1s replication:
   no impact on db performance
 
 -----------------------------------------------------------------------------------------------:
@@ -2466,7 +2462,7 @@ DATABASE MIGRATION SERVICE (DMS):
       migrates existing data and replicates any ongoing changes from source to target:
     CDC only: 
       replicates only data changes: 
-  implements schema conversion tool: 
+  implements schema conversion tool (SCT): 
     used when db engines are not compatible:
     used when converting one database engine to another
     use for larger migrations
@@ -2500,7 +2496,7 @@ EFS, ELASTIC FILE SYSTEM:
 -----------------------------------------------------------------------------------------------:
 AWS BACKUP:
   fully managed data protection (backup/restore) service:
-  implements a wide range of products that perform central management: 
+  implements a wide range of products that perform central management of backups: 
     consolidate management into one place, across accounts and across regions:
   backup plans:
     frequency, window, lifecycle, vault, region copy
@@ -2571,7 +2567,7 @@ ELB ARCHITECTURE:
     configured to run in 2+ AZs:
     1+ elb nodes are placed into a subnet in each AZ and scale with load:
     a record: 
-      each elb is configured with an A record DNS name that resolves to the ELB nodes:
+      each elb is configured with an A record DNS name that resolves to the ELB node:
     need 8+ IPs per subnet and a /27 or larger subnet to allow for scale
   two different type of elb nodes:
     internet-facing: 
@@ -2604,7 +2600,7 @@ APPLICATION AND NETWORK LOAD BALANCER (ALB VS NLB):
           forward, redirect, fixed-response, authenticate-oidc, authenticate-cognito
   network load balancer:
     layer 4 load balancer, TCP, TLS, UDP, TCP_UDP:
-    SMTP, SSH, game servers, financial apps or apps that do not use http:
+    SMTP, SSH, game servers, apps that do not use http:
     no visibility or understanding of HTTP or HTTPS, no headers, no cookies, no session stickiness:
     really really really fast, 75% faster than ALBs:
     health checks just check icmp/tcp handshake, they do not provide application health checks:
@@ -2625,12 +2621,11 @@ LAUNCH CONFIGURATIONS AND LAUNCH TEMPLATES:
   allow you to define the configuration of an ec2 instance in advance:
   launch configs not editable, launch templates have versions:
   you can define anything you normally define instance type, storage and key pair, networking and security groups, userdata, IAM role
-  lauch templates provide newer features: 
-    they provide all of the features launch configurations provide and more, including T2/T3 unlimited, placement groups, capacity reservations, and elastic graphics:
   launch configurations have one purpose: 
     provide configuration of ec2 isntances of an auto scaling group:
   launch templates purpose: 
     same as launch configuration and also can be used to provision ec2 instances from the console UI or CLI:
+    also provide T2/T3 unlimited, placement groups, capacity reservations, and elastic graphics:
 
 -----------------------------------------------------------------------------------------------:
 AUTO SCALING GROUPS:
@@ -2699,14 +2694,14 @@ ASG LIFECYCLE HOOKS:
 
 -----------------------------------------------------------------------------------------------:
 ASG HEALTH CHECKS:
-  ASG can use ALB health checks rather than ec2 status checks but depend on situation as to which u might want to implement:
-  three different types: 
+  ASG can use ALB health checks rather than ec2 status checks:
+  three different types of health checks: 
     EC2(default), ALB(can be enabled), and custom :
     EC2 unhealthy:
-      stopping, stopped, terminated, shutting down, or impaired(not 2/2 status checks)
+      stopping, stopped, terminated, shutting down, or impaired(not 2/2 status checks):
     ELB healthy:
       running and passing ELB health check
-      they can be more application aware because has knowledge of layer 7 
+      they can be more application aware because has knowledge of layer 7:
     custom:
       instances marked healthy or unhealthy by an external system
       health check grace period: 
@@ -2717,7 +2712,7 @@ SSL OFFLOAD AND SESSION STICKINESS:
 3 ways an elb can handle secure connections: bridging, pass-through, or offload
   bridging mode:
     default mode of an application load balancer:
-    connection is terminated (DECRYPTED) on the ELB and needs a ssl certificate for the domain name the application uses:
+    connection is terminated (DECRYPTED) on the ELB and needs a ssl certificate for the domain name the application uses:it's a
     elb decrypts the http then routes to backend based on that http, but before connecting to backend it encrypts data and initiates a new ssl connection to backend instances.:
     1 or more clients makes 1 or more connections to a load balancer
     listener is configured for HTTPS
@@ -2754,7 +2749,7 @@ allows us to implement transparent security appliances in a scalable way:
   transparent security appliance: 
     allow to deploy, scale, and manage 3rd party virtual appliances such as firewalls, intrusion detection and prevention systems, and deep packet inspection systems that scans data after it leaves and before it enters the application instance:
   flow:
-    traffic source => GWLBE => GWLB => appliances => GWLB => GWLBE => aws destination: 
+    traffic source => GWLBE => GWLB => appliances => GWLB => GWLBE => aws destination 
     it combines a transparent network gateway (GWLB endpoint that is single entry and exit point for all traffic) that distributes traffic to GWLB that distributes traffic via a Geneve encapsulation tunnel to your 3rd party appliances on demand, and scales this load,
     then the appliances filter traffic, send back to GWLB, that sends back to GWLB endpt, who then sends to aws destination
 
@@ -2854,7 +2849,7 @@ LAMBDA NETWORKING MODES:
     default, can access public aws services and the public internet:
     best performance because no customer specific vpc networking is required
     lambda functions have no access to VPC based services unless public IPs are provided and security controls allow external access
-  VPC networking:
+  private:
     configured to run in private subnet, obey all of the vpc networking rules:
     vpc gateway endpts can provide access to public aws services from private subnet
     nat gateway and internet gateway are required to access public internet from public subnet
@@ -2887,7 +2882,7 @@ Three types of lambda invocations: synchronous, asynchronous, and event source m
     asynchronous communication, so not waiting for response
     EXAM:
      error handling: 
-      incoming events are placed in the queue before being sent to the actual fn, if the fn returns an error to lambda service then lambda will retry fn twice by default or keep event kept in the queue for a certain time period.  If either are reached, then you can have error sent to DLQ, or Lambda destinations
+      incoming events are placed in the lambda service queue before being sent to the actual fn, if the fn returns an error to lambda service then lambda will retry fn twice by default or keep event in the lambda service queue for a certain time period.  If either are reached, then you can have error sent to DLQ, or Lambda destinations
     EXAM:
      need to be idempotent: reprocessing a result should have the same end state
     EXAM:
@@ -3016,7 +3011,7 @@ API GATEWAY:
   allows you to create and manage APIs:
   sits between applications and integrations(services which provide the functionality of API gateway): 
     http endpts, lambda, step fns, sns, ddb:
-  highly available, scalable, handles authorization, transformations, throttling, caching, CORS, OpenAPI spec, direct integration, and more:
+  highly available, scalable, handles authorization, authentication, data transformations, throttling, caching, CORS, OpenAPI spec, direct integration, and more:
   HTTP APIs, REST APIs, and Websocket APIs:
   can connect to services/endpts in aws or on premises
   integrates with cloudwatch
@@ -3036,7 +3031,7 @@ API GATEWAY:
     private:
       accessible only within a VPC via interface endpt
   resource: 
-    abstract concept that allows you to expose something to be consumed by a client:
+    data that can be manipulated by an application, Resources are typically exposed by an API (application programming interface) or other interface that allows the application to interact with them.:
   stage:
     is a reference to a deployment, or snapshot.  Helps you manage and optimize a particular deployment. every time you make a change to your api, you must deploy to a stage for it to go live:
     each stage has its unique url as well as its own settings
@@ -3068,7 +3063,7 @@ SQS, SIMPLE QUEUE SERVICE:
   message queieng service that allows you to build loosely coupled systems:
   clients can send messages to queue, and other clients poll the queue:
   all sqs queues have enqueue timestamps (time when message is received) and retention period:
-  retention period can be from 1 minute to 14 days, messages are then automatically deleted:
+  retention period can be from 1 minute to 14 days, default 3 days, messages are then automatically deleted:
   can hold an unlimited number of messages:
   public, fully managed, highly available queues
   messages up to 256 kb in size, if you need bigger message you can store link inside queue
@@ -3117,7 +3112,7 @@ SQS DELAY QUEUES:
 
 -----------------------------------------------------------------------------------------------:
 SQS DEAD LETTER QUEUES:
-  help you handle reoccuring failures while processing messages which are within an SQS queue:
+  help you handle reoccuring failures when processing messages which are within an SQS queue:
   specifically you can analyze data being sent to DLQ, perform seperate processing, or testing:
   messages are automatically deleted from DLQ if retention period of DLQ > enqueue timestamp:
   each message contains a ReceiveCount, which is number of times it has entered queue
@@ -3264,7 +3259,7 @@ AMAZON MQ:
     EXAM: 
       no aws native integrations...delivers activeMQ product which you manage:
     EXAM: 
-      vpc based, not a public service, private networking required:
+      vpc based, not a public service, private networking is required:
 -----------------------------------------------------------------------------------------------:
 AMAZON APPFLOW:
   fully managed integration service:
@@ -3336,7 +3331,7 @@ CF TTL AND INVALIDATIONS:
     you can change TTL values, minimum TTL and maximum TTL,  for all or per object values:
     the minimum and maximum override a per object value if the per object value is not within the constraints
   EXAM: 
-    you can set custom per object TTL values via custom origin or S3 via object metadata:
+    you can set custom per object TTL values via object metadata:
     EXAM: Origin Header: cache-control max-age (seconds), 
     EXAM: Origin Header: cache-control s-maxage (seconds), 
     EXAM: Origin Header: Expires (Date and time)
@@ -3349,7 +3344,7 @@ CF TTL AND INVALIDATIONS:
 
 -----------------------------------------------------------------------------------------------:
 AWS CERTIFICATE MANAGER, ACM:
-  allows you to easily provision, deploy, manage, public or private certificates SSL/TLS certificates for use with aws services and your internal connected resources:
+  allows you to easily provision, deploy, manage, public or private SSL/TLS certificates for use with aws services and your internal connected resources:
   ACM lets you run a public or private CA, certificate authority
   Private CA: 
     applications need to trust your private CA
@@ -3372,8 +3367,8 @@ CLOUDFRONT AND SSL:
     SSL supported by default as long as you use *.cloudfront.net default domain name:
   to use SSL on custom domain name:
     verify ownership using a matching certificate, HTTPS optional:
-    EXAM: 
-      generate or import certificate in ACM in us-east-1:
+  EXAM: 
+    generate or import certificate in ACM in us-east-1:
   two SSL connections when using cloudfront:
     viewer protocol: 
       viewer and cloudfront:
@@ -3509,7 +3504,7 @@ EGRESS-ONLY INTERNET GATEWAY:
 
 -----------------------------------------------------------------------------------------------:
 VPC ENDPTS - GATEWAY endpt:
-  allows a private only resource within a VPC to access s3 or dynamodb:
+  allows a private only resource within a VPC to access dynamodb and s3:
   used in lieue of providing infrastructure like NAT:
   implemented via PrivateLink:
  
@@ -3663,9 +3658,9 @@ DIRECT CONNECT, DX:
 
 -----------------------------------------------------------------------------------------------:
 DX RESILIENCE AND HA:
+  see slide:
   multiple dx routers connect to multiple customer dx routers:
   provision several customer premises with routers:
-  see slide:
 
 -----------------------------------------------------------------------------------------------:
 TRANSIT GATEWAY, TGW:
@@ -3689,7 +3684,8 @@ STORAGE GATEWAY:
     helps with extensions of a data center into AWS, storage tiering, DR and replacement of backups systems:
     you keep your applications and migrate your on premise file share network to aws:
     small datasets at a time:
-    -----------------------------------------------------------------------------------------------:
+
+-----------------------------------------------------------------------------------------------:
 STORAGE GATEWAY- VOLUME:
   EXAM: 
     iSCSI raw block devices:
@@ -3697,19 +3693,16 @@ STORAGE GATEWAY- VOLUME:
     cached mode:
       EXAM: 
         main location for data is not on premises, rather in s3 in aws: 
-        has local cache that stores frequently accessed data:
+        on premise has local cache that stores frequently accessed data:
       EXAM: 
         allows data center extension:
     stored mode: 
       presents volumes over iSCSI to servers running on premises
-      local storage on storage gatweay VM is source of storage 
-      upload buffer asynchronously copies data to SG endpt in aws, data then sent to EBS snapshots:
+      source of storage is on premise storage:
+      upload buffer asynchronously copies data to SG endpt in aws, data then sent to EBS snapshots
       EXAM: 
-        great for full disk backups of servers:
-      EXAM: 
-        great for disaster recovery:
-      EXAM: 
-        doesn't improve datacenter capacity, storage gatweay VM is source of storage:
+        great for full disk backups of servers and for disaster recovery:
+        doesn't improve datacenter capacity, storage gatweay VM is source of storage
         32 volumes per gateway, 16TB per volume, 512TB per gateway
 -----------------------------------------------------------------------------------------------:
 STORAGE GATEWAY- TAPE (VTL, virtual tape library):
@@ -3794,7 +3787,7 @@ AWS DIRECTORY SERVICE:
       full microsoft AD DS running in AWS:
       primary running location in aws, resilient if the vpn fails:
       use case:
-        applications in aws which need MS AD DS, or you need to trust on premise AD DS:
+        applications in aws which need AD DS, or you need to trust on premise AD DS:
         optional direct connect or vpn connection set up between aws and on premises directory:
     AD connector:
       when you want to use only one aws service that requires you to implement AD service:
@@ -3804,9 +3797,9 @@ AWS DIRECTORY SERVICE:
 
 -----------------------------------------------------------------------------------------------: AWS DATASYNC:
   data transfer service to and from aws for large datasets:
+  think migration:
   helps with manual tasks of migrations, data processing transfers and then back out, archival/cost effective storage:
   designed to work at huge scale:
-  think migration:
   keeps metadata
   built in data validation
   features:
@@ -3841,7 +3834,7 @@ FSx FOR WINDOWS FILE SERVER:
   supports volume shadow copies (file level versioning)
   EXAM:
     VSS, user driven restores: 
-      allows user to restore files and folder:
+    allows user to restore files and folder:
     Native file system accessible over SMB:
     Windows permission model:
     supports DFS, distributed file system, way you natively scale out file systems in windows:
@@ -3932,7 +3925,7 @@ WEB APPLICATION FIREWALL:
   can protect both global and regional services:
   architecture:
     EXAM: 
-      designed to create a feedback loop between logs generated by WAF, Applications (Cloudfront, APIGateway, ALB), or ecosystem data to update WEBACL:
+      designed to create a feedback loop between logs generated by WAF, Applications (Cloudfront, APIGateway, ALB), or ecosystem data to update WEB ACL:
     Web ACL:
       main unit of configuration within WAF, associated with a set of resources:
       rule groups/rules: 
@@ -3971,9 +3964,8 @@ WEB APPLICATION FIREWALL:
 
 -----------------------------------------------------------------------------------------------:
 AWS NETWORK FIREWALL:
-  stateful, managed network firewall for your VPC that filters traffic at perimeter of your VPC
-  enable in VPC service
-
+  stateful, managed network firewall for your VPC that filters traffic at perimeter of your VPC:
+  enable in VPC service:
 
 -----------------------------------------------------------------------------------------------:
 AWS SHIELD 101:
@@ -4239,7 +4231,7 @@ NESTED STACKS AND CROSS REFERENCE STACKS:
         use only when everything is lifecycle linked: 
     
   CROSS STACK REFERENCES:
-    allow one stack to reference another:
+    allow one stack to reference another stacks outputs:
     EXAM: 
       outputs can be exported, making them visible from other stacks:
     EXAM: 
@@ -4250,7 +4242,7 @@ NESTED STACKS AND CROSS REFERENCE STACKS:
     export attribute: used to export the output of a stack to that region's export list
     Use case:
       EXAM: 
-        service oriented, different lifecycles, stack reuse:
+        service oriented, different lifecycles, stack outputs reuse:
 
 -----------------------------------------------------------------------------------------------:
 CLOUDFORMATION STACK SETS:
@@ -4400,7 +4392,7 @@ DYNAMODB OPERATIONS, CONSISTENCY, AND PERFORMANCE:
   scan operation:
     least efficient operation, but most flexible way to query data:
     consumes the capacity of every item in table:
-    allows you to scan range of attributes that are not partition key:
+    allows you to scan range for all attributes that are not partition key:
 
   consistency:
     deals with when data is read from database, is the data consistent with the most recent version of write:
@@ -4427,6 +4419,7 @@ DDB LOCAL SECONDARY INDEX AND GLOBAL SECONDARY INDEX, LSI, GSI:
       must be created with a table:
     EXAM: 
       shares the RCU and WCU with the table:
+      ensures strong consistency:
       indexes are sparse, capacity is only consumed on corresponding indexes
   GSI (GLOBAL SECONDARY INDEX):
     EXAM: 
@@ -4444,7 +4437,7 @@ DDB LOCAL SECONDARY INDEX AND GLOBAL SECONDARY INDEX, LSI, GSI:
 -----------------------------------------------------------------------------------------------:
 DYNAMODB STREAMS AND LAMBDA TRIGGERS (KNOW ALL):
   streams:
-    time ordered list of item changes in a db table
+    time ordered list of item changes in a ddb table
     24 hour rolling window
     enabled on a per table basis
     4 view types:
@@ -4532,11 +4525,10 @@ ELASTICACHE:
 
 -----------------------------------------------------------------------------------------------:
 REDSHIFT ARCHITECTURE:
-  allows OLAP products within AWS or on premises:
+  column based, petabyte scale, OLAP data warehousing product implemented in aws or on premises:
   server based, not serverless:
   sql like interface JDBC/ODBC connections:
   integrates with aws tooling like quicksight, firehose, and dms:
-  column based, petabyte scale, data warehousing product
   redshift spectrum:
     allows you to directly query s3 without loading it into redshift in advance
   federated query:
@@ -4662,7 +4654,7 @@ AMAZON TRANSCRIBE:
 
 -----------------------------------------------------------------------------------------------:
 AMAZON TRANSLATE:
-  allows you to perform language translation:
+  allows you to perform real time language translation:
   fast, high quality, affordable, and customizable 
   allows you to offer a multilingual user experience 
   commonly integrates with other services/apps/platforms
@@ -4738,7 +4730,8 @@ TUTORIAL DOJO PRACTICE EXAMS :
 *******************************************
 KNOW ALL LINES:
 AWS COMPUTE OPTIMIZER:
-  recommends optimal AWS resources for your workloads to reduce costs and improve performance by using machine learning to analyze historical utilization metrics
+  recommends optimal compute allocation:
+  reduces costs and improve performance by using machine learning to analyze historical utilization metrics
   generates recommendations for the following resources:
     ec2 instances, auto scaling groups, ebs volumes, and lambda functions
 
@@ -4750,7 +4743,7 @@ AMAZON MANAGED GRAFANA:
   use it together with amazon managed service for prometheus
 
 AWS APPLICATION MIGRATION SERVICE:
-  highly automated lift and shift solutions that helps replicate your on premises and/or cloud servers into your aws account
+  highly automated lift and shift solutions that helps migrate your on premises and/or cloud servers to serverless architecture on aws
   once your applications are running on aws, you can leverage aws services and capabilities to easily replatform or refactor applications
   different that datasynce or snowball because it migrates applications, not just raw data
 
@@ -4788,8 +4781,7 @@ IAM DB AUTHENTICATION:
   uses an authentication token 
 
 AURORA NATIVE FUNCTIONS OR STORED PROCEDURES:
-  you can invoke a lambda function from amazon aurora with a native function or a stored procedure
-  can capture data changes, for ex whenever a row in a table is modified in database
+  you can invoke a lambda function when data changes from amazon aurora with a native function or a stored procedure
   different from rds events because rds events can only capture operational events such as db instance events that deal with a db instance is created, modified, or deleted
 
 S3 ACCESS POINTS:
@@ -4803,7 +4795,7 @@ best way to track billing:
 AWS Budget:
   allows you to run custom actions if your budget thresholds are exceeded
 Cost and Usage report:
-  gives you breakdown of aws services
+  gives you breakdown of costs based on aws services
 
 AWS PROTON:
   allows you to deploy any serverless or container based application with increased efficiency, consistency, and control
