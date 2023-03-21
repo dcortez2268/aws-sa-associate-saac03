@@ -59,7 +59,7 @@ Encryption:
   ciphertext: 
     encrypted data
 
-  key: decrypts ciphertext, "password"
+  key: decrypts ciphertext, "password":
     different types: 
       symmetric key: 
         same key is used for both encryption and decryption processes:
@@ -82,9 +82,9 @@ Encryption:
 -----------------------------------------------------------------------------------------------:
 NETWORKING:
 
-  OSI 5 LAYER MODEL: 
+  OSI MODEL (7 layers): 
     networking stack, that includes seven software layers for transporting data:
-    layer x understands its layer and below, built on top of other layers:
+    layer x understands its layer and below, and is built on top of other layers:
     physical, data link, network, transport, session, presentation, application layers
     media layers: 
       how data is moved between point A and B
@@ -171,12 +171,12 @@ NETWORKING:
       User datagram Protocol, UDP:
 
     TCP/IP: 
-      TCP is layer 4 protocol running on top of IP, used in most of the important Application Layer protocols like HTTP, HTTPS, SSH, and so on, TCP is connection oriented protocol:
+      TCP is layer 4 protocol running on top of IP, used in most of the important Application Layer protocols like HTTP, HTTPS, SSH, FTP, and so on, TCP is connection oriented protocol:
       has source and destination ports, sequence number
       connection between random port on client and known port on the server, flags set up connection, makes error checking, ordering, and retransmission possible because everything is connection based
     UDP/IP: 
       used in same way as tcp:
-      faster (no overhead) but it is also less reliable:
+      faster because it does not have connection overhead but it is also less reliable:
 
 -----------------------------------------------------------------------------------------------:
 -----------------------------------------------------------------------------------------------:
@@ -239,7 +239,7 @@ SSL AND TLS, SECURE SOCKETS LAYER and TRANSPORT LAYER SECURITY:
   provide privacy and data integrity between client and server:
   both do the same thing but TLS is newer and more secure version:
 
-  allows identity verification two ways possible, but generally is client verifying server:
+  allows identity verification two ways possible, but generally client is verifying server:
   provides private communications that are encrypted first asymmetric and then symmetric:
   provides reliable connection, detects data alteration
 
@@ -283,11 +283,11 @@ Three Different Network Zones:
     nothing from the internet can access the VPC unless you allow it via public ip 
     on premise can access via AWS VPN or Direct Connect
     internet gateway: 
-      allows VPC service with public ip access to public internet: 
-      allows VPC service to be accessed via public internet by allocating public ip address: 
-      allows VPC service access to public aws service as long as data does not touch public internet at any point
       EXAM:
-        only allows public services within VPC to access outside VPC, does not work with private service so need to implement NAT gateway if you want private service inside vpc to access outside its VPC:
+        allows only public services within VPC to access outside VPC, does not work with private service.. so you need to implement NAT gateway in a public subnet if you want private service inside vpc to access outside its VPC:
+      allows VPC service with public ip address, access to the public internet
+      allows VPC service to be accessed via public internet, by allocating the service a public ip address
+      allows VPC service access to public aws service as long as data does not touch public internet at any point
 
 -----------------------------------------------------------------------------------------------:
 AWS GLOBAL INFRASTRUCTURE:
@@ -300,7 +300,7 @@ AWS GLOBAL INFRASTRUCTURE:
 
   edge locations: 
     allow us to cache content and lower latency: 
-    generally only have content distribution services: 
+    they generally only have content distribution services: 
 
   availability zone: 
     single data center or a collection of data centers within a region:
@@ -308,9 +308,9 @@ AWS GLOBAL INFRASTRUCTURE:
 
   service resilience:
     globally resilient: 
-      service operates globally with a single database and its data is replicated across several regions, is highly available because it is always available unless every single region fails, ex route53 and IAM:
+      service operates globally with a single database and its data is replicated across several regions, it is highly available because it is always available unless every single region fails, ex route53 and IAM:
     regionally resilient:
-      service that operates in a single region with one set of data per region.  replicates data across multiple availability zones within that region.:
+      service that operates in a single region with one set of data per region.  replicates data across multiple availability zones within that region, ex s3:
     AZ resilient:
       service that operates in a single availability zone, if availability zone fails then that service fails:
 
@@ -335,7 +335,7 @@ VIRTUAL PRIVATE CLOUD:
   Custom VPCs: 
     you can have many in 1 region:
     require you to configure everything end to end:
-    private by default
+    private by default:
 
 -----------------------------------------------------------------------------------------------:
 -----------------------------------------------------------------------------------------------:
@@ -352,7 +352,7 @@ EC2:
   resiliency: 
     AZ resilient:
   features:
-    different instance sizes and capabilities, you can set when you provision or some settings can be changed even after deployment:
+    different instance sizes and capabilities, you can set configs when you provision ec2 instance or some settings can be changed even after deployment:
     on demand billing, per second
   different types of storage: 
     many, including on host storage or Elastic Block Store, EBS
@@ -388,13 +388,16 @@ AMI:
       determines which volume is root volume and which volume is a data volume
 
 -----------------------------------------------------------------------------------------------:
-CONNECTING TO AN EC2:
+CONNECTING TO AN EC2 instance:
     EXAM: 
       since we have different OS available for instances, we connect to different ports based on the OS:
-        3389: Remote Desktop Protocol, windows instances: USES TCP PROTOCOL:
-        22: SSH Protocol, Linux instances: SSH USES TCP PROTOCOL
+        3389: Remote Desktop Protocol, windows instances: RDP USES TCP PROTOCOL:
+        22: SSH Protocol, Linux instances: SSH USES TCP PROTOCOL :
 
         20 and 21: FTP protocol , uses TCP:
+        80: HTTP, uses TCP:
+        443: HTTPS, uses TCP:
+
 
 -----------------------------------------------------------------------------------------------:
 -----------------------------------------------------------------------------------------------:
@@ -488,6 +491,8 @@ Cloudwatch:
       AWS Products, apps, on premises
     Events: 
       AWS services and schedules 
+    alarms:
+      takes an action based on a specific metric:
   Namespace:
     container for monitoring data
   metric:
@@ -496,8 +501,6 @@ Cloudwatch:
     measurement that contains time stamp and value
   dimension:
     separate datapoints for different things or perspectives with the same metric, ex one ec2 instance cpu utilization
-  alarms:
-    takes an action based on a specific metric:
 
 -----------------------------------------------------------------------------------------------:
 High Availability vs Fault Tolerance vs Disaster Recovery (KNOW ALL):
@@ -550,7 +553,7 @@ DNS Record Types (KNOW ALL):
   MX: 
     finds a mail server (SMTP) for a domain
   TXT: 
-    allow you to add arbitrary text to a domain allowing further functionality, in some cases used to prove domain ownership
+    allow you to add arbitrary text to a domain allowing further functionality, in some cases it it used to prove domain ownership
   TTL: 
     numerical value that can be set on DNS records, once a DNS record from zonefile is recovered by NS, records are cached on resolver server for TTL seconds, caching it so resolver server does not have to perform lookup again for TTL seconds
 
@@ -642,23 +645,23 @@ IAM ARNS:
 -----------------------------------------------------------------------------------------------:
 IAM Roles:
   roles allow users to temporarily assume permissions via policies:  
-  two types of policies:
+  if identity has access to role then temporary security credentials are made available that expire after a given amount of time:
+  each role has two policies:
     trust policy:
       controls which identities can assume that role:
       can ref identities in same or diff acount: 
-      if identity has access to role then temporary security credentials are made available that expire after a given amount of time:
     permissions policy:
       allows or denies permissions for aws resources and services in trust policy:
       sts:AssumeRole is policy given to access temporary security credentials and perform whatever permissions it was granted
   
   USE ROLES WHEN...:
-    generally used when an unknown number of users is uncertain:
-    use when a set of credentials are needed, bc we dont want to hard code into code or on service because it is security risk as well as problematic if we ever need to change or rotate keys (roles use temporary security credentials):
+    an unknown number of users is uncertain:
+    a set of credentials are needed, bc we dont want to hard code into code or on service because it is security risk as well as problematic if we ever need to change or rotate keys (roles use temporary security credentials):
     emergency or out of the usual situations
-    when you're adding aws into an existing corporate network, external accounts or external identities can't be used to interact with AWS directly, so instead assign the external identities a role for them to interact with aws:
-    users > 5000, use Web identity federation that uses roles:
-    give users from one account access to resources in another aws account via roles:
-    service linked roles:
+    you're adding aws into an existing corporate network, external accounts or external identities can't be used to interact with AWS directly, so instead assign the external identities a role for them to interact with aws:
+    users > 5000, use roles with Web identity federation:
+    you want to give users from one account access to resources in another aws account via roles:
+    you need service linked roles:
       Service roles are used to grant permissions to AWS services to access resources in your account:
       predefined by a service that provide permissions that a service needs to interact with other AWS services on your behalf, service might create or delete the role or allow you to during setup or within IAM
       you can't delete the role until it's no longer required!
@@ -710,6 +713,7 @@ CLOUDTRAIL:
   logs api actions which effect aws accounts:
   not realtime, there is a delay:
   by default, cloudtrail logs events from one region:
+  by default, log files are encrypted using sse-s3:
   cloudtrail event:
     logged api call/activity
   event history:
@@ -720,7 +724,7 @@ CLOUDTRAIL:
     management: 
       logs management operations performed on resource 
     data: 
-      logs the resource operations performed on or within a resource
+      logs the resource operations performed on or within a resource, very detailed, like server access logging however it logs both object level actions AND bucket actions:
     insight events: 
       logs any unusual activity, errors, or user behavior in your account:
   log file integrity validation feature:
@@ -762,13 +766,13 @@ AWS Control Tower:
     custom:
       generally used for testing and for account factory
   Account factory:
-    automates creating, updating, and deleting AWS accounts as your business needs them
-    changes based on templates and implements Cloudformation to provision 
+    automates creating, updating, and deleting AWS accounts as your business needs them:
+    changes based on templates and implements Cloudformation to provision
   automates: 
     account provisioning, identities with appropriate permissions, guardrails, account and network standard configurations, and can be fully integrated with a businesses SDLC
   other features:
     guard rails: 
-      detect and mandate rules/standards across all acounts
+      detect and mandate rules/standards across all acounts:
     rule categories:
       mandatory, strongly recommended, or elective
     preventative functional type of rule: 
@@ -794,11 +798,11 @@ S3:
       like identity policies, but are attached to resources instead of identities.  You are controlling who has access to that resource: 
       resource policies have principal field, whereas an identity policy does not have one because it is implied
     benefit:
-      allow/deny access to identities in same or DIFFERENT accounts (diff than identity policies):
-      allow/deny anonymous principals:
+      can allow/deny access to identities in same or DIFFERENT accounts (diff than identity policies):
+      can allow/deny anonymous principals:
 
   ACLS, Access Control Lists:
-    allow a way to provide security on objects and bucket, basically limited resource policies:
+    allow a way to provide security on objects and bucket, they are basically limited resource policies:
     aws recommends you do not use them and instead use bucket policies:
     inflexible and simple permissions because you cannot apply conditions like bucket policies and you cannot apply a certain ACL on a group of objects, you would need to apply several ACLs
 
@@ -919,16 +923,16 @@ DEKs, DATA ENCRYPTION KEYS:
   implementation:
     when DEK is created, KMS provides you with two versions of that key:
     plaintext version:
-      used to encrypt data then discarded:
+      used to encrypt data then discarded
     ciphertext version:
-      encrypted via KMS key:
+      encrypted via KMS key
       then the encrypted key is stored with encrypted data:
-      when decrypting, you send encrypted key to KMS, it decrypts it and then you decrypt data with the key and then discard key
+      when decrypting, you send encrypted key to KMS, it decrypts it and then you decrypt data with the key and then discard key:
 
 -----------------------------------------------------------------------------------------------:
 Key POLICIES AND SECURITY:
   key policy:
-    type of resource policy that has to explicitly grant permission to account owner access to KMS:
+    type of resource policy that has to explicitly grant permission to KMS:
     every key has one and primary way to control access to KMS keys:
     you cannot allow access via iam policy without key policy allowing access:
   typical way of accessing key:
@@ -955,18 +959,18 @@ S3 ENCRYPTION:
           ss encryption with customer provided keys:
           you manage the encryption keys and s3 manages the encryption:
         SSE-S3: 
-          ss encryption with s3 managed keys, uses AES256 encryption:
-          regularly rotates:
+          ss encryption with s3 managed keys, uses AES256 encryption (STRONGEST ENCRYPTION):
+          regularly rotates the keys:
         SSE-KMS: 
-          ss encryption with KMS keys stored in KMS, best: 
+          ss encryption with KMS managed keys, best: 
           seperate permissions for the use of a key that provides added protection against unauthorized access:
           provides audit trail:
 
   Bucket Default Encryption:
     allows you to set default encrytion method used if not specified on object level:
     you can set bucket default in the console at bucket level or you can set encryption at object level via header when uploading object
-    header x-amz-server-side-encryption:
-      header determines the encryption of object: 
+    header 'x-amz-server-side-encryption':
+     determines the encryption of object: 
 
 -----------------------------------------------------------------------------------------------:
 S3 OBJECT STORAGE CLASSES (KNOW ALL):
@@ -1015,6 +1019,7 @@ S3 LIFECYCLE POLICIES:
   transition actions: 
     change storage classes of objects after x amount of time:
     can only transition down classes:
+    before transitioning down to s3-ia, it must be in current storage class for 30 days:
   expiration actions: 
     can delete objects, or versions after x amount of time:
 
@@ -1054,12 +1059,12 @@ S3 REPLICATION:
 -----------------------------------------------------------------------------------------------:
 S3 PRESIGNED URLS:
   allow you to give an unauthenticated user access to an object inside an s3 bucket using generated credentials from an IAM user in a safe and secure way:
-  credentials are included in URL:
+  the credentials are included in URL:
   see slides for architectures
   used when offloading media and access to a private s3 bucket needs to be controlled and you don't want to run application servers to broker that access
   EXAM POWERUPS:
     you can create a URL for an object you have no access to, (which will also have no access lol)
-    when using the URL, the permissions match the identity's which generated it CURRENTLY, so if they change so do the URL's permissions:
+    when using the URL, the permissions match the identity's which generated it CURRENTLY, so if the identity's permissions change so do the URL's permissions:
     do not generate URL's with a role!  URL stops working when temporary credentials expire:
 
 -----------------------------------------------------------------------------------------------:
@@ -1085,7 +1090,7 @@ S3 EVENTS:
 
 -----------------------------------------------------------------------------------------------:
 S3 ACCESS LOGS:
-  Enable logging on source bucket and sends logs to target bucket:
+  Enables logging on source bucket and sends logs to target bucket:
   s3 log delivery group reads permissions you set, the bucket acl on target group allows access to s3 log delivery group
   use cases:
     security functions
@@ -1138,8 +1143,8 @@ VPC SIZING AND STRUCTURE:
 -----------------------------------------------------------------------------------------------:
 CUSTOM VPCS:
   regional service, operates from all of the AZs in that region:
+  by default allow nothing IN or OUT without explicit configuration:
   allows you to create isolated networks
-  allow nothing IN or OUT without explicit configuration:
   flexible configuration, simple or multi-tier
   hybrid networking to other cloud and on premises
   default or dedicated tenancy, allows resources created inside VPC to be provisioned on shared or dedicated hardware
@@ -1161,7 +1166,7 @@ CUSTOM VPCS:
 VPC subnets:
   a subnetwork of a VPC, within a particular AZ:
   1 subnet can have only one AZ, one AZ can have zero to many subnets:
-  subnets can communicate with other subnets in the VPC with proper configurations:
+  subnets can communicate with other subnets in the VPC with proper configurations, (NACLS or route tables):
   AZ resilient: 
   allow you to add structure, functionality, and resilience to VPCs
   ipv4 CIDR is a subset of the VPC CIDR, and cannot overlap with any other subnets within VPC
@@ -1193,7 +1198,7 @@ VPC ROUTING AND INTERNET GATEWAY:
     Runs from within AWS Public zone, or "border between public zone and VPC"
     Gateways traffic between the VPC and internet or between VPC and public aws zone
     Managed by aws for performance
-    only allows public services to access outside VPC, does not work with private service so need to implement with NAT gateway if you want private service inside vpc to access outside its VPC:
+    allows only public services to access outside VPC, it does not work with private services so you need to implement with NAT gateway if you want private service inside vpc to access outside its VPC:
       maintains mappings of ipv4 public addresses for private instances within VPC:
         instances that have ipv4 addressing enabled, have only private ipv4 address
         the igw maintains a public ipv4 address mapping to private ip address
@@ -1205,7 +1210,7 @@ VPC ROUTING AND INTERNET GATEWAY:
 -----------------------------------------------------------------------------------------------:
 VPC ROUTER:
   routes traffic between subnets:
-  every vpc has a vpc router, highly available:
+  every vpc has a vpc router, it is highly available:
   in every subnet, the router uses network+1 address
   controlled by route tables, each subnet has one only
   a VPC has a main route table, it is default table for subnet if there hasn't been an explicit association with custom table, when subnet does get associated with custom table the main route table is dissasociated:
@@ -1231,7 +1236,7 @@ STATEFUL VS STATELESS FIREWALLS:
       need rule for each request/response, 2 total:
       request is always to well known port, and response is always to ephemeral port and since it does not have state, you have to allow traffic to all ephemeral ports
     stateful firewall:
-      recognize connection and treats each request/response as 1 rule, 1 total rule allows/denies request and response is automatically allowed/denied:
+      recognizes connection and treats each request/response as 1 rule, 1 total rule allows/denies request and response is automatically allowed/denied:
       lower admin overhead
 
 -----------------------------------------------------------------------------------------------:
@@ -1252,11 +1257,11 @@ VPC SECURITY GROUPS:
   associated with individual resources and control traffic in and out of those resources:
   are attached to individual EC2 instances, network interfaces, or load balancers and control traffic in and out of these:
   no explicit deny, only allow or implicit deny by not allowing:
+  by default, provides outbound rule that allows all traffic, not inbound though:
   rules are evaluated starting with lowest number rule.  as soon as a rule matches traffic, it's applied immediately regardless of any other rule that may contradict it:
   if request is allowed, then response is automatically allowed 
   can't block specific bad actors
   support IP/CIDR rules and logical resource references, which includes other security groups and itself, both help scale, you could use self reference to allow intra app communication:
-  by default, provides outbound rule that allows all traffic, not inbound though:
 
 -----------------------------------------------------------------------------------------------:
 NETWORK ADDRESS TRANSLATION, NAT, AND NAT GATEWAYS:
@@ -1271,7 +1276,7 @@ NETWORK ADDRESS TRANSLATION, NAT, AND NAT GATEWAYS:
       allows private services in private subnet to access internet gateway:
       provision nat gateway into public subnet with route table, diff route table for private subnet, so that packets sent from private service go to nat gateway, then get sent to internet gateway:
       uses elastic IP (static ipv4 public address)
-      az resilient service, deploy a nat gateway in each az for region resilience:
+      az resilient service, so deploy a nat gateway in each az for region resilience:
       2 charges, one per hour and another per gb of data consumed
     nat instance:
       implementing ec2 instance as NAT gateway, not really all that important to know because nat gateways are mostly used, however for exam know that if you do implement nat instance, you need to disable source/destination checks:
@@ -1289,13 +1294,13 @@ VIRTUALIZATION 101:
   virtualization: 
     process of running more than one operating system on a piece of physical hardware or server:
     user mode and privileged mode
-    application needs to make calls to OS(kernel)(privileged state) that makes calls to hardware, apps cannot make system calls directly to hardware:
+    application needs to make calls to OS(kernel)(privileged state) that makes calls to hardware because apps cannot make system calls directly to hardware:
 
   virtualization allows multiple os to make calls to hardware:
   emulated virtualization:
    host os, which runs in privileged mode, has hypervisor, means it has knowledge of the different guest os and can allow privileges 
   virtual machine:
-    container that contains applications and guest operating system, logical hardware is allocated by hypervisor which has access to physical hardware
+    container that contains applications and guest operating system, logical hardware is allocated by hypervisor which has access to physical hardware:
   binary translation:
     guest os not modified, whenever the virtual machine makes call to physical hardware, the hypervisor steps in and makes the call to physical hardware
   Para-virtualization:
@@ -1324,8 +1329,8 @@ EC2 ARCHITECTURE AND RESILIENCE:
     recommended for quickly accessible data, running a database on an instance, long term data storage
   ec2 instances remain on same host unless host fails or host is stopped and started:
   use cases:
-    tends to be default compute service within aws:
-    long-running compute needs:
+    tends to be the default compute service within aws:
+    long-running compute needs > 15 minutes:
     when you've got a traditional os+application compute
     server style applications, that are waiting for incoming connections
     either bursts or steady state load requirements
@@ -1370,7 +1375,7 @@ CONNECTING TO EC2 (KNOW ALL):
     using the GUI can only connect to public ec2 instances, can connect to private using CLI
   ec2 ssh client:
     standard way to connect to linux instances via SSH:
-    need to manage ssh access key:
+    you need to manage ssh access key:
   session manager:
     lets you manage instances via interactive one click browser based shell or through aws cli:
     not a valid way to log into linux ec2 instance:
@@ -1408,7 +1413,7 @@ EBS, ELASTIC BLOCK STORE:
   provides block storage that can be encrypted using KMS:
   instances see block device and create file system on this device
   provisioned in one az, resilient in that AZ:
-  attached to one ec2 instance over a storage network, or multiple but have to be in same AZ:
+  attached to one ec2 instance over a storage network, (or multiple with multi attach feature but have to be in same AZ):
   persistent, they can be detached and reattached to same or different instances:
   you can perform backups, or snapshots, of data into s3.  You can migrate the data and create volumes from that snapshot:  
   can be provisioned with different physical storage types, different sizes, and different performance profiles
@@ -1418,8 +1423,8 @@ EBS, ELASTIC BLOCK STORE:
 EBS VOLUME TYPES: 
 
 GENERAL PURPOSE SSD:
-  up to 16000 IOPS per volume:
   GP2:
+    up to 16000 IOPS per volume:
     default general purpose ssd storage:
     high performance storage for fairly low price
     can be as small as 1GB or as large as 16TB
@@ -1452,7 +1457,7 @@ HARD DISK DRIVE (HDD) -BASED, (MAGNETIC VOLUMES):
   st1:
     fast hard drive, not agile
     sequentially accessed data
-    throughput optimed:
+    throughput optimized:
   sc1:
     cold HDD
     designed for infrequently accessed workloads where cheaper storage is priority:
@@ -1467,11 +1472,11 @@ INSTANCE STORE VOLUMES:
   highest storage performance in aws by much higher levels:
   included in instance price
   attached at launch of ec2 instance:
-  number of and size of instance store volumes depend on type of instance:
+  number of and size of instance store volumes depends on type of instance:
     EXAM:
       local on ec2 host
       add at launch only
-      data lost on instance move, resize, hardware failure, or when ec2 stops and starts because aws allocates new host: 
+      data is lost on instance move, resize, hardware failure, or when ec2 stops and starts because aws allocates new host: 
       data not lost on restart (instance stays on same host):
       price included in instance:
       temporary data
@@ -1481,17 +1486,18 @@ CHOOSING BETWEEN INSTANCE STORE AND EBS:
   EBS: higher resilience :
   EBS: storage isolated from instance lifecycle
   depends: when you need resilience and app supports in built replication of data, instance stores are an option because you can have many ec2 instances with instance store to provide the resilience and the data is persisted within app
-  depends: high performance needs
+  depends: high performance needs:
     RAID0 + EBS: enables you to improve your storage volumes' performance:
   instance store: super high performance needs, more than 260,000 IOPS to millions:
   instance store: when cost is a primary concern because no cost for instance store:
 
 -----------------------------------------------------------------------------------------------:
 EBS SNAPSHOTS:
-  incremental volume copies to s3, improves az resilience to region resilient:
+  incremental volume copies to s3, improves az resilience to region resilience:
   the first is a full copy of data on the volume, future snaps are incremental:
   volumes can be created or restored from snapshots, and can be copied to another region :
   billing: GB/month of used data, not allocated data:
+  ebs volumes can be written to or read from while snapshot is in progress:
 
   when you create new EBS volume w/out snapshot: 
     full performance immediately
@@ -1511,7 +1517,7 @@ EBS SNAPSHOTS:
     Whenever wanting to read/write data, the volume makes request to KMS, KMS sends response with decrypted DEK key which is stored on the ec2 host and is used to encrypt and decrypt data stored on instance volume.  Whenever instance moves hosts, the key is discared
     Instance retains encrypted DEK key, and whenever wanting to read/write data repeats step 2.  same implementation for snapshots. 
   EXAM POWER-UP:
-    accounts can be set to encrypt ebs volumes by default, you can set a default KMS key or choose a custom KMS key to use:
+    accounts can be set to encrypt ebs volumes.. you can set a default KMS key or choose a custom KMS key to use:
     each volume uses 1 unique DEK: 
     snapshots and future volumes use the same DEK:
     can't change a volume to not be encrypted once it's encrypted:
@@ -1520,7 +1526,11 @@ EBS SNAPSHOTS:
 -----------------------------------------------------------------------------------------------:
 NETWORK INTERFACES, INSTANCE IPS, AND DNS:
   every ec2 instance has one network interface called the primary ENI (elastic network interface):
-  An ENI can have its own network settings, including IP addresses, a MAC address, and a set of security group rules, which control the traffic that is allowed to and from the ENI:
+  An Elastic Network Interface (ENI) is a virtual network interface that you can attach to an instance in a Virtual Private Cloud (VPC). You can use ENIs to create network interfaces for an instance in a VPC, which can allow that instance to communicate with other instances or resources in the VPC or outside of it.
+  You can attach an ENI to:
+    EC2 instances, AWS Lambda functions, Elastic Network Adapters for VMWare Cloud on AWS, and Network Load Balancers.:
+  
+  An ENI can have its own network settings, including IP addresses, a MAC address, and a set of security group rules:
   optionally, you can attach one or more secondary ENIs (everything needs to be in 1 AZ), only difference between primary and secondary ENI is that you can detach secondary ENIs and attach to diff instances:
   on the eni:
     mac address
@@ -1560,8 +1570,8 @@ AMI, Amazon Machine Image:
     create image: create an ami with ec2 default configs + your customization, contains permissions and block device mapping, which references the snapshots created of ebs volumes 
     launch: new instance is launched with resources and configs, snapshots are used to create corresponding ebs volumes in region
   EXAM POWER-UPS:
-    AMI = one region, only works in that one region:
-    AMI Baking = creating an AMI from a configured instance + application:
+    AMI = one region, it only works in that one region:
+    AMI Baking is creating an AMI from a configured instance + application:
     An AMI can't be edited, you have to create a new one
     can be copied between regions:
     permissions by default allow only your account to access:
@@ -1573,7 +1583,7 @@ EC2 PURCHASE OPTIONS (LAUNCH TYPES):
     per second billing while an instance is running.  also some resources like disk are always billed, regardless of instance state :
     characteristics:
       predictable pricing, no upfront cost, no discounts:
-      default:
+      default purchase option:
       good for short term, unknown workloads, and apps which can't be interrupted:
 
   SPOT:
@@ -1588,7 +1598,7 @@ EC2 PURCHASE OPTIONS (LAUNCH TYPES):
   RESERVED INSTANCES:
     Standard Reserved:
       committment for long term consumption of ec2 resources:
-      unused reservations are still billed, you can try to resell on reserved instance marketplace:
+      unused reservations are still billed, you can try to resell on reserved instance marketplace if you need to:
       reduced or no per second price for corresponding on demand instance
       can be regional or zonal reservation or neither
       commitments:
@@ -1609,7 +1619,7 @@ EC2 PURCHASE OPTIONS (LAUNCH TYPES):
     Dedicated Hosts:
       hosts that are allocated to you entirely:
       you pay for the host, no instance charges:
-      characteristics:
+      use cases:
         host affinity, links instances to hosts
         socket and core licensing requirements
         when you have strict regulatory or data requirements:
@@ -1618,7 +1628,7 @@ EC2 PURCHASE OPTIONS (LAUNCH TYPES):
       instances that are allocated to you entirely:
       host is not shared between you and other customers:
       you do not pay for host, pay for flat hourly charge and for dedicated instances themselves: 
-      characteristics:
+      use cases:
         when you have strict regulatory or data requirements:
 
   CAPACITY RESERVATIONS:
@@ -1648,9 +1658,9 @@ EC2 PURCHASE OPTIONS (LAUNCH TYPES):
 -----------------------------------------------------------------------------------------------:
 INSTANCE STATUS CHECKS AND AUTORECOVERY:
   2 status checks per instance:
-    system status: 
+    system status(host check): 
       things like loss of system power, ec2 host or service failures
-    instance status: 
+    instance status(instance check): 
       things like corrupted file system, incorrect instance networking, os kernel
   autorecovery:
     allows you to automatically recover from failed status checks:
@@ -1705,7 +1715,7 @@ INSTANCE METADATA:
 *******************************************
 CONTAINERS:
 *******************************************
-solve this problem with virtualization: 
+solve the problem with virtualization: 
   guest os consumes a lot of the available resources that's allocated to each virtual machine because same os is copied for each instance:
 containers:
   allows an application to run within an isolated environment:
@@ -1772,7 +1782,7 @@ ECS FARGATE MODE:
 -----------------------------------------------------------------------------------------------:
 CHOOSING BETWEEN EC2 VS ECS EC2 MODE VS ECS FARGATE MODE:
   ec2: if you use containers already
-  ec2 mode: large workload, price conscious over effort(higher admin overhead)
+  ec2 mode: large workload, higher overhead but less cost
   Fargate: large workload, low admin overhead
   Fargate: small/burst/batch/periodic workloads
   
@@ -1817,6 +1827,8 @@ ELASTIC KUBERNETES SERVICE, EKS:
   aws managed kubernetes, open source and cloud agnostic(you can move to any cloud):
   it can run on aws, outposts, eks anywhere, or eks distro:
   control plane scales and runs on multiple AZs:
+  aws iam authenticator for kubernetes:
+    allows access to your cluster using IAM and gets its config info from aws-auth ConfigMap:
   integrates with AWS services like ECR, ELB, IAM, VPC
   eks cluster: eks control plane and eks nodes
   etcd: distributd across multiple AZs
@@ -1838,7 +1850,7 @@ ADVANCED EC2:
     enabled via user data, accessed via 169.254.169.254/latest/user-data :
     anything in user data is executed by the instance OS:
     ec2 doesn't interpret, it passes the data blindly, the os needs to understand the user data and execute, 
-    can be done in UI when launching ec2 instance or you can bootstrap via including user data inside cloudformation template that launches ec2 instance:
+    can be done in UI by editing user data field when launching ec2 instance or you can bootstrap via including user data inside cloudformation template that launches ec2 instance:
   architecture:
     ec2 bootstrapping slide
     key points:
@@ -1854,11 +1866,11 @@ ADVANCED EC2:
     post launch time:
       configuring the instance after launch before it is available for service
     optimal way:
-      ami bake in the installation part, and bootstrap the final configurations:
+      ami baking in the installation part, and bootstrapping the final configurations:
 
 -----------------------------------------------------------------------------------------------:
 ENHANCED BOOTSTRAPPING WITH CFN-INIT:
-  allows you to pass complex bootstrapping instructions into ec2 instance, much more complex than user data instructions:
+  allows you to pass complex bootstrapping instructions into ec2 instance, it is much more complex than user data instructions:
   more powerful because it tells ec2 desired state rather than procedural script like user data and also can run more than once, ex watching for updates to metadata then performing update:
   cfn-init: 
     helper script installed on ec2 os: 
@@ -1904,7 +1916,7 @@ SYSTEM AND APPLICATION LOGGING ON EC2:
      two types:
         unified cloudwatch agent:
           recommended:
-          enables collection of logs and metrics with one agent, also from servers running windows server, and automatically pushes data to cloudwatch logs:
+          enables collection of logs and metrics with one agent, also collects logs from servers running windows server, and automatically pushes data to cloudwatch logs:
         cloudwatch agent:  
   agent configuration: 
     configures which logs and metrics we want to capture
@@ -1930,7 +1942,7 @@ EC2 PLACEMENT GROUPS:
     ensure maximum availability and resiliency:
     can span AZs:
     esch instance has its own isolated networking and power supply from other instances
-    limit of 7 instances per AZ, (1 in each partition), placement is done by aws:
+    limit of 7 instances per AZ, (1 in each partition of AZ), placement is done by aws:
     not supported for dedicated instances or hosts
     use cases: 
       small number of critical instances that need to be kept separated from each other:
@@ -1956,7 +1968,7 @@ EC2 DEDICATED HOSTS:
     basically remember there are some features that are not supported on dedicated hosts:
 
 -----------------------------------------------------------------------------------------------:
-ENHANCED NETWORKING AND EBS OPTIMIZED:
+ENHANCED NETWORKING AND EBS OPTIMIZED for EC2 instances:
   two optimization techniques
     enhanced networking: 
       offers logical card to each ec2 instance instead of a single physical card on the host that the host manages which ec2 instance has access to:
@@ -1994,8 +2006,8 @@ ROUTE 53 PUBLIC HOSTED ZONES:
   DNS DB for a domain that performs the mapping: 
   hosted on four managed NS specific for the zone:
   accessible from the public internet and VPCs:
-  stores RRs, resource records, which are actual items of data dns uses:
-  you can point to externally registered domains:
+  stores RRs, resource records, which are data the dns uses:
+  you can point to externally registered domains
   hosted zones are authoritative for a domain
   architecture differs slightly between public internet access and vpc access, see slide
 
@@ -2009,7 +2021,7 @@ R53 PRIVATE HOSTED ZONES:
 R53 CNAME RECORDS VS ALIAS RECORDS:
   cname records:
     maps a name to another name:
-    invalid for naked/apex of a domain (domain with no subdomain, like no www., ex catagram.io) and problem is that many aws services use a DNS name which is naked/apex of a domain:
+    invalid for naked/apex of a domain (domain with no subdomain, like with no www., ex catagram.io) and problem is that many aws services use a DNS name which is naked/apex of a domain:
     so just cname catagram.io would be invalid
   alias records:
     map a name to an aws resource:
@@ -2017,7 +2029,7 @@ R53 CNAME RECORDS VS ALIAS RECORDS:
     there is no charge for alias requests pointing at aws resources
   EXAM: 
     for aws services, default to picking alias record:
-    sub types, so you need to match alias type to corresponding record it is pointing at, for ex has A and AAAA alias types:
+    there are sub types, so you need to match alias type to corresponding record it is pointing at, for ex has A and AAAA alias types:
     use alias records for services such as gateway, cloudfront, elb, elastic beanstalk, global accelerator, and s3:
 
 -----------------------------------------------------------------------------------------------:
@@ -2032,7 +2044,7 @@ R53 SIMPLE ROUTING:
 
 -----------------------------------------------------------------------------------------------:
 R53 HEALTH CHECKS:
-  health checkers located globally can check aws targets and anything accessible over public internet:
+  health checkers are located globally and can check aws targets and anything accessible over public internet:
   seperate from, but are used by records
   health checkers check every 30s, every 10s costs extra
   checks can be TCP, HTTP/HTTPS, HTTP/HTTPS with string matching, these checks build upon each other
@@ -2068,7 +2080,7 @@ WEIGHTED ROUTING:
   EXAM POWER UP: 
     use when you want simple load balancing or testing new software versions:
     implements record weights, precendence is based on its record weight vs total weight:
-    if a chosen record is unhealthy, the process of selection is repeated until a healthy record is chosen
+    if a chosen record is unhealthy, the process of selection is repeated until a healthy record is chosen:
 
 -----------------------------------------------------------------------------------------------:
 LATENCY-BASED ROUTING:
@@ -2091,9 +2103,9 @@ GEOLOCATION ROUTING:
 -----------------------------------------------------------------------------------------------:
 GEOPROXIMITY ROUTING:
   returns lowest distance, including bias:
-  you define a record a region is created in via tag name or lat and long coordinates:
+  you define the region a record is created in via tag name or lat and long coordinates:
   bias: 
-    + increases a regions size, and - descreases a regions size:
+   increases a regions size, and can also decrease a regions size:
 
 -----------------------------------------------------------------------------------------------:
 INTEROPABILITY:
@@ -2103,8 +2115,8 @@ INTEROPABILITY:
     see slides for diff architectures of working together, working seperate
   when registering a domain:
     checks with TLD to see if domain is available:
-    creates a zone file for registered domain, known as hosted zone:
-    allocates 4 nameservers for the zone file:
+    creates a hosted zone (zone file) for registered domain:
+    allocates 4 nameservers for the hosted zone:
     adds nameserver records to TLD that indicate that the nameservers are authoritative for domain:
 
 -----------------------------------------------------------------------------------------------:
@@ -2154,7 +2166,7 @@ DIFFERENT STYLES OF DATABASES (know all lines):
     ideal if you are operating with rows adding, updating, deleting whole row or record at a time
     ideal for Online Transaction Processing, or OLTP
   column store:
-    data stored as columns, ie every attribute for each document is stored together
+    data stored as columns, ie every attribute for each record is stored together
     ideal for analytics and reporting, or OLAP
   graph:
     relationships between things are formally defined and stored in the database as well as data
@@ -2190,7 +2202,7 @@ ACID VS BASE:
     durable: 
       once committed, transactions are durable.  resilient to power outages or crashes.
     EXAM: 
-      rds databases, limits databases to scale: 
+      rds databases are ACID databases which limits them to scale: 
 
   BASE: 
     focuses on availability:
@@ -2200,7 +2212,7 @@ ACID VS BASE:
         database doesn't enforce consistency, offloaded onto the application/user
       eventually consistent: 
         if we wait long enough, reads from the system will be consistent
-      EXAM: 
+      EX: 
         dynamoDB or NoSQL databases:
 
 -----------------------------------------------------------------------------------------------:
@@ -2212,7 +2224,7 @@ DATABASES ON EC2:
     vendor or decision makers demand it
     you need db, db version, architecture, or specific os/db combination aws doesn't provide, generally the only reason why you would want to run a db on ec2
   if you are going to do it:
-    best practice is to split monolithic stack of application, into two instances where one instance is running application and web server and another instance running the db on it.  This way you can export db to aws managed service if needed:
+    best practice is to split monolithic stack of application, into two instances where one instance is running application and web server and another instance running the db on it.  This way you can export db to aws managed service if needed
   why you shouldn't do it:
     adds significant cost of admin overhead of managing ec2 and dbhost:
     adds significant cost of backup and disaster recovery management  
@@ -2237,10 +2249,11 @@ RDS ARCHITECTURE:
     each RDS instance can have 1+ databases:
   EXAM: 
     each RDS instance has one dedicated storage EBS volume:
-  synchronous replication: 
-    where each time data is written to primary instance, the data is then copied from primary to standby immediately:
-  asynchronous replication: 
-    read replicas back up data asynchronously to standby instances in same region or different region:
+  two types of replication:
+    synchronous replication: 
+      where each time data is written to primary instance, the data is then copied from primary to standby immediately:
+    asynchronous replication: 
+      read replicas back up data asynchronously to standby instances in same region or different region:
   EXAM POWER UP: 
     backups and snapshots of data are transferred to s3:
   costs:
@@ -2254,13 +2267,12 @@ RDS ARCHITECTURE:
 
 -----------------------------------------------------------------------------------------------:
 RDS ENHANCED MONITORING (KNOW ALL LINES):
-  gathers metrics from an agent on the rds instance
+  gathers metrics from an agent on the rds instance:
   enhanced monitoring is useful when you want to see how different processes or threads on a DB instance use the CPU:
   not enabled by default 
 
 -----------------------------------------------------------------------------------------------:
 RDS MultiAZ:
-  offers high availability via multiAZ instance deployment or multiAZ cluster deployment:
   
   multiAZ Instance Deployment:
     primary rds instance contains all of the database instances and is replicated synchronously to a standby instance in another AZ:
@@ -2285,7 +2297,7 @@ RDS MultiAZ:
       writer is like primary rds instance
       replication is via transaction logs which are more efficient, failover is around 35s
     EXAM: 
-      data is committed when data has been replicated to at least one reader:
+      data is viewed as committed when data has been replicated to at least one reader:
       each instance has its own local storage:
       readers have to be in same region as writer:
     cluster endpoint: 
@@ -2331,12 +2343,12 @@ RDS READ REPLICAS:
   benefits:
     implement performance benefits for read operations:
       able to deploy 5 direct read replicas per db instance:
+    can be cross-region, providing global resilience:
       read replicas can have read replicas but can introduce lag issues
       global performance improvements for read workloads
     help us provide really low RTO, meaning they speed up the process of rds restores:
-      snapshots and backups improve RPO but not RTO
       read replicas offer near 0 rpo and near 0 rto but only good for failure and not for corruption:
-    can be cross-region, providing global resilience:
+      snapshots and backups improve RPO but not RTO
   characteristics:
     only read operations, unless promoted to rds instance:
     aren't part of the primary instance in any way, have their own db endpoint address
@@ -2385,7 +2397,7 @@ AMAZON AURORA (provisioned) (provisioned db clusters) ARCHITECTURE:
     provides benefits of both rds multi az (restore on failure) and rds read replicas (readers and writers):
   storage:
     doesn't use local storage for the instances, instead uses shared cluster volume:
-    storage has 6 replicas that spread across AZ, replicated automatically across az's:
+    storage has 6 replicas that spread across AZs, replicated automatically across AZs:
     all SSD based, high IOPS, low latency:
     faster provisioning, improved availability, and performance
   features:
@@ -2607,7 +2619,7 @@ ELB ARCHITECTURE:
   listeners: 
     nodes are configured with listeners which accept traffic on a port and protocol and communicate with targets on a port and protocol
   cross zone elb:
-    feature that allows elb node to distribute connections across all AZs:
+    feature that allows elb node to distribute connections across all AZs, not enabled by default:
 
 -----------------------------------------------------------------------------------------------:
 APPLICATION AND NETWORK LOAD BALANCER (ALB VS NLB):
@@ -2615,10 +2627,11 @@ APPLICATION AND NETWORK LOAD BALANCER (ALB VS NLB):
   application load balancer:
     listens on HTTP and/or HTTPS:
     can understand l7 content type, custom headers, user location, app behavior:
-    can't understand any other layer 7 protocols and no TCP/ UDP/TLS listeners:
+    can't understand any other layer 7 protocols:
     ALBs are slower than NLBs, bc there are more levels of the network stack to process:
-    ALBs can perform application health checks:
+    ALBs can perform application health checks, HTTP and HTTPS:
     have to be in public subnet:
+    supports weighted target groups routing:
     HTTP HTTPS always terminated on the ALB, no unbroken SSL connection from customer through to your application instances, then a new connection is made from load balancer to the application
     ALBs must have SSL certs if HTTPS is used
     rules:
@@ -2656,7 +2669,7 @@ LAUNCH CONFIGURATIONS AND LAUNCH TEMPLATES:
     contains:
       instance type, key pair, one or more security groups, and a block device mapping
   launch templates purpose: 
-    same as launch configuration and also can be used to provision ec2 instances from the console UI or CLI:
+    same as launch configuration and can also be used to provision ec2 instances from the console UI or CLI:
     also provides superset of features that allow you to provide T2/T3 unlimited, placement groups, capacity reservations, and elastic graphics:
 
 -----------------------------------------------------------------------------------------------:
@@ -2687,18 +2700,22 @@ AUTO SCALING GROUPS:
       diff from scheduled because all instances need to be homogenous:
     dynamic (know all): 
         simple: 
-          simple if then adjustment
+          a single simple if then adjustement
         stepped: 
-          bigger +- based on difference, recommended by aws bc more flexible
+          increase or descrese the current capacity based on a set of scaled adjustments, that vary based on the size of the metric, recommended by aws bc it is more flexible
         target tracking: 
           maintains a desired aggregate metric like keep cpu at 40%
         scaling based on SQS queue: 
           ApproximateNumberOfMessagesVisible, scale base on approximate number of messages visible
+          ApproximateAgeOfOldesMessage, scale base on approximate age of messages
+
   self healing:
     asg implements ec2 status checks:
       monitors health of ec2 instances, and if they do not pass status check, terminates the instance and provisions a new one:
   default policy on which instance to terminate when scaling in:
-    terminate the ec2 instance launched from oldest configuration that is not protected:
+    terminate the ec2 instance launched from oldest launch configuration that is not protected:
+    choose az with most number of instances:
+    select instance that is closest to the next billing hour:
 
   scaling processes:
     different process or functions to be performed by asg
@@ -2746,14 +2763,14 @@ SSL OFFLOAD AND SESSION STICKINESS:
 3 ways an elb can handle secure connections: bridging, pass-through, or offload
   bridging mode:
     default mode of an application load balancer:
-    connection is terminated (DECRYPTED) on the ELB and needs a ssl certificate for the domain name the application uses:it's a
-    elb decrypts the http then routes to backend based on that http, but before connecting to backend it encrypts data and initiates a new ssl connection to backend instances.:
+    alb decrypts the http then routes to backend based on that http, but before connecting to backend it encrypts data and initiates a new ssl connection to backend instances.:
+    connection is terminated (DECRYPTED) on the ELB and needs a ssl certificate for the domain name the application uses
     1 or more clients makes 1 or more connections to a load balancer
     listener is configured for HTTPS
     aws does have some level of access to certificate
     instances need ssl certificates and compute required for cryptographic operations
     benefits:
-      elb gets to decrypt http data and perform actions based on that data, flexible:
+      alb gets to decrypt http data and perform actions based on that data, very flexible:
     disadvantages:
       certificate stores on elb and that's a risk and ec2 instances need a copy of certificate which adds admin overhead:
   pass-through: 
@@ -2795,7 +2812,7 @@ allows us to implement transparent security appliances in a scalable way:
 *******************************************
 EVENT-DRIVEN ARCHITECTURE:
 *******************************************
-DIFFERENT TYPES OF ARCHITECTURE (know all lines):
+DIFFERENT TYPES OF ARCHITECTURE:
   monolithic:
     all of the different components of application are coupled together, they fail together, scale together, and bill together because full capacity is needed at all times in case they are all running even if certain components are not running
   tiered:
@@ -2815,9 +2832,9 @@ DIFFERENT TYPES OF ARCHITECTURE (know all lines):
   microservice architecture:
     collection of microservices
     microservices:
-      a tiny self sufficient application
-      has its own input, output components, logic, and its own store of data 
-      are small units that do things individually very well, they can be unique services or copies of same service
+      a tiny self sufficient application that produces and consumes events:
+      has its own input, output components, logic, and its own store of data:
+      are small units that do things individually very well, they can be unique services or copies of same service:
       producer, consumer, or both (microservices): 
         producer produces data, consumer consumes data, and some do both
         Microservices produce and consume events
@@ -2829,7 +2846,7 @@ DIFFERENT TYPES OF ARCHITECTURE (know all lines):
     both producers and consumers are not running or consuming resources unless they have been triggered and resources are required
     event routers: 
     event bus:
-      like a constant flow of information, producers send events here and event router routes them to consumers
+      like a constant flow of information, producers send events here and event router routes them to consumers:
     takeways:
       only consumes resources while handling events
 
@@ -2914,7 +2931,7 @@ Three types of lambda invocations: synchronous, asynchronous, and event source m
       errors or retries have to be handled within the client
   asynchronous:
     typically used when aws services invoke lambda functions
-    asynchronous communication, so not waiting for response
+    performs asynchronous communication, so not waiting for response
     EXAM:
      error handling: 
       incoming events are placed in the lambda service queue before being sent to the actual fn, if the fn returns an error to lambda service then lambda will retry fn twice by default or keep event in the lambda service queue for a certain time period.  If either are reached, then you can have error sent to DLQ, or Lambda destinations
@@ -2968,7 +2985,7 @@ CLOUDWATCH EVENTS AND EVENTBRIDGE:
     rules match incoming events, or schedule based rules, and route events to 1+ targets, ex lambda, ecs:
   overview:
     if X happens, or at Y time(s), ... do Z,
-    Eventbridge is basically CloudWatch Events v2,
+    Eventbridge is basically CloudWatch Events v2:
     Cloudwatch events has only one implicit bus, eventbridge can have additional event busses
   flow:
     Eventbridge sits over the top of event bus listening for events
@@ -2977,7 +2994,7 @@ CLOUDWATCH EVENTS AND EVENTBRIDGE:
 -----------------------------------------------------------------------------------------------:
 SERVERLESS ARCHITECTURE:
   main focus is you do not have to manage the servers, or if you do very few:
-  event driven, billing occurs only when being used:
+  implements event driven architecture:
   FaaS is used where possible for compute functionality:
   applications are smaller than microservices, they are a collection of small and specialized functions
   run in stateless and ephemeral (short-lived) environment, implements duration billing,
@@ -2988,12 +3005,13 @@ SNS, SIMPLE NOTIFICATION SERVICE:
   helps coordinate the sending and delivery of messages across aws for notifications:
   messages are <=256KB payloads
   public aws service
-  publisher: 
-    sends messages to a topic:
-  topics: 
-    endpts, they contain permissions and configurations:
-  subscribers: 
-    receive messages from a topic, ex HTTP, email, sqs, mobile push, sms messages, lambda:
+  implements publisher/subcriber model:
+    publisher: 
+      sends messages to a topic:
+    topics: 
+      endpts, they contain permissions and configurations:
+    subscribers: 
+      receive messages from a topic, ex HTTP, email, sqs, mobile push, sms messages, lambda:
   characteristics:
     by default, each message published to a topic is received by every subscriber, but you can enable filter on topic which determines messages a subscriber receives:
     delivery status: 
@@ -3027,7 +3045,7 @@ AWS STEP FUNCTIONS:
   implements ASL, amazon states language
   IAM role is used for permissions
   states:
-    are things which occur inside state machine, input data, modify data, output data,
+    are things which occur inside state machine, they have input data, can modify data, and output data:
     succeed and fail states: 
       process succeeded or failed,
     wait state: 
@@ -3046,12 +3064,14 @@ API GATEWAY:
   allows you to create and manage APIs:
   sits between applications and integrations(services which provide the functionality of API gateway): 
     http endpts, lambda, step fns, sns, ddb:
-  highly available, scalable, handles authorization, authentication, data transformations, throttling, caching, CORS, OpenAPI spec, direct integration, and more:
-  HTTP APIs, REST APIs, and Websocket APIs:
+  highly available
+  scalable 
+  handles authorization, authentication, data transformations, throttling, caching, CORS, OpenAPI spec, direct integration, and more:
+  implements HTTP APIs, REST APIs, and Websocket APIs:
   can connect to services/endpts in aws or on premises
   integrates with cloudwatch
   authentication: 
-    can natively integrate with cognito:
+    API gateway can natively integrate with cognito:
   gateway cache:
     helps reduce the number of calls made to backend integrations and improves latency:
     configured per stage
@@ -3076,12 +3096,12 @@ API GATEWAY:
   3 phases in most api gateway interactions:
     request phase: 
       client makes a request to api gateway:
-      authorizes, validates, transforms to data integration can handle:
+      authorizes, validates, and transforms data to data integration can handle:
     integration phase:
       request is moved through api gateway to integration:
     response phase:
       where response is sent to client:
-      transforms to data client can handle, prepares, returns to client:
+      transforms data to data client can handle, and returns that data to client:
 
   facts and figures to remember:
     4xx errors: client error, invalid request on client side:
@@ -3098,7 +3118,7 @@ SQS, SIMPLE QUEUE SERVICE:
   message queieng service that allows you to build loosely coupled systems:
   clients can send messages to queue, and other clients poll the queue:
   all sqs queues have enqueue timestamps (time when message is received) and retention period:
-  retention period can be from 1 minute to 14 days, default 3 days, messages are then automatically deleted:
+  retention period can be from 1 minute to 14 days, default is 4 days, messages that have been in queue longer than the retention period are then automatically deleted:
   can hold an unlimited number of messages:
   public, fully managed, highly available queues
   messages up to 256 kb in size, if you need bigger message you can store link inside queue
@@ -3106,7 +3126,7 @@ SQS, SIMPLE QUEUE SERVICE:
   EXAM POWER UP: 
     REMEMBER SNS AND SQS FANOUT ARCHITECTURE SLIDE:
   visibilityTimeout: 
-    time period that a message is hidden from queue after is it received from client.  If client (does not delete message or processing fails) after this time period is over, then message reappears back in the queue to be reprocessed:
+    time period that a message is hidden from queue after is it received from client.  If client (does not delete message or processing fails) then after this time period is over, the message reappears back in the queue to be reprocessed:
   Dead Letter Queues (DLQ): 
     can be used for problem messages
   implementations:
@@ -3114,14 +3134,15 @@ SQS, SIMPLE QUEUE SERVICE:
       one component sends messages to queue, other reads from the queue, that way they do not have to communicate directly:
     scaling: 
       ASGs can scale based on queue length and lambdas can be invoked when messages appear on a queue via event source mapping invocation:
+      ASGs can scale based on ApproximateAgeOfOldestMesssage metric as well:
   billing:
     based on requests, request is a single request you make to sqs
     1 request = 1-10 messages up to 64KB total
   two types of polling:
     short: 
-      immediate, if 0 messages are in queue then returns 0 messages:
+      immediate response, if 0 messages are in queue then returns 0 messages:
     Long:(waitTimeSeconds): 
-      can be as long as 20s, if 0 messages are in queue then it waits for a message to appear before returning:
+      response can be as long as 20s, if 0 messages are in queue then it waits for a message to appear before returning response:
   two types of queues: 
     Standard:
       at least once delivery, no guarantee on order:
@@ -3154,7 +3175,7 @@ SQS DEAD LETTER QUEUES:
   allows you to configure an alarm when a message is delivered to a dead letter queue
   redrive policy:
     specifies the source queue, the DLQ, and conditions where messages will be moved from one to the other, it defines the maxReceiveCount: 
-    if maxReceiveCount < ReceiveCount message is deleted
+    if maxReceiveCount < ReceiveCount, message is deleted
 
 -----------------------------------------------------------------------------------------------:
 AMAZON KINESIS HAS FOUR MAIN SERVICES:
@@ -3227,7 +3248,7 @@ SQS VS KINESIS?:
   SQS: decoupling and asynchronous communications:
   SQS: no persistence of messages, no window
   Kinesis: huge scale ingestion:
-  Kinesis: mulitple consumers, rolling window:
+  Kinesis: multiple consumers, rolling window needed past 1-365 days:
   Kinesis: data ingestion, analytics, monitoring, app clicks:
 
 -----------------------------------------------------------------------------------------------:
@@ -3318,7 +3339,7 @@ GLOBAL CONTENT DELIVERY AND OPTIMIZATION:
 CLOUDFRONT ARCHITECTURE:
   origin:
     the source location of your content:
-    two types of origins are s3 origins and custom origins(HTTP server):
+    the two types of origins are s3 origins and custom origins(HTTP server):
   distribution:
     the base configuration entity of cloudfront:
     EXAM: 
@@ -3342,16 +3363,17 @@ CLOUDFRONT ARCHITECTURE:
 
 -----------------------------------------------------------------------------------------------:
 CLOUDFRONT BEHAVIORS:
+  are like a sub-configuration within a distribution:
   EXAM: 
     a single distribution can have multiple behaviors:
-  defines:
+  defines on the behavior (know these):
     origin and origin groups
     viewer protocol policy: 
       which policy is used between viewer and edge location
       allowed http methods 
     cache policies:
-    restrict viewer access to a behavior: 
-      via trusted key groups or trusted signer, need signed cookies or signed urls to access
+    signers that restrict viewer access to a behavior: 
+      the signers are used to sign cookies or urls to grant private access
     function associations: 
       lambda@edge
 
@@ -3396,7 +3418,7 @@ AWS CERTIFICATE MANAGER, ACM:
     EXAM: 
       if certificates are imported, you are responsible for renewal of certificates:
     EXAM: 
-       certificates can be deployed out to supported services, cloudfront, albs, api gateway:
+       certificates can be deployed out to supported services like cloudfront, albs, api gateway:
     EXAM: 
       regional service, cannot leave the region they are generated or imported in, so the certificate needs to be in same region by service accessing it, however cloudfront operates as though its within us-east-1 so use us-east-1 for cloudfront and other global services
 
@@ -3410,29 +3432,30 @@ CLOUDFRONT AND SSL:
     generate or import certificate in ACM in us-east-1:
   two SSL connections when using cloudfront:
     viewer protocol: 
-      viewer and cloudfront:
+      connection between viewer and cloudfront:
+      cloudfront gets certificate via ACM, or a trusted CA such as Comodo, DigiCert, or Symantec:
     origin protocol: 
-      cloudfront and origin:
-    EXAM: 
-      both need valid public certificates!:
-      ALB can use ACM, custom origin needs to use an imported generated cert:
+      connection between cloudfront and origin:
+      s3 origins handle certficates natively:
+      for custom origins you need to use an imported generated certificate UNLESS you are using an ALB then you can import certificate via ACM:
   billing:
     SNI is free, dedicated host costs around 600$/mo per distribution
     SNI, server name identification: 
       allows a client to tell a server which domain name its attempting to access, happens at TCP layer, modern browsers support this:
       allows one IP for edge location to host many HTTPS websites that need their own certificate:
       old browsers don't support SNI
-      you can established a dedicated host ip address for edge location within CF
+      you can establish a dedicated host ip address for edge location within CF
 
 -----------------------------------------------------------------------------------------------:
 ORIGIN TYPES AND ARCHITECTURE:
   s3 origin:
+    implementing an s3 bucket as the source location of your content:
     EXAM: 
-      does not include website hosted on a s3 bucket:
+      does not include websites hosted on a s3 bucket:
     EXAM: 
       protocol for origin protocol and viewer protocol are always the same:
-      custom headers available:
-      you can restrict access to only CF, via origin access control.  access is granted via trusted key groups:
+      custom headers available
+      you can restrict access to only CF, via origin access control.  access is granted via trusted key groups
     aws media package channel endpts
     aws media store container endpts
   everything else are custom origins (web servers):
@@ -3442,21 +3465,7 @@ ORIGIN TYPES AND ARCHITECTURE:
       origin protocol can differ from viewer protocol:
       customize http port and https port between origin and edge location
     custom headers available: 
-      custom origins does not have origin access control like s3 buckets so if you want to ensure connections only from cf you can do so via custom headers:
-
------------------------------------------------------------------------------------------------:
-SECURING CD AND S3 USING OAI:
-securing connection between edge locations and origins:
-  requires users to access content via cloudfront:
-  for s3 origins:
-    oac, origin access control (new version of oai, origin access identity):
-      requires users to access content via cloudfront url instead of using direct url for file:
-      oac allows cf to sign requests going to s3 origin and need to update s3 bucket policy to allow oac:
-    legacy: 
-      cf becomes oai when accessing s3 origin and the oai can be used in s3 bucket policies to restrict everything but that or more OAIs
-  for custom origins (2 ways):
-    require custom header: 
-    use firewall that only allows IPs of edge locations:
+      custom origins does not have origin access control like s3 buckets so if you want to ensure connections only from cf you can do so via custom headers
 
 -----------------------------------------------------------------------------------------------:
 PRIVATE DISTRIBUTION AND BEHAVIORS:
@@ -3471,7 +3480,7 @@ PRIVATE DISTRIBUTION AND BEHAVIORS:
     EXAM: 
       new way:
         1. create trusted key groups in KMS:
-        2. add trusted key group to signers on cloudfront distribution.  The distribution lists requirements for granting access:
+        2. add trusted key group to signers on cloudfront behavior inside distribution.  The distribution lists requirements for granting access:
         3. the signers are used to sign cookies or urls to grant private access:
 
   Signed URLS vs signed cookies:
@@ -3479,9 +3488,25 @@ PRIVATE DISTRIBUTION AND BEHAVIORS:
       urls provide access to one object only:
       use urls if your client doesn't support cookies:
     EXAM: 
-      signed cookies provide access to groups of objects, all files of a type:
+      signed cookies provide access to groups of objects, or all files of a type:
       for members, send the required 'set-cookie' headers to the viewer which will unlock the content only to them:
       use cookies if you want to keep application url the same, signed urls change url format:
+
+-----------------------------------------------------------------------------------------------:
+SECURING CD AND S3 USING OAI:
+securing connection between edge locations and origins:
+  requires users to access content via cloudfront:
+  for s3 origins:
+    oac, origin access control (new version of oai, origin access identity):
+      requires users to access content via cloudfront url instead of using direct url for file:
+      oac allows cf to sign requests going to s3 origin and need to update s3 bucket policy to allow oac:
+    legacy: 
+      cf becomes oai when accessing s3 origin and the oai can be used in s3 bucket policies to restrict everything but that or more OAIs
+    custom headers available as well:
+  for custom origins (2 ways):
+    require custom header: 
+    use firewall that only allows IPs of edge locations:
+
 
 -----------------------------------------------------------------------------------------------:
 Lambda@Edge:
@@ -3503,9 +3528,9 @@ Lambda@Edge:
 
 -----------------------------------------------------------------------------------------------:
 GLOBAL ACCELERATOR:
+  implements the quickest route for traffic. traffic initially uses public internet and enters a global accelerator edge location, from the edge, data transits globally across the aws global network leading to significantly better performance:
   comprised of anycast IP addresses: 
     allow a single IP to be in multiple locations.  routing moves traffic to closest location:
-  traffic initially uses public internet and enters a global accelerator edge location, from the edge, data transits globally across the aws global network leading to significantly better performance:
     moves the aws network closer to customers
   EXAM: 
     customer connections enter at edge, using anycast IPs:
@@ -3546,11 +3571,11 @@ EGRESS-ONLY INTERNET GATEWAY:
 
 -----------------------------------------------------------------------------------------------:
 VPC GATEWAY endpt:
-  allows a private only resource within a VPC to access dynamodb and s3:
+  allows a private only resource within a VPC to access only dynamodb and s3:
   used in lieue of providing infrastructure like NAT:
   implemented via PrivateLink:
- 
-  regional, can't access cross-region services
+  regional, can't access cross-region services:
+
   s3 buckets can be set to private only by allowing access only from a gateway endpt 
   gateway endpts are not accessible outside the VPC
   implementation:
@@ -3564,12 +3589,13 @@ VPC INTERFACE endpt:
   allows a private only resource within a VPC to access any service besides dynamodb:
   used in lieue of providing infrastructure like NAT:
   added to specific subnets, to a single ENI, so not HA:
+  regional, can't access cross-region services:
   network access controlled via security groups
   endpoint policies: 
     controls what things can be connected to by that gateway endpt
   only support TCP and IPV4 protocols
   implemented via PrivateLInk:
-    allows external services to be injected into your VPC:
+    allows external services to be injected into your VPC
   implementation:
     endpt provides a new service dns name so services within vpc can access new service via dns name via endpt
     regional dns
@@ -3599,7 +3625,7 @@ HYBRID ENVIRONMENT AND MIGRATION:
 *******************************************
 BGP, BORDER GATEWAY PROTOCOL:
   routing protocol that controls how data flows from different points, based on shortest path of interconnected networks:
-  operates over TCP/179, it's reliable:
+  operates over TCP/179, so it's reliable:
   not automatic, peering is manually configured:
   made up of many autonomous sytems (AS): 
     routers controlled by one entity, a network in BGP, details abstracted away from BGP
@@ -3638,7 +3664,7 @@ IPSEC VPN FUNDAMENTALS:
     provides less functionality but simpler to set up
 
 -----------------------------------------------------------------------------------------------:
-AWS SITE TO SITE VPN (KNOW EVERY LINE) (SEE SLIDE):
+AWS VPN (KNOW EVERY LINE) (SEE SLIDE):
   logical connection between a VPC and on premises network encrypted using IPSec, running over the public internet
   EXAM: 
     highly available, if you design and implement correctly
@@ -3684,7 +3710,7 @@ DIRECT CONNECT, DX:
   aws allocates you a port and authorizes you to use port at a DX location, you need to arrange connection to that port
   no resilience for physical connection
   EXAM: 
-    not encrypted, a private encryption can be created by using a site to site VPN over public VIF:
+    not encrypted, a private encryption can be created by using a VPN over public VIF:
   connection: 
     business premises => dx location => aws region
   cost: 
@@ -3723,8 +3749,8 @@ STORAGE GATEWAY:
   integrates with EBS and S3:
   presents storage using iSCSI, NFS, or SMB
   EXAM: 
-    helps with extensions of a data center into AWS, storage tiering, DR and replacement of backups systems:
-    you keep your applications and migrate your on premise file share network to aws:
+    helps with extensions of a data center into AWS, storage tiering, DR and replacement of backups systems
+    you keep your applications and migrate your on premise file share network to aws
     small datasets at a time:
 
 -----------------------------------------------------------------------------------------------:
@@ -3734,7 +3760,7 @@ STORAGE GATEWAY- VOLUME:
   architecture:
     cached mode:
       EXAM: 
-        main location for data is not on premises, rather in s3 in aws: 
+        main location for data is in s3 in aws and not on premise: 
         on premise has local cache that stores frequently accessed data:
       EXAM: 
         allows data center extension:
@@ -3774,7 +3800,7 @@ FILE STORAGE GATEWAY:
   when a file share modies a file on premise, it gets replicated to s3, but s3 doesn't notify other fileshares automatically of change
 
 -----------------------------------------------------------------------------------------------:
-SNOWBALL/ EDGE / SNOWMOBILE:
+SNOWMOBILE PRODUCTS: SNOWBALL/ EDGE / SNOWMOBILE:
   allow you to move large amounts of data in and out of aws:
   physical storage devices range from suitcase or truck:
   snowball:
@@ -3822,14 +3848,14 @@ AWS DIRECTORY SERVICE:
       standalone directory which uses Samba 4 and is open source:
       not designed to integrate with any existing on premises: 
       use case:
-        default. simple requirements. a directory in aws.:
+        a directory in aws with default, simple requirements.:
       small mode is up to 500 users, large mode is up to 5000 users
       integrates with aws services
-    managed microsoft AD:
+    managed AD:
       full microsoft AD DS running in AWS:
-      primary running location in aws, resilient if the vpn fails:
+      primary running location is in aws, is resilient if the vpn fails:
       use case:
-        applications in aws which need AD DS, or you need to trust on premise AD DS:
+        applications in aws need AD DS, or you need to trust on premise AD DS:
         optional direct connect or vpn connection set up between aws and on premises directory:
     AD connector:
       is a proxy to your on premises directory and used when you want to use only one aws service that requires you to implement AD service:
@@ -3864,7 +3890,7 @@ AWS DIRECTORY SERVICE:
 
 -----------------------------------------------------------------------------------------------:
 FSx FOR WINDOWS FILE SERVER:
-  fully managed native windows file servers/shares (windows shared file system product):
+  fully managed native windows file system product:
   integrates with Directory Service or self managed AD in aws or on premises:
   can be deployed into a single AZ or Multi-AZ in VPC:
   designed for integration with windows environments
@@ -3883,7 +3909,7 @@ FSx FOR WINDOWS FILE SERVER:
     use when you want to migrate your on premise application and file share to aws:
 
 -----------------------------------------------------------------------------------------------: FSx FOR LUSTRE:
-  managed implementation of Lustre file system (fs designed for high performance workloads):
+  fully managed implementation of Lustre file system (fs designed for high performance workloads):
   supports Linux based instances, and POSIX style permissions:
   accessible over VPN or direct connect
   data is lazy loaded from s3 to file system, can be exported back to s3 at any point
@@ -3971,7 +3997,7 @@ WEB APPLICATION FIREWALL:
       rule groups/rules: 
         allow different reactions to different types of traffic:
       EXAM: 
-        eventbridge can integrate with and implement IP list parser:
+        eventbridge can integrate with WAF and implement IP list parser:
   
     rule groups/rules: 
       processed in order
@@ -4008,6 +4034,7 @@ AWS NETWORK FIREWALL:
   stateful, managed network firewall for your VPC that filters traffic at perimeter of your VPC:
   enable in VPC service:
 
+
 -----------------------------------------------------------------------------------------------:
 AWS SHIELD 101:
   Two tiers:
@@ -4032,7 +4059,7 @@ AWS SHIELD 101:
 -----------------------------------------------------------------------------------------------:
 CLOUDHSM (KNOW ALL LINES):
   service that creates, manages, and secures keys
-  different from KMS because not shared between customers (with KMS, aws manages keys and service is shared between customers but seperated accounts)
+  different from KMS because the service is not shared between customers (with KMS, aws manages keys and service is shared between customers but seperated accounts)
   EXAM: 
     true "single tenant" hardware security module, HSM
   EXAM: 
@@ -4044,7 +4071,7 @@ CLOUDHSM (KNOW ALL LINES):
     can integrate with KMS, KMS can use CloudHSM as a custom key store
   use cases:
     EXAM: 
-      no native integrations between HSM and any aws service needed
+      when you don't need any native integrations between HSM and aws services
     EXAM: 
       offload the SSL/TLS processing for web servers
     EXAM: 
@@ -4066,7 +4093,7 @@ AWS CONFIG:
 -----------------------------------------------------------------------------------------------:
 AMAZON MACIE:
   allows you to discover, monitor, and protect data stored in s3 buckets:
-  automated discovery of data ie PII, PHI, finance:
+  helps automate discovery of PII, PHI, and finance data:
   aws managed data identifiers, built in, ML/patterns:
   you can build custom identifiers, regex based:
   data security and data privacy service
@@ -4085,7 +4112,7 @@ AMAZON INSPECTOR:
     network and host assessment: 
       agent:
       checks end to end reachability, ie EC2, ALB, DX, ELB, ENI, IGW, ACLs, RTs, SGs, subnets, VPCs, VGWs and VPC peering:
-      Packages (agent required):
+      Packages that require an agent:
         EXAM: 
           CVE, common vulnerabilities and exposures:
         EXAM: 
@@ -4117,7 +4144,7 @@ CLOUDFORMATION PHYSICAL AND LOGICAL RESOURCES:
   template: 
     contains logical resources and their properties and allows us to build a stack with corresponding physical resources:
     written either in YAML or JSON:
-    should be portable, ie allow you to create resuable templates:
+    should be portable, it should allow you to create resuable templates:
     avoid naming things explicitly and avoid using region specific values like AMIs:
       contains:
         resources: 
@@ -4225,19 +4252,19 @@ CLOUDFORMATION CONDITIONS (KNOW ALL):
   
 -----------------------------------------------------------------------------------------------:
 CLOUDFORMATION DependsOn:
-  allows you to explicitly define formal dependencies between resources within templates:
+  allows you to explicitly define dependencies between resources within templates:
   when creating stack:
     cf does things in parallel
-    tries to determine a dependency order via references or functions or you can explicitly state dependencies with DependsOn:
+    the stack tries to determine a dependency order via references or functions or you can explicitly state dependencies with DependsOn:
   EXAM: 
-    an elastic IP requires an IGW attached to a VPC in order to work, but since there is no explicit !Ref in template defn then there could be an error when provisioning stack:
+    example is an elastic IP requires an IGW attached to a VPC in order to work, but since there is no explicit !Ref in template defn then there could be an error when provisioning stack:
     solution:
       implement DependsOn property to explicitly state the dependency
 
 -----------------------------------------------------------------------------------------------:
 CF WaitCondition, Creation Policy, and cfn-signal:
   
-  both configure cf to hold to process a resource:
+  both WaitCondition and CreationPolicy configure cf to hold to process a resource's createcomplete status:
     wait for X number of success signals within defined timeout period for those signals:
     if signals received, then status of resource moves to CREATE_COMPLETE:
     if failure signal or timeout (12 HR max) is reached, creation fails:
@@ -4268,10 +4295,10 @@ NESTED STACKS AND CROSS REFERENCE STACKS:
           has parameters and outputs just like normal stack
         parent stack:
           parent of any stack that it immediately creates, contains its own nested stack
-    benefits:
+    use cases:
       use when you want to overcome the 500 resource limit of one stack:
       code reuse via modular templates, nested stacks can reference resources:
-      installation process is easier because nested stacks are created by root stack:
+      use when you want to simplify the installation process because nested stacks are created by root stack:
       EXAM: 
         use only when everything is lifecycle linked: 
     
@@ -4321,7 +4348,7 @@ CFN DELETION POLICY:
     you specify a deletionPolicy attribute for each resource you want to control
     only applies to delete operations, not replace operations
       delete: 
-        default behavior without deletionPolicy
+        default behavior without deletionPolicy:
       retain: 
         preserves a resouce if stack is deleted
       snapshot: 
@@ -4336,14 +4363,14 @@ CFN STACK ROLES:
     allow an IAM role to be passed in stack via PassRole which allows role seperation:
   PassRole: 
     EXAM: 
-      allows stack to use this role rather than the identity interacting with the stack to create, update, and delete resources:
+      allows stack to use this role rather than the identity's permissions interacting with the stack to create, update, and delete resources:
 
 -----------------------------------------------------------------------------------------------:
 CFN-INIT:
   allows you to provide configuration information to an ec2 instance, it is an alternative to user data:
-  allow a desired state configuration management system to be implemented within CFN:
+  allow a desired state configuration management system to be implemented within CFN
   AWS::CloudFormation::Init : 
-    located in template, this part of logical resource allows you to include metadata on an EC2 instance for the cfn-init helper script:
+    located in cfn template, this part of logical resource allows you to include metadata on an EC2 instance for the cfn-init helper script:
     states desired state, leaves implementation details up to system:
     defines which configkeys to use and in which order to apply
   cfn-init script:
@@ -4365,7 +4392,7 @@ CFN CHANGE SETS:
 
 -----------------------------------------------------------------------------------------------:
 CFN CUSTOM RESOURCES:
-  allow to write custom provisioning logic in templates that runs anytime CFN creates, updates custom resource, or delete stacks:
+  allows you to write custom provisioning logic in templates that runs anytime CFN creates or updates a custom resource, or delete stacks:
   EXAM: 
     they are logical resources that allow CFN to integrate with anything it doesn't yet, or doesn't natively support:
   EXAM: 
@@ -4384,9 +4411,9 @@ NOSQL DATABASES AND DYNAMODB:
   no self managed servers or infrastructure
   manual or automatic provisioned performance, or on-demand
   highly resilient, across AZs and optionally global:
-  really fast, single digit milliseconds for processing of small data that dynamically grows and changes:
-  event driven integration, allow you to do things when data changes:
-  backups, point in time recovery, encryption at rest:
+  really fast, single digit milliseconds time for processing small data sets that dynamically grows and changes:
+  event driven integration allow you to do things when data changes:
+  some features are backups, point in time recovery, and encryption at rest:
   EXAM: 
     if you see NoSQL or key/value on exam, likely answer is DynamoDB:
   access via console, CLI, API, but not SQL!
@@ -4402,35 +4429,34 @@ NOSQL DATABASES AND DYNAMODB:
       WCU: 
         write capacity units:
         EXAM: 
-          1 wcu = 1kb per second:
+          per 1 wcu it can write 1kb per second:
       RCU:
         read capacity units:
         exam: 
-          1 rcu = 4kb per second:
+          per 1 rcu it can read 4kb per second:
       on demand capacity: 
-        capacity is managed for you
+        capacity is managed for you:
         use when you have unknown, unpredictable, low admin workloads
         price per million R or W units
       provisioned capacity:
-        you explicitly set capacity values on a per table basis
+        you explicitly set capacity values on a per table basis:
 
   
   backups:
     On-demand Backups:
-      EXAM: 
-        manual restore and delete is required:
+      manual restore and delete is required:
       full copy of table retained until removed:
       restores can be same or cross region, with/out indexes, and you can adjust encryption:
     Point in time recovery, PITR:
       not enabled by default, but you can enable on a table basis:
-      continuous record of changes allows replay to any point in the 35 day recovery window:
-      1 second granularity:
+      continuous record of changes allows replay to any point in the 35 day recovery window with 1 second granularity:
 
 -----------------------------------------------------------------------------------------------:
 DYNAMODB OPERATIONS, CONSISTENCY, AND PERFORMANCE:
   EXAM: 
-    every operation consumes at least 1 RCU/WCU:
-  every table has a RCU and WCU burst pool, 300 seconds, that is available if you run out of designated RCU or WCU, if you exceed this pool your table will output an error if R or W operation is performed:
+    every operation consumes at least 1 RCU or WCU:
+  every table has a RCU and WCU burst pool, 300 seconds, that is available if you run out of designated RCU or WCU:
+  if you exceed this pool your table will output an error if R or W operation is performed:
 
   query operation:
     requires you to query via partion key OR partition key and sort key, allows range for sort key:
@@ -4440,33 +4466,37 @@ DYNAMODB OPERATIONS, CONSISTENCY, AND PERFORMANCE:
     allows you to scan range for all attributes that are not partition key:
 
   consistency:
-    deals with when data is read from database, is the data consistent with the most recent version of write:
+    if data is read from database, is the data consistent with the most recent version of write:
     architecture:
-    two types: eventually consistent and strongly consistent
+    two types: 
+      eventually consistent and strongly consistent
       one leader storage node is selected out of all storage nodes
       writes are written to leader storage node, leader node replicates data to other nodes
       eventually consistent reads:
-        reads from any of the storage nodes, price is 50% less because it uses less RCU, data could be stale, but faster read:
+        reads from any of the storage nodes, and price is 50% less because it uses less RCU:
+        the data could be stale, but faster read:
       strongly consistent reads:
-        reads from leader storage node, not as fast reads:
+        reads from leader storage node, and not as fast reads:
 
 -----------------------------------------------------------------------------------------------:
-DDB LOCAL SECONDARY INDEX AND GLOBAL SECONDARY INDEX, LSI, GSI:
+DDB LOCAL SECONDARY INDEX AND GLOBAL SECONDARY INDEX, (LSI, GSI):
   indexes: 
     allow for more efficient data retrieval operations:
     allow you to provide alternative views on table data(allows alt key to search with, other than primary key):
 
   LSI (LOCAL SECONDARY INDEX) and GSI (GLOBAL SECONDARY INDEX) allow for an alternative presentation of data stored in a base table
   LSI (LOCAL SECONDARY INDEX):
+    ensures strong consistency:
     EXAM: 
       allow for alternative SKs: 
     EXAM: 
       must be created with a table:
     EXAM: 
       shares the RCU and WCU with the table:
-      ensures strong consistency:
       indexes are sparse, capacity is only consumed on corresponding indexes
   GSI (GLOBAL SECONDARY INDEX):
+    are always eventually consistent:
+    use as default, use LSI only when strong consistency is required:
     EXAM: 
       allow for alternative PK AND SKS:
     EXAM: 
@@ -4474,8 +4504,6 @@ DDB LOCAL SECONDARY INDEX AND GLOBAL SECONDARY INDEX, LSI, GSI:
     EXAM: 
       are allocated their own RCU and WCU allocations:
     indexes are sparse, capacity is only consumed on corresponding indexes
-    are always eventually consistent:
-    use as default, use LSI only when strong consistency is required:
   EXAM: 
     for both, some or all attributes can be projected onto view, KEYS_ONLY, INCLUDE, ALL:
 
@@ -4489,20 +4517,20 @@ DYNAMODB STREAMS AND LAMBDA TRIGGERS (KNOW ALL):
       keys_only, new_image, old_image, new_and_old_images
 
   triggers:
-    item changes added to stream automatically generate an event, triggers lambda fn that takes action using the event data
+    item changes added to stream automatically generate an event,  and triggers lambda fn that takes action using the event data
 
 -----------------------------------------------------------------------------------------------:
-DynamoDB GLOBAL TABLES (KNOW ALL):
+DynamoDB GLOBAL TABLES:
   EXAM: 
-    help provide multi-master cross-region replication
+    help provide multi-master cross-region replication:
     tables are created in multiple regions and added to the same global table, the tables in the regions become replica tables
   EXAM: 
     last writer wins is used for conflict resolution
-    reads and writes can occur to any region
+    reads and writes can occur to any region:
   EXAM: 
-    generally sub second replication between regions
+    generally sub second replication between regions:
   EXAM: 
-    strongly consistent reads only in the same region as writes, everything else eventually consistent
+    strongly consistent reads only in the same region as writes, everything else eventually consistent:
   HA, fast performance, and global disaster recover/business continuity (DR/BC)
 
 -----------------------------------------------------------------------------------------------:
@@ -4560,16 +4588,16 @@ ELASTICACHE:
     redis:
       advanced data structures:
       multi AZ replication:
-      replication (scale reads):
       backup and restore:
-      transactions, multiple operations are treated as one:
-      authenticate via using Redis AUTH command:
+      replication (scale reads)
+      transactions, multiple operations are treated as one
+      authenticate via using Redis AUTH command
     memcached:
       simple data structures:
       no replication:
-      multiple nodes (sharding)
       no backups:
-      multi threaded:
+      multi threaded
+      multiple nodes (sharding)
 
 -----------------------------------------------------------------------------------------------:
 REDSHIFT:
@@ -4586,7 +4614,7 @@ REDSHIFT:
     one AZ in a VPC, due to network cost and performance:
     for regional resilience:
       by default, automatic snapshots to s3 with option of manual snapshots:
-    cross region resilience:
+    for cross region resilience:
       you have to enable cross-region snapshots:
     has all of the integrations a service in vpc has like security, IAM permissions, KMS, CW
     enhanced vpc routing:
@@ -4671,7 +4699,7 @@ AMAZON POLLY:
 -----------------------------------------------------------------------------------------------:
 AMAZON REKOGNITION:
   allows extraction of information and insights from images and videos:
-  can even analyze video live streams via kinesis streams:
+  can even analyze live video streams via kinesis streams:
   can identify objects, people, text, activities, content moderation, face detection, face analysis, face comparison, pathing, and much more
   per image or per minute pricing
   integrates with applications and event driven
@@ -4821,11 +4849,11 @@ AWS LAKE FORMATION:
 
 AWS ARTIFACT:
   central resource for compliance related information
-  includes SOC reports, PCI reports, and certifications that validata the implementation and operating effectiveness of aws security controls
+  includes SOC reports, PCI reports, and certifications that validate the implementation and operating effectiveness of aws security controls
 
 AWS RESOURCE ACCESS MANAGER, RAM:
   allows you to share aws resources with any aws account or within your aws organization
-  you can share aws transit gateways, subnets, aws license manager configurations, and route 53 resolver rules
+  you can share aws transit gateways, subnets, aws license manager configurations, route 53 resolver rules, and ec2 instances
 
 IAM DB AUTHENTICATION:
   feature of RDS that allows you to authenticate to your DB instance using IAM 
@@ -4880,6 +4908,8 @@ AWS IAM IDENTITY CENTER (NEWER VERSION OF SSO):
   connects with AD through aws Directory Service to allow users in that directory to sign in to a personalized aws access portal using their existing AD user names and password
 
 AWS APPSYNC:
+  serverless GraphQL and Pub/Sub API service that simplifies building modern web and mobile applications
+  allows you to create custom domains and allows you to integrate with ACM to enable HTTPS communication
   can be integrated with DynamoDB to make is easy for you to build collaborative apps that keep shared data updated in real time
   you specify the data for your app and appsync manages everything needed to keep the app updated in real time
 
@@ -4899,6 +4929,9 @@ DYNAMODB AUTO SCALING:
 ELASTIC FABRIC ADAPTER (EFA):
   network device that you can attach to your ec2 instance to accelerate high performance computing (HPC) and machine learning applications.
   can only be used with Linux instances
+ELASTIC NETWORK ADAPTER (ENA):
+  network device that you can attach to your ec2 instance to accelerate high performance computing (HPC) and machine learning applications.
+  can only be used with Windows instances
 
 AWS WELL ARCHITECTED TOOL:
   automatically monitors the status of your workloads across your AWS account, conducts architectural reviews, and checks for AWS best practices
@@ -4921,3 +4954,24 @@ AWS LICENSE MANAGER:
   
 S3 REQUESTOR PAYS FEATURE:
   allows requestor of data, instead of bucket owner, to pay the cost of the request
+
+AWS SYSTEMS MANAGER RUN COMMAND:
+  lets you manage the configuration of your managed instances (instances that have been configured for Systems Manager)
+  automates common admin tasks
+
+AWS WAVELENGTH ZONES:
+  allows you to implement aws services on the mobile providers network
+
+AWS TRUSTED ADVISOR:
+  inspects your aws env, and then makes recommendations to improve cost savings, security, availability and performance, provision resources, and inspect service limits
+  cloudwatch events captures the status events from trusted advisor and uses rules to send the status events to targets
+
+AWS WORKSPACES:
+  secure cloud virtual desktop service
+  can integrate with AD
+
+AWS CLOUDWATCH APPLICATION INSIGHTS:
+  facilitates observability for your applications and underlying resources
+  it correlates observations using a combination of classification algorithms and built in rules and then creates dashboards that show the relevant observations and problem severity information to help you prioritize your actions
+
+  
