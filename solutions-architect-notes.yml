@@ -29,7 +29,7 @@ NIST definition of cloud computing (read through):
     Resource usage can be monitored, controlled, reported, and billed 
 
 -----------------------------------------------------------------------------------------------:
-Public vs Private vs Hybrid vs Multi Cloud Models (KNOW ALL):
+Public vs Private vs Hybrid vs Multi Cloud Models (READ ALL):
   multi-cloud: 
     using multiple public clouds for higher levels of availability and durability
   private: 
@@ -1423,6 +1423,8 @@ EBS, ELASTIC BLOCK STORE:
   attached to one ec2 instance over a storage network, (or multiple with multi attach feature but have to be in same AZ):
   persistent, they can be detached and reattached to same or different instances:
   you can perform backups, or snapshots, of data into s3.  You can migrate the data and create volumes from that snapshot:  
+  encryption by default feature:
+    implements all new ebs volumes in entire region to be encrypted:
   can be provisioned with different physical storage types, different sizes, and different performance profiles
   billed based on gb-month, and in some cases performance
 
@@ -1981,13 +1983,13 @@ EC2 DEDICATED HOSTS:
 ENHANCED NETWORKING AND EBS OPTIMIZED for EC2 instances:
   two optimization techniques
     enhanced networking: 
+      uses SR-IOV, single root io virtualization, to provide high performance networking on supported instance types:
       offers logical card to each ec2 instance instead of a single physical card on the host that the host manages which ec2 instance has access to:
-      uses SR-IOV, single root io virtualization, to improve latency of networking:
       NIC is virtualization aware
       characteristics:
         higher packets per second, PPS:
         consistent lower latency:
-        more bandwidth, high throughput
+        more bandwidth, high throughput:
         offers higher IO and loswer host cpu usage
         no charge, available on most EC2 types
     ebs optimized: 
@@ -2372,6 +2374,7 @@ RDS SECURITY:
   encryption in transit is available:
     EXAM: 
       you can enable SSL/TLS (in transit security) to be mandatory:
+      to do this, set the rds.force_sll parameter to true and reboot instance:
     EXAM: 
       by default, encryption is done via ebs volume encryption via KMS:
       handled by host/ebs
@@ -2416,8 +2419,9 @@ AMAZON AURORA (provisioned) (provisioned db clusters) ARCHITECTURE:
     restores create a new cluster
     backtrack: 
       can be used which allows in place rewinds to a previous point in time:
-    fast clones:
-       allow you to make a new database much faster than copying all data, it provides reference to unchanged data and copies changed data, known as copy on write:
+    clones:
+       makes a copy of a database very fast and much faster than taking a snapshot and restoring:
+       it provides reference to unchanged data and copies changed data, known as copy on write:
   billing:
     is different bc storage is billed based on what's used, high water mark so billed for the most used, and replicas can be added and removed without requiring storage provisioning:
     no free tier option
@@ -2505,7 +2509,7 @@ RDS PROXY:
 DATABASE MIGRATION SERVICE (DMS):
   managed database migration service:
   source and destination endpts point at source and target databases and one endpt must be on aws:
-  destinations can also include kinesis and MSK (Managed Streaming of Kafka):
+  source/ target destinations can also include s3 and kinesis and MSK (Managed Streaming of Kafka):
   runs using a replication instance
   replication instance:
     can define replication tasks, define all of the options relate to migration
@@ -2651,7 +2655,7 @@ APPLICATION AND NETWORK LOAD BALANCER (ALB VS NLB):
       direct connections which arrive at a listener
       processed in priority order, there is a default rule 
         rule conditions: 
-          url path, hostname, http headers, and query strings:
+          url path, hostname, http headers, and query string, source ip:
         actions: 
           forward, redirect, fixed-response, authenticate-oidc, authenticate-cognito
   network load balancer:
@@ -2668,7 +2672,7 @@ APPLICATION AND NETWORK LOAD BALANCER (ALB VS NLB):
   
   NLB or ALB?:
     NLB: unbroken encryption:
-    NLB: static ip for whitelisting, you can't associate EIPS with ALB:
+    NLB: static ip for whitelisting, you can't associate EIPS with ALB, static ip is good for allowing a security group to allow traffic from NLB and you can also add your NLB IP to a whitelist (allow list) on a third party service:
     NLB: fastest performance:
     NLB: protocols not HTTP or HTTPS:
     ALB: any other scenario:
@@ -3439,6 +3443,8 @@ AWS CERTIFICATE MANAGER, ACM:
       if certificates are imported, you are responsible for renewal of certificates:
     EXAM: 
        certificates can be deployed out to supported services like cloudfront, albs, api gateway:
+       DaysToExpiry metric can be monitored by cloudwatch:
+    
     EXAM: 
       regional service, cannot leave the region they are generated or imported in, so the certificate needs to be in same region by service accessing it, however cloudfront operates as though its within us-east-1 so use us-east-1 for cloudfront and other global services
 
@@ -3556,6 +3562,8 @@ GLOBAL ACCELERATOR:
     customer connections enter at edge, using anycast IPs:
   EXAM: 
     transits over aws backbone to 1+ locations:
+  EXAM: 
+    implements endpt groups for each region so you can manage one ip address instead of multiple for sgs and whitelisting ips:
   
   CLOUDFRONT VS GLOBAL ACCELERATOR:
     GA implements TCP/UDP connections (not HTTP/HTTPS) where CF can cache HTTP/HTTPS content only:
@@ -3935,6 +3943,7 @@ FSx FOR WINDOWS FILE SERVER:
   supports Linux based instances, and POSIX style permissions:
   accessible over VPN or direct connect
   data is lazy loaded from s3 to file system, can be exported back to s3 at any point
+  natively works with s3, EFS does not:
   use cases:
     machine learning, big data, financial modeling:
   deployment types:
@@ -4867,6 +4876,8 @@ AWS LAKE FORMATION:
   data lake:
     centralized, curated, and secured repository that stores all of your data, both in its original form and prepared for analysis
   this was solution to combining multiple sources of data from different aws accounts' s3 buckets to a single centralized data lake
+  Apache ORC and Apache Parquet:
+    open-source columnar formats that improve performance and reduce costs
 
 AWS ARTIFACT:
   central resource for compliance related information
@@ -4966,6 +4977,7 @@ AWS HEALTH:
   events:
     learn how service and resource changes might affect your applications running on aws
     helps you be aware of and to prepare for planned activities
+    can check ACM expiration:
 
 S3 GLACIER VAULT:
   implements a vault access policy that you can lock to help you enforce regulatory and compliance requirements
@@ -5002,4 +5014,21 @@ IAM PERMISSIONS BOUNDARY:
 VPN CLOUDHUB:
   you can provide secure communication between multiple site to site vpn connections sites using the aws vpn cloudhub
   there has to be infrastructure like direct connect or vpn already set up between the parent and children vpn connections and then vpn cloudhub allows children to communicate with each other 
+
+EC2 OPTMIZED INSTANCES:
+  compute:
+    great for compute intensive tasks that require high performance
+    HPC, batch processing workloads, gaming server
+  storage:
+    great for storage intensive tasks that require high, sequential io access to large data sets on local storage
+    implement for OLTP systems, relational databases cache for in memory databases, data warehousing apps, distributed file systems
+  general purpose:
+    implement for a diversity of workloads such as web servers or code repositories
+  memory optimized instances:
+    fast performance for workloads that process large data sets in memory (ram)
+    implement for high performance or non relational dbs, apps performing real time processing of big unstructured data
+
+data transferred between EC2, RDS, Redshift, Elasticache, S3, and ENIs is free if:
+  services are in the same AZ
+
 
