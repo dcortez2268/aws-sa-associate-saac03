@@ -843,6 +843,7 @@ S3:
     you can have custom domains via R53 and bucket name matters
     CORS configuration:
       allows you to define a way for client web applications that are loaded in one domain to interact with resources in a different domain:
+      cors is configured on the origin being accessed, not the origin accessing:
     use cases for s3 static website hosting:
       offloading:
         store static data from website on s3, have compute service handle dynamic content and then retrieve static data from s3 to save money on storage:
@@ -928,7 +929,9 @@ implementation:
 provides role separation:
   individual permissions are needed for different operations, like creating key, managing KMS, encrypt, decrypt:
 custom key store feature:
-  implements CloudHSM as a custom key store which combines greater security controls provided by aws cloudhsm with the integration and ease of use of aws kms:
+  implements CloudHSM as a custom key store which combines greater security controls provided by aws cloudhsm with the integration and ease of use of aws kms, is still not fips 140-2 LEVEL 3 though if you use this feature:
+  implement CloudHSM with client side encryption if you want to maintain fips 140-2 level 3 compliance:
+
 
 -----------------------------------------------------------------------------------------------:
 DEKs, DATA ENCRYPTION KEYS:
@@ -1391,8 +1394,8 @@ EC2 INSTANCE TYPES:
 -----------------------------------------------------------------------------------------------:
 CONNECTING TO EC2 (KNOW ALL):
   ec2 instance connect:
-    used to connect to linux instances using SSH via CLI or ec2 instance connect API:
-    you do not need to share and manage ssh keys, instead uses identity policy permissions:
+    allows you to interact with ec2 instance via CLI or ec2 instance connect API:
+    connects via SSH but you do not need to share and manage ssh keys, instead uses identity policy permissions:
     your browser connects to aws, then it redirects to connect to ec2 instance
     using the GUI can only connect to public ec2 instances, can connect to private using CLI
   ec2 ssh client:
@@ -1404,7 +1407,7 @@ CONNECTING TO EC2 (KNOW ALL):
     no need for ssh or bastion hosts because aws fully manages the process via secure tunnel:
 
 -----------------------------------------------------------------------------------------------:
-STORAGE REFRESHER:
+STORAGE TYPES:
   3 main categories of storage available in AWS:
     block storage: 
       Volume presented to the OS as a collection of blocks.  no structure provided. mountable. bootable. :
@@ -1621,6 +1624,7 @@ EC2 PURCHASE OPTIONS (LAUNCH TYPES):
       never use spot for workloads which can't tolerate interruptions:
       spot is good for anything which is stateless or anything which can be rerun and non time critical:
       if you need burst capacity needs
+      you can see termination details inside instance metadata:
 
   RESERVED INSTANCES:
     Standard Reserved:
@@ -1821,7 +1825,7 @@ ECR, ELASTIC CONTAINER REGISTRY:
   each registry can have many respositories and each repository can contain many images, think github
   container images can have several unique tags within your repository
   public repository: 
-    anyone has read access but write requires permissions
+    anyone has read access but write (pushing to registry) requires permissions
   private registry: 
     permissions are required for any access
   benefits:
@@ -2380,6 +2384,7 @@ RDS READ REPLICAS:
       snapshots and backups improve RPO but not RTO
   characteristics:
     perform only read operations, unless promoted to rds instance:
+    whenever we add read replicas to an app, we need to change the application code to use them for reads:
     aren't part of the primary instance in any way, have their own db endpoint address
     can be created in same or different region as primary instance
   kept in sync with primary instance via asynchronous replication:
@@ -2476,7 +2481,6 @@ AURORA SERVERLESS:
       multi tenant applications:
       development and test databases
 
-LEFT OFF HERE
 -----------------------------------------------------------------------------------------------:
 AURORA GLOBAL DATABASE:
   allow you to create global level replication using aurora from a master region to up to 5 secondary aws regions:
@@ -2507,7 +2511,7 @@ RDS PROXY:
     maintains a pool of connections that remain open for the database and applications:
     multiplexes, so there is a smaller number of connections open to the database than the number of connections open to the applications:
     EXAM: 
-      each lambda function connection to proxy is much quicker to establish vs direct connection to db and no load on db:
+      each lambda function connection to proxy is much quicker to establish vs direct connection to db and with proxy there is no load on db:
     EXAM: 
       abstracts clients away from db failure or failover events, bc proxy connection is established and waits even if target db is unresponsive:
   use cases:
@@ -2635,7 +2639,7 @@ EVOLUTION OF ELASTIC LOAD BALANCER (ELB):
 
 -----------------------------------------------------------------------------------------------:
 ELB ARCHITECTURE:
-  accepts connections from client and distributes those connections across any registered backend compute:
+  accepts connections from client and distributes those connections across any backend compute services:
   the physical infrastructure is abstracted away from the customer
   without load balancers, everything would have to be tied to everything in a sequential flow and if there is failure, service would be disrupted
   elb's allow each tier to scale independently
@@ -2653,17 +2657,18 @@ ELB ARCHITECTURE:
   listeners: 
     nodes are configured with listeners which accept traffic on a port and protocol and communicate with targets on a port and protocol
   cross zone elb:
-    feature that allows elb node to distribute connections across all AZs, and it isnot enabled by default:
+    feature that allows elb node to distribute connections across all AZs, and it is not enabled by default:
 
 -----------------------------------------------------------------------------------------------:
 APPLICATION AND NETWORK LOAD BALANCER (ALB VS NLB):
-  v2 load balancers support rules that contain 1 ssl per rule, each rule targets a target group, which contains resources corresponding to ssl:
+  v2 load balancers support rules that contain 1 ssl certificate per rule:
+    each rule targets a target group that contains resources:
   application load balancer:
-    listen on HTTP and/or HTTPS:
-    can understand l7 content type, custom headers, user location, app behavior:
+    listens on HTTP and/or HTTPS:
+    can understand l7 content type, lik custom headers, user location, and app behavior:
     can't understand any other layer 7 protocols:
     ALBs are slower than NLBs, bc there are more levels of the network stack to process:
-    ALBs can perform application health checks, HTTP and HTTPS health checks:
+    ALBs can perform application health checks, and HTTP and HTTPS health checks:
     have to be in public subnet:
     supports weighted target groups routing:
     has a static DNS name:
@@ -2677,8 +2682,8 @@ APPLICATION AND NETWORK LOAD BALANCER (ALB VS NLB):
         actions: 
           forward, redirect, fixed-response, authenticate-oidc, authenticate-cognito
   network load balancer:
-    layer 4 load balancer, TCP, TLS, UDP, TCP_UDP:
-    SMTP, SSH, game servers, apps that do not use http:
+    layer 4 load balancer, that supports TCP, TLS, UDP, TCP_UDP:
+    supports SMTP, SSH, game servers, and apps that do not use http:
     no visibility or understanding of HTTP or HTTPS, no headers, no cookies, no session stickiness:
     really really really fast, 75% faster than ALBs:
     health checks for HTTP, TCP, and HTTPS:
@@ -2688,11 +2693,11 @@ APPLICATION AND NETWORK LOAD BALANCER (ALB VS NLB):
     NLB's can have static IPs which are useful for whitelisting
     used with private link to provide services to other VPCs
   
-  NLB or ALB?:
+  when to use NLB or ALB?:
     NLB: unbroken encryption:
-    NLB: static ip for whitelisting, you can't associate EIPS with ALB, static ip is good for allowing a security group to allow traffic from NLB and you can also add your NLB IP to a whitelist (allow list) on a third party service:
+    NLB: static ip for whitelisting, you can't associate EIPS with ALB, and static ip is good for allowing a security group to allow traffic from NLB and you can also add your NLB IP to a whitelist (allow list) on a third party service:
     NLB: fastest performance:
-    NLB: protocols not HTTP or HTTPS:
+    NLB: protocols that are not HTTP or HTTPS:
     ALB: any other scenario:
     NLB: privatelink
 
@@ -2702,7 +2707,7 @@ LAUNCH CONFIGURATIONS AND LAUNCH TEMPLATES:
   launch configs not editable, launch templates have versions:
   you can define anything you normally define instance type, storage and key pair, networking and security groups, userdata, IAM role
   launch configurations have one purpose: 
-    template that an auto scaling group uses to launch ec2 instances:
+    they are a template that an auto scaling group uses to launch ec2 instances:
     contains:
       instance type (AMIs), key pair, one or more security groups, and a block device mapping
   launch templates purpose: 
@@ -2711,7 +2716,7 @@ LAUNCH CONFIGURATIONS AND LAUNCH TEMPLATES:
     also provide superset of features that allow you to provide T2/T3 unlimited, placement groups, capacity reservations, and elastic graphics:
 
 -----------------------------------------------------------------------------------------------:
-AUTO SCALING GROUPS:
+AUTO SCALING GROUP:
   allows ec2 to scale automatically based on demand placed on the system:
   generally used with elbs and launch templates to deliver elastic architectures:
   EXAM: 
@@ -2749,7 +2754,7 @@ AUTO SCALING GROUPS:
 
   self healing:
     asg implements ec2 status checks:
-      monitors health of ec2 instances, and if they do not pass status check, terminates the instance and provisions a new one:
+      monitors health of ec2 instances, and if they do not pass status checks, asg terminates the instance and provisions a new one:
   default policy on which instance to terminate when scaling in:
     terminate the ec2 instance launched from oldest launch configuration that is not protected:
     choose az with most number of instances:
@@ -2810,11 +2815,11 @@ SSL OFFLOAD AND SESSION STICKINESS:
     benefits:
       alb gets to decrypt http data and perform actions based on that data, very flexible:
     disadvantages:
-      certificate stores on elb and that's a risk and ec2 instances need a copy of certificate which adds admin overhead:
+      certificate stores on alb and that's a risk and admin overhead and ec2 instances need a copy of certificate as well:
   pass-through: 
     network load balancer performs this architecture:
     each instance needs to have certificate installed but elb doesn't so no certificate exposure to aws:
-    client connects to elb, but elb just passes that connection to backend instances:
+    client connects to nlb, but nlb just passes that connection to backend instances:
     listener is configured for tcp.  no encryption or decryption happens on the NLB.
   offload:
     connection is terminated (DECRYPTED) on the ELB and needs a ssl certificate on ELB for the domain name the application uses:
@@ -2894,17 +2899,14 @@ AWS Lambda:
   function as a service that allows you to run code without needing to manage servers:
   you are billed for the duration that a function runs:
   key part of serverless architectures
-  runtime environment: 
+  execution environment: 
     functions are loaded and run in a runtime environment with defined runtime:
     you directly control the memory allocated for lambda functions whereas CPU is allocated indirectly, 128MB to 10240 MB:
   lambda function :
     contains code, wrappings, and configurations:
     deployment package service lamba executes
-  docker:
-    does not support running docker containers, however you can use docker image to spin up a lambda image
-    you can package and deploy lambda functions as container images:
   custom runtimes: 
-    layers allow you to create custom runtimes
+    layers allow you to modularize libraries and reusable code
   common uses:
     serverless applications... s3, api gateway, lambda
     file processing... s3, s3 events, lambda
@@ -2922,15 +2924,17 @@ LAMBDA FUNCTION PERMISSIONS:
     they use IAM role based access:
     do not embed credentials into lambda execution environment
     also needs basic execution permissions in order to do things like posting logs in cloudwatch, AWSLambdaBasicExecutionRole
-  resource based policies:
+  resource policies:
     define who can invoke or manage your lambda function:
     you can allow or deny certain entities from interacting with your lambda function
-    can only be changed via cli or api
+    limited edits can be made console or full control via cli or api
 
 -----------------------------------------------------------------------------------------------:
 LAMBDA ENVIRONMENT VARIABLES:
+  key value pairs that can be accessed within execution environment:
   are automatically encrypted by default with kms default encryption key:
   to have more control over the data, use your own key (encryption helper), to create, rotate, disable, and define access controls:
+  if they are associated with $LATEST they can be edited, and if they are associated with a version they are immutable
 
 -----------------------------------------------------------------------------------------------:
 LAMBDA NETWORKING MODES: 
@@ -2944,7 +2948,7 @@ LAMBDA NETWORKING MODES:
     assign lambda fn to at least one subnet for each AZ:
     vpc gateway endpts can provide access to public aws services from private subnet
     nat gateway and internet gateway are required to access public internet from public subnet
-    you must provide vpc subnet id and security group id to lambda so it can create an ENI for each lambda function to run inside VPC:
+    you must provide vpc subnet ids and security group id to lambda so it can create one ENI for each subnet for lambda function to run inside VPC:
       needs permission
       creates one ENI per unique set of security group and subnets, for lambda fns
       takes 90s for initial setup
@@ -2952,12 +2956,24 @@ LAMBDA NETWORKING MODES:
 -----------------------------------------------------------------------------------------------:
 LAMBDA LOGGING:
   lambda uses cloudwatch, cloudwatch logs, and xray for logging:
-  logs from lambda executions: 
-    cloudwatchlogs
-  metrics (invocations, success/failure, retries, latency): 
-    cloudwatch
-  distributed tracing: 
-    x-ray:
+  cloudwatch:
+    displays metrics (invocations, success/failure, retries, latency) :
+    cloudwatch logs:
+      any information printed to stdout or stderr will be logged and will be available:
+      a log group is created for every function, /aws/lambda/functionname:
+      log stream will be grouped by execution data and time, YYYY/MM/DD/[$LATEST/version]:
+  x-ray:
+    distributed tracing service
+    shows the flow of requests through your application:
+    enable xray for a function via 'active tracing' option in console:
+    command to enable active using CLI:
+      aws lambda update-function-configuration --function-name functionName --tracing-config Mode=Active
+    permissions:
+      include 'AWSXRayDaemonWriteAccess' managed policy in execution role:
+    use x-ray sdk within your function
+    AWS_XRAY_DAEMON_ADDRESS:
+      env variable that provides connection details for the port of the xray daemon:
+
 
 -----------------------------------------------------------------------------------------------:
 LAMBDA INVOCATIONS (need to know all lines):
@@ -2970,7 +2986,7 @@ Three types of lambda invocations: synchronous, asynchronous, and event source m
       errors or retries have to be handled within the client
   asynchronous:
     typically used when aws services invoke lambda functions
-    performs asynchronous communication, so not waiting for response
+    performs asynchronous communication, so client is not waiting for response
     EXAM:
      error handling: 
       incoming events are placed in the lambda service queue before being sent to the actual fn, if the fn returns an error to lambda service then lambda will retry fn twice by default or keep event in the lambda service queue for a certain time period.  If either are reached, then you can have error sent to DLQ, or Lambda destinations
@@ -2988,18 +3004,25 @@ Three types of lambda invocations: synchronous, asynchronous, and event source m
       lambda supports destinations (sqs, sns, lambda, eventbridge) where successful or failed batches can be sent
 
 -----------------------------------------------------------------------------------------------:
-ALIASES AND VERSIONS:
+LAMBDA ALIASES AND VERSIONS:
   Versions: 
-    help manage the deployment of functions, enabling the ability to publish a new version of a function for testing, without affecting stable prod version:
-    with every version there are two ARNS, (references), one that points to the published fn and another that points to the copy:
-    published fn is immutable:
+    publishing versions of a function allows you to manage the deployment of functions:
+    published fn is immutable (locked, no editing):
+    has a qualified arn which points at a specific version:
     includes:
       code and dependencies,  runtime setting and env variables, and ARN
+    if you don't specify version:
+      you are deploying changes to $LATEST and you can use unqualified ARN to reference:
+      not immutable, you can edit it:
   alias: 
-    like a pointer to a specific lambda function version:
-    services within serverless architecture point to alias so that when a lambda fn changes, you only have to update alias to point to new published version istead of changing all references for your services to point to new published version:
-    has ARN reference
-
+    is a pointer to a specific lambda function version:
+    aliases can be updated, changing which version they reference:
+    points to qualified ARN reference
+    services within serverless architecture point to alias so that when a lambda fn changes, you only have to update alias to point to new published version istead of changing all references for your services to point to new published version
+    alias routing:
+      distributing percentage of requests to different aliases:
+      need same execution role, same/no DLQ, and need specific versions that are not $LATEST
+  
 -----------------------------------------------------------------------------------------------:
 LAMBDA EXECUTION CONTEXT REUSE(know all lines):
   execution context: 
@@ -3009,6 +3032,7 @@ LAMBDA EXECUTION CONTEXT REUSE(know all lines):
   warm start: 
     after a function is executed, lambda maintains the execution context for 15 mins, "warming" the context for reuse so reduced latency when called again because context is reused
     After 15 mins, lambda will terminate the execution context, and if called again will need to be bootstrapped again
+    store assets in the /tmp folder so they can be available for any future executions which use the same execution environment
   provisioned concurrency:
     feature that allows you to launch the amount of execution contexts you have specified and will keep them warm for you.  can be less expensive than running a Lambda on demand if you are using the capacity you reserved.
 
@@ -3021,7 +3045,7 @@ CLOUDWATCH EVENTS AND EVENTBRIDGE:
     a default event bus(stream of events which occurs from any supported service) for the account:
     super set of cloudwatch events functionality:
     allows us to handle third party events as well as events from custom applications:
-    rules match incoming events, or schedule based rules, and route events to 1+ targets, ex lambda, ecs:
+    rules match incoming events, or schedule based rules are automatically invoked periodically, and both route events to 1+ targets, ex lambda, ecs:
   overview:
     if X happens, or at Y time(s), ... do Z,
     Eventbridge is basically CloudWatch Events v2:
@@ -3125,14 +3149,18 @@ API GATEWAY:
     private:
       accessible only within a VPC via interface endpt
   resource: 
-    data that can be manipulated by an application, Resources are typically accessed by an API (application programming interface) or other interface that allows the application to interact with them.:
+    data that can be manipulated by an application, such as a file, object, database record, or a network connection. Resources are typically exposed by an API (application programming interface) or other interface that allows interaction with the application.:
   stage:
-    is a reference to a deployment, or snapshot.  Helps you manage and optimize a particular deployment. every time you make a change to your api, you must deploy to a stage for it to go live:
+    is a reference to a deployment.  It's another name for a version. every time you make a change to your api, you must deploy to a stage for it to go live.:
+    not immutable, can be overwritten and rolled back:
     each stage has its unique url as well as its own settings
+      stage variables:
+        environment variables of stages:
+        key value pairs that allow you to decouple your api code from stage specific settings:
     canary deployments: 
       Deployments are made to the canary (sub part of stage), not stage.
       can be configured so a certain percentage of traffic is sent to the canary.  This can be adjusted over time, to eventually promoting canary to be new base stage (consuming all of traffic)
-  3 phases in most api gateway interactions:
+  3 phases in api gateway interactions:
     request phase: 
       client makes a request to api gateway:
       authorizes, validates, and transforms data to data integration can handle:
@@ -3166,6 +3194,7 @@ SQS, SIMPLE QUEUE SERVICE:
     REMEMBER SNS AND SQS FANOUT ARCHITECTURE SLIDE:
   visibilityTimeout: 
     time period that a message is hidden from queue after is it received from client.  If client (does not delete message or processing fails) then after this time period is over, the message reappears back in the queue to be reprocessed:
+    default is 30s and can be between 0 seconds and 12 hours
   Dead Letter Queues (DLQ): 
     can be used for problem messages
   use cases:
@@ -3200,7 +3229,7 @@ SQS, SIMPLE QUEUE SERVICE:
 -----------------------------------------------------------------------------------------------:
 SQS DELAY QUEUES:
   allow you to postpone the delivery of messages to consumers:
-  messages are hidden for a set period of time, DelaySeconds, as soon as they are added to queue
+  as soon as msgs are added to queue, messages are hidden for a set period of time, DelaySeconds
   can set up to 15 minutes
   you can set per message setting of delay on standard queues but not FIFO queues
 
@@ -3208,12 +3237,12 @@ SQS DELAY QUEUES:
 SQS DEAD LETTER QUEUES:
   help you handle reoccuring failures when processing messages which are within an SQS queue:
   specifically you can analyze data being sent to DLQ, perform seperate processing, or testing:
-  messages are automatically deleted from DLQ if retention period of DLQ < enqueue timestamp:
+  messages are automatically deleted from DLQ if retention period of DLQ < enqueue timestamp from original queue:
   each message contains a ReceiveCount, which is number of times it has entered queue
   allows you to configure an alarm when a message is delivered to a dead letter queue
   redrive policy:
     specifies the source queue, the DLQ, and conditions where messages will be moved from one to the other, it defines the maxReceiveCount:
-    if maxReceiveCount < ReceiveCount, message is deleted
+    if ReceiveCount > maxReceiveCount, and message isnt deleted, then it's moved to the DLQ
 
 -----------------------------------------------------------------------------------------------:
 AMAZON KINESIS HAS FOUR MAIN SERVICES:
@@ -3228,11 +3257,13 @@ KINESIS DATA STREAMS:
     use if you have multiple consumers retrieving data from a stream in parallel to improve performance:
   public service and highly available
   kinesis data record:
-    allows streams to store data for 1 day by default but up to 365 days for cost: 
+    data is stored in stream for 1 day by default but up to 365 days for cost: 
   shards:
     streams have 1 to n shards:
     the more shards, the more performance and cost:
     not serverless because you manage resources to process and analyze data:
+    shard splitting:
+      increasing the number of shards:
     each shard has 1 MB/s ingestion capacity and 2 mb/s consumption capacity
   kinesis data firehose:
     connects to a stream and moves data from a stream into another aws service, ex s3
@@ -3272,7 +3303,7 @@ KINESIS DATA ANALYTICS:
     streaming data needing real time SQL processing:
     time series analytics, elections/ e-sports:
     real time dashboards, leaderboards for games:
-    real time metrics, security and response teams:
+    real time metrics, ex would be for security and response teams:
 
 -----------------------------------------------------------------------------------------------:
 KINESIS VIDEO STREAMS:
@@ -3308,7 +3339,7 @@ AMAZON COGNITO:
     unauthenticated identities: 
       guest users
     federated identities:
-      swap external identities for short term aws credentials, ex would be google, facebook, twitter, saml2.0, user pool:
+      external identities are swapped for short term aws credentials, ex would be google, facebook, twitter, saml2.0, user pool:
     process of Identity pool and federated identity:
       token, which can be different types, is passed to identity pool:
       authenticated or unauthenticated role is granted to cognito, who grants aws temporary credentials to user:
@@ -3381,7 +3412,7 @@ GLOBAL CONTENT DELIVERY AND OPTIMIZATION:
 CLOUDFRONT ARCHITECTURE:
   origin:
     the source location of your content:
-    the two types of origins are s3 origins and custom origins(some other server(HTTP or other), file storage, or ELB):
+    the two types of origins are s3 origins and custom origins(some other server including( HTTP, file storage, ELB, or other server):
   distribution:
     the base configuration entity of cloudfront:
     EXAM: 
@@ -3481,7 +3512,7 @@ CLOUDFRONT AND SSL:
     origin protocol: 
       connection between cloudfront and origin:
       s3 origins handle certficates natively:
-      for custom origins you need to use an imported generated certificate UNLESS you are using an ALB then you can import certificate via ACM:
+      for custom origins you need to use an imported certificate UNLESS you are using an ALB then you can generate certificate via ACM:
   billing:
     SNI is free, dedicated host costs around 600$/mo per distribution
     SNI, server name identification: 
@@ -3511,6 +3542,7 @@ ORIGIN TYPES AND ARCHITECTURE:
     custom headers available: 
       custom origins does not have origin access control like s3 buckets so if you want to ensure connections only from cf you can do so via custom headers
 
+jjj
 -----------------------------------------------------------------------------------------------:
 PRIVATE DISTRIBUTION AND BEHAVIORS:
   securing connection between edge locations and viewers:
@@ -4516,6 +4548,7 @@ DYNAMODB OPERATIONS, CONSISTENCY, AND PERFORMANCE:
 
   query operation:
     requires you to query via partion key OR partition key and sort key, allows range for sort key:
+    you can create different indexes to make any attribute the partition key/sort key so you can query for any attribute:
   scan operation:
     least efficient operation, but most flexible way to query data:
     consumes the capacity of every item in table:
@@ -4538,7 +4571,7 @@ DYNAMODB OPERATIONS, CONSISTENCY, AND PERFORMANCE:
 DDB LOCAL SECONDARY INDEX AND GLOBAL SECONDARY INDEX, (LSI, GSI):
   indexes: 
     allow for more efficient data retrieval operations:
-    allow you to provide alternative views on table data(allows alt key to search with, other than primary key):
+    allow you to provide alternative views on table data(makes any attribute the pk, which allows alt key to search with):
 
   LSI (LOCAL SECONDARY INDEX) and GSI (GLOBAL SECONDARY INDEX) allow for an alternative presentation of data stored in a base table
   LSI (LOCAL SECONDARY INDEX):
@@ -4596,9 +4629,9 @@ DynamoDB ACCELERATOR, (DAX):
   very fast, cache hits are returned in microseconds, misses returned in milliseconds:
   Primary node supports writes, replicas support reads:
   supports write through, (you can write via dax sdk):
+  dax deployed within a VPC:
   nodes are HA
   you can scale up and scale out
-  dax deployed within a VPC
 
 -----------------------------------------------------------------------------------------------:
 DYNAMODB TTL:
@@ -4613,28 +4646,28 @@ AMAZON ATHENA:
   capable of working with unstructured, semi-structured, or structured data
   original data never changed, remains on s3
   schema on read:
-    table like translation where schema translates data when read
-    output can be sent to other services like Quicksight:
-    you can also query other data sources other than s3 w/ athena federated query:
-    good for querying aws logs, glue data catalog that have been exported to s3
-    demo implementation:
-      use DDL to define database, table schema, and source of data
-      perform query on table
+    table like translation where schema translates data when read, original data is unchanged in s3:
+  output can be sent to other services like Quicksight:
+  you can also query other data sources other than s3 w/ athena federated query:
+  good for querying aws logs, glue data catalog that have been exported to s3
+  demo implementation:
+    create s3 bucket to store results
+    via DDL language:
+      create database in athena, create table schema to read data, and define src of data
+    perform query on table
 
 -----------------------------------------------------------------------------------------------:
 ELASTICACHE:
   in memory caching solution designed primarily for databases and applications running on ec2 instances:
   can also be used with other aws services and applications as a caching layer:
-  designed for high performance:
+  designed for high performance (in memory vs using disk like rds does):
   not persistent:
   
   EXAM: 
     supports redis or memcached engines:
   use cases:
     EXAM: 
-      read heavy workloads with low latency:
-    EXAM: 
-      scaling reads in a cost effective way:
+      implement for read heavy workloads with low latency requirements:
     EXAM: 
       allows externally hosted user session state, allowing stateless servers:
       session state is written to cache and loaded when needed:
@@ -4645,14 +4678,14 @@ ELASTICACHE:
       advanced data structures:
       multi AZ replication:
       backup and restore:
+      authenticate via using Redis AUTH command:
       replication (scale reads)
       transactions, multiple operations are treated as one
-      authenticate via using Redis AUTH command:
     memcached:
       simple data structures:
       no replication:
       no backups:
-      multi threaded
+      multi threaded, higher performance when doing multi core computations:
       multiple nodes (sharding)
 
 -----------------------------------------------------------------------------------------------:
@@ -4890,11 +4923,6 @@ AWS MIGRATION HUB:
 
 AMAZON QUANTUM LEDGER DATABASE (QLDB):
   fully managed ledger database that provides a transparent, immutable, and cryptographically verifiable transaction log owned by a central trusted authority
-
-ELASTIC BEANSTALK:
-  allows you to upload your application, and automatically handles the details of capacity provisioning, load balancing, scaling, and application health monitoring
-  when you deploy your application, it builds the selected supported platform version and provisions one or more aws resources to run your application
-  reduces management complexity without restricting choice or control
 
 AWS LAKE FORMATION:
   service that makes it easy to set up a secure data lake in days
