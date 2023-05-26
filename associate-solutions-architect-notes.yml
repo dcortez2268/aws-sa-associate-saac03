@@ -1816,7 +1816,8 @@ ECS CONCEPTS, ELASTIC CONTAINER SERVICE:
     tells ecs information about single container, including pointer reference and which port it uses 
   task definitions: 
     metadata in json form to tell ecs how to run a docker container:
-    contains info on image name, port binding for container and host, memory and cpu required, environment variables, networking information, iam role, and logging configuration, and canc contain up to 10 container definitions:
+    contains info on image name, port binding for container and host, memory and cpu required, environment variables, networking information, iam role, and logging configuration:
+    contains up to 10 container definitions, run containers inside same task definition if they need access to same resources, otherwise run seperate containers in seperate task definitions:
     contain task role:
       use when implementing fargate mode:
       iam role the tasks can assume to interact with aws resources :
@@ -1831,6 +1832,8 @@ ECS CONCEPTS, ELASTIC CONTAINER SERVICE:
   service definition: 
     defines a service, which defines how we want task [definitions] to scale, or availability, resiliency, copies, capacity, etc:
   when you terminate a container instance in the running state, that container instance is automatically removed from cluster, but if you do so in the stopped state, the container instance is not automatically deregistered from the cluster:
+  dynamic port mapping:
+    allows you to support multiple tasks from a single service on the same container instance
 
 -----------------------------------------------------------------------------------------------:
 ECS EC2 MODE:
@@ -2810,6 +2813,8 @@ AUTO SCALING GROUP:
   self healing:
     asg implements ec2 status checks:
       monitors health of ec2 instances, and if they do not pass status checks, asg terminates the instance and provisions a new one:
+    alb implements health checks:
+      to automate the replacement of unhealthy ec2 instances, you must change the health check type of your instance's asg group from ec2 to elb by using a configuration file:
   default policy on which instance to terminate when scaling in:
     terminate the ec2 instance launched from oldest launch configuration that is not protected:
     choose az with most number of instances:
@@ -3417,6 +3422,7 @@ AMAZON COGNITO:
     JWTs can grant access to APIs via Legacy Lambda custom authorizers and API gateway, but not aws credentials
     features:
       user directory management and profiles, sign up and sign in (customizable UI), MFA, and other security features:
+      can integrate with application load balancer to offload the work of authenticating users from your application to alb:
   IDENTITY POOLS:
     allow you to offer access to temporary aws credentials in exchange for token:
     unauthenticated identities: 
