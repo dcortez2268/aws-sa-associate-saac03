@@ -1,21 +1,3 @@
-IAM access keys: 
-  use access keys for authentication when using CLI:
-  long term credentials used with IAM users only:
-  don't change automatically or regularly:
-  similar to user name and password, but differences are:
-    an IAM user can have two access keys, either 0, 1, or 2
-    can be created, deleted, made inactive or active
-  formed from two parts: 
-    access key ID: username
-    secret access key: passw
-
-  aws configure: 
-    allows us to configure the default configuration for CLI
-  aws configure --profile nameOfProfile: 
-    named profiles:
-      allow us to configure multiple aws accounts to our CLI instead of just using one account:
-    whenever running commands append '--profile nameOfProfile' to run from NameOfProfile account:
-
 -----------------------------------------------------------------------------------------------:
 NIST definition of cloud computing (read through): 
 5 characteristics: 
@@ -363,11 +345,13 @@ EC2:
   states:
     running and stopped: 
       can toggle between states, like off/on switch:
-      this can be automated via enabling hibernation which allows apps to pick up exactly where they left off, to hibernate instance must have an ebs volume and must be encrypted:
+      hibernation mode:
+        automates toggling running/stopped states which allows apps to pick up exactly where they left off:
+        instance must have an encrypted ebs volume to enable hibernation mode:
     terminated: 
       instance is fully deleted once you move to termination state:
   charges:
-    cpu, memory, disk, and networking, charged per second,
+    cpu, memory, disk, and networking
     charged for all four while running: 
     charged for disk while stopped if there is an attached ebs volume, by default there is not an ebs volume attached to an ec2 instance:
 
@@ -517,9 +501,9 @@ Cloudwatch:
         high resolution:
           1 second+
           for alarms: 10s+
-  dimension:
-    name value pairs that uniquely identifies a metric, ex.. ec2instance:3042348324-34, environment:production:
-    name value pairs that aggregrate datapoints for same metric, ex.. all ec2 isntance's cpu utilization
+    dimension:
+      name value pairs that uniquely identifies a metric, ex.. ec2instance:3042348324-34, environment:production:
+      name value pairs that aggregrate datapoints for same metric, ex.. all ec2 isntance's cpu utilization
   statistic:
     aggregration over a period(min, max, sum, avg...)
 
@@ -606,16 +590,16 @@ IAM, ACCOUNTS, AND AWS ORGANIZATIONS:
 IAM POLICIES:
   JSON document that allows or denies permissions for IAM users (identities), groups, and roles:
   contains 1 or more statements:
-  Sid: 
-    statement id, optional field, allows you to provide summaryName of statement to quickly identify what it does, 
-  Action: 
-    can provide a wildcard * which means "all", list of multiple independent actions, or a specific individual action 
-    ["service: operationName"]
-  Resource: 
-    same options above as action 
-    ["arnResourceNames"]
-  Effect: 
-    either allow or deny, controls what aws does if action and resource match
+    Sid: 
+      statement id, optional field, allows you to provide summaryName of statement to quickly identify what it does, 
+    Action: 
+      can provide a wildcard * which means "all", list of multiple independent actions, or a specific individual action 
+      ["service: operationName"]
+    Resource: 
+      same options above as action 
+      ["arnResourceNames"]
+    Effect: 
+      either allow or deny, controls what aws does if action and resource match
 
   Every interaction you have with AWS, is a combination of resource you're interacting with and the actions that your attempting to perform on that resource
   Policy precedence when two policies overlap permissions(ordered in highest precedence vs least:
@@ -624,7 +608,7 @@ IAM POLICIES:
     3. default deny (implicit), by default aws identities have no access to any resources (besides root):
 
   Inline Policies:
-    applying JSON to each account individually:
+    applies JSON to each account individually:
     use only when you need a special or exceptional allow or deny for a single user:
   Managed Policies: 
     create policy, then attach to any identity that wishes to use it
@@ -687,7 +671,7 @@ IAM Roles:
       assuming a role in another aws account to access that account via the console UI:
     you need service linked roles:
       Service roles are used to grant permissions to AWS services to access resources and other aws services:
-      permissions are created and managed by the aws service itself:
+      permissions are created and managed by the aws service itself (predefined by the service):
       you can't delete the role until it's no longer required:
       predefined by a service that provide permissions that a service needs to interact with other AWS services on your behalf, service might create or delete the role or allow you to during setup or within IAM
     iam:PassRole action: 
@@ -948,7 +932,7 @@ implementation:
 provides role separation:
   individual permissions are needed for different operations, like creating key, managing KMS, encrypt, decrypt:
 custom key store feature:
-  implements CloudHSM as a custom key store which combines greater security controls provided by aws cloudhsm with the integration and ease of use of aws kms, is still not fips 140-2 LEVEL 3 though if you use this feature:
+  implements kms with CloudHSM as a custom key store which combines greater security controls provided by aws cloudhsm with the integration and ease of use of aws kms, is still not fips 140-2 LEVEL 3 though if you use this feature:
   implement CloudHSM with client side encryption if you want to maintain fips 140-2 level 3 compliance:
 
 
@@ -958,7 +942,7 @@ DEKs, DATA ENCRYPTION KEYS:
   generated by KMS keys via GenerateDataKey api call:
   KMS doesn't store the DEK in any way, provides to you or service using KMS to perform crypto operations
   implementation:
-    when DEK is created, KMS provides you with two versions of that key:
+    when DEK is created, KMS provides you with two versions of that key
     plaintext version:
       used to encrypt data then discarded
     ciphertext version:
@@ -970,7 +954,7 @@ DEKs, DATA ENCRYPTION KEYS:
 Key POLICIES AND SECURITY:
   key policy:
     type of resource policy that has to explicitly grant permissions to principals to access KMS:
-    every key has one and primary way to control access to KMS keys:
+    every key has one and is the primary way to control access to KMS keys:
     you cannot allow access via iam policy without key policy allowing access:
   typical way of accessing key:
     broad key policy for account + IAM policies
@@ -997,18 +981,20 @@ S3 ENCRYPTION:
           you manage the encryption keys and s3 manages the encryption:
           mandates that HTTPS be used while uploading/downloading objects:
         SSE-S3: 
-          ss encryption with s3 managed keys, uses AES256 encryption (STRONGEST ENCRYPTION):
+          ss encryption with s3 managed keys:
+          uses AES256 encryption (STRONGEST ENCRYPTION):
           regularly rotates the keys:
         SSE-KMS: 
-          ss encryption with KMS managed keys, best: 
+          ss encryption with KMS managed keys: 
           provides role separation for the use of a key:
           provides audit trail:
           establishes quotas for the number of api operation requests/second:
+          regularly rotates the keys:
 
   Bucket Default Encryption:
     allows you to set default encrytion method used if not specified on object level:
     you can set bucket default in the console at bucket level or you can set encryption at object level via header when uploading object
-    header 'x-amz-server-side-encryption' + opt.. 'x-amz-server-side-encryption-aws-kms-key-id':
+    header 'x-amz-server-side-encryption' + ['x-amz-server-side-encryption-aws-kms-key-id']:
       determines the encryption of object for sse-kms and optional header is used if a kms key other than default is being used: 
     header 'x-amz-server-side-encryption':
      determines the encryption of object for sse-s3: 
@@ -1023,7 +1009,7 @@ S3 OBJECT STORAGE CLASSES (KNOW ALL):
     no minimums, you are charged per GB for data transferred out and per 1000 requests
     recommended for frequently accessed data which is important and non replaceable data:
     takes ms to retrieve
-  standard infrequent access: 
+  standard infrequent access (S3-IA): 
     architecture is mostly the same as s3 standard except that it is cheaper to store data but more expensive to retrieve the data
     has minimum duration of 30 days for storage and min billing size per object, 128KB:
     recommended for long lived data, which is important but where access is infrequent:
@@ -1055,7 +1041,7 @@ S3 OBJECT STORAGE CLASSES (KNOW ALL):
     recommended for archival data, accessed very rarely if ever, and hours-days retrieval:
     has minimum duration of 90 days for storage:
   intelligent tiering: 
-    helps you automatically move data to most cost effective storage tier based on access patterns
+    helps you automatically move data to most cost effective storage tier based on access patterns:
     tiers are like classes we have frequent access, infrequent access, archive instant access, archive access, and deep archive
     recommended for long lived data with changing or unknown patterns:
 
@@ -1065,7 +1051,7 @@ S3 LIFECYCLE POLICIES:
   transition actions: 
     change storage classes of objects after x amount of time:
     can only transition down classes:
-    before transitioning down to s3-ia, it must be in current storage class for 30 days:
+    before transitioning down to s3-ia, it must be in current storage class for 30 days
   expiration actions: 
     can delete objects, or versions after x amount of time:
 
@@ -1088,7 +1074,6 @@ S3 REPLICATION:
     ownership, default is source account but you can change
     RTC, replication time control, keeps buckets in sync within 15 mins of each other:
   s3 replication considerations:
-    EXAM: 
       not retroactive and versioning for both buckets needs to be on:
       one way replication only from source to destination:
       can handle unencrypted objects, SSE-S3, AND SSE-KMS with extra config:
@@ -1481,7 +1466,7 @@ EBS VOLUME TYPES:
 
 GENERAL PURPOSE SSD:
   GP2:
-    up to 16000 IOPS per volume
+    up to 16000 IOPS per volume:
     default general purpose ssd storage:
     high performance storage for fairly low price
     can be as small as 1GB or as large as 16TB
@@ -1555,7 +1540,7 @@ EBS SNAPSHOTS:
   the first is a full copy of data on the volume, future snaps are incremental:
   volumes can be created or restored from snapshots, and can be copied to another region :
   billing: GB/month of used data, not allocated data:
-  ebs volumes can be written to or read from while snapshot is in progress:
+  ebs volumes can be written to or read from while snapshot is in progress
 
   when you create new EBS volume w/out snapshot: 
     full performance immediately
@@ -1574,7 +1559,6 @@ EBS ENCRYPTION:
     KMS generated encrypted DEK key to be stored on instance
     Whenever wanting to read/write data, the volume makes request to KMS, KMS sends response with decrypted DEK key which is stored on the ec2 host and is used to encrypt and decrypt data stored on instance volume.  Whenever instance moves hosts, the key is discared
     Instance retains encrypted DEK key, and whenever wanting to read/write data repeats step 2.  same implementation for snapshots. 
-  EXAM POWER-UP:
     accounts can be set to encrypt ebs volumes.. you can set a default KMS key or choose a custom KMS key to use:
     each volume uses 1 unique DEK: 
     snapshots and future volumes use the same DEK:
@@ -1602,7 +1586,7 @@ NETWORK INTERFACES, INSTANCE IPS, AND DNS:
       (elastic ips are like public ipv4 addresses but different bc normally you can only have 1 public address per interface while you can have many elastic ips, (1 per private ipv4 address))
     0 or more ipv6 addresses:
     security groups:
-    source/destination check
+    source/destination check:
 
   elastic ip addresses: 
     replaces the public ipv4 address:
@@ -1711,7 +1695,7 @@ EC2 PURCHASE OPTIONS (LAUNCH TYPES):
   EC2 SAVINGS PLANS:
     hourly commitment for a 1 or 3 year term:
     two types:
-      general compute $ amounts: 
+      general compute $ amounts, (hourly charge): 
         ex, 20$ per hour for 3 years, for ec2, fargate, and lambda, saves you money because savings plan rate is lower than on demand rate for these products
       specific ec2 savings plan: 
         you pick size and OS
@@ -1801,7 +1785,7 @@ containers:
       hub or registry of container images
 
 -----------------------------------------------------------------------------------------------:
-ECS CONCEPTS, ELASTIC CONTAINER SERVICE:
+ECS, ELASTIC CONTAINER SERVICE:
   allows you to use docker containers running on infrastructure that aws partially or fully manages:
   clusters run in ec2 mode or fargate mode:
     ec2 mode: 
@@ -1811,24 +1795,24 @@ ECS CONCEPTS, ELASTIC CONTAINER SERVICE:
   ecs container engine maintains clusters
   ecs allows you to create cluster
   cluster: 
-    where your containers run from, tasks or services get deployed into cluster:
-  container definition: 
-    tells ecs information about single container, including pointer reference and which port it uses 
+    where your containers run from, tasks and services get deployed into cluster:
   task definitions: 
-    metadata in json form to tell ecs how to run a docker container:
-    contains info on image name, port binding for container and host, memory and cpu required, environment variables, networking information, iam role, and logging configuration:
+    metadata written in json that tells ecs how to run a docker container:
     contains up to 10 container definitions, run containers inside same task definition if they need access to same resources, otherwise run seperate containers in seperate task definitions:
-    contain task role:
-      use when implementing fargate mode:
-      iam role the tasks can assume to interact with aws resources :
+    contains info on image name, port binding for container and host, memory and cpu required, environment variables, networking information, iam role, and logging configuration:
+    contains container instance iam role:
+      use instead of task roles when implementing ec2 mode: 
+      one iam role per task definition:
+    contains task role:
+      used when implementing fargate mode:
+      is an iam role the tasks can assume to interact with aws resources :
       task roles are BEST PRACTICE to give ecs containers permissions to access aws services and resources:
       one iam role per task definition:
-    container instance iam roles:
-      use instead of task roles when implementing ecs ec2 mode: 
-      one iam role per task definition:
-    contains envrionment variables:
+    contains environment variables:
       can be hardcoded:
       can be injected via SSM Parameter store, Secrets Manager, or s3:
+  container definition: 
+    tells ecs information about single container, including pointer reference and which port it uses:
   service definition: 
     defines a service, which defines how we want task [definitions] to scale, or availability, resiliency, copies, capacity, etc:
   when you terminate a container instance in the running state, that container instance is automatically removed from cluster, but if you do so in the stopped state, the container instance is not automatically deregistered from the cluster:
@@ -1919,7 +1903,7 @@ ADVANCED EC2:
   bootstrapping:
     process of running scripts or other configurations when an instance is first launched:
     allows ec2 build automation once launched
-    enabled via user data, accessed via 169.254.169.254/latest/user-data :
+    is enabled via user data, accessed via 169.254.169.254/latest/user-data :
     anything in user data is executed by the instance OS with root user privileges:
     ec2 doesn't interpret, it passes the data blindly, the os needs to understand the user data and execute, 
     can be implemented in UI by editing user data field when launching ec2 instance or you can bootstrap via including user data inside cloudformation template that launches ec2 instance:
@@ -1978,7 +1962,7 @@ SSM PARAMETER STORE:
     allows you to implement parameter policies that allow you to assign specific criteria to a parameter:
     expiration:
       deletes the parameter at a specific date:
-    expirationNotiication:
+    expirationNotification:
       sends an event to eventbridge when the specified expiration time is reached:
     NoChangeNotification:
       sends an event to eventbridge when a parameter has not been modified for a specified amount of time:
@@ -2431,7 +2415,7 @@ RDS BACKUP AND RESTORE:
 RDS READ REPLICAS:
   benefits:
     implement performance benefits for read operations:
-      you are able to deploy 5 direct read replicas per db instance:
+      you are able to deploy 5-15 direct read replicas per db instance:
     can be cross-region, providing global resilience:
       read replicas can have read replicas but can introduce lag issues
       global performance improvements for read workloads
@@ -2961,12 +2945,14 @@ AWS Lambda:
   key part of serverless architectures
   execution environment: 
     functions are loaded and run in a runtime environment with defined runtime:
-    you directly control the memory allocated for lambda functions whereas CPU is allocated indirectly, 128MB to 10240 MB:
+    you directly control the memory allocated for lambda functions whereas CPU is allocated indirectly: 
+      memory size:
+        128MB to 10,240 MB:
   lambda function :
     contains code, wrappings, and configurations:
     deployment package service lamba executes
   custom runtimes: 
-    custom runtimes via zip files can be created for applications and bootstrap it to an aws lambda function:
+    are implemented via zip files can be created for applications and bootstrap it to an aws lambda function:
     another option is to implement via layers which allow you to modularize libraries and reusable code:
   common uses:
     serverless applications... s3, api gateway, lambda
@@ -2993,10 +2979,10 @@ LAMBDA FUNCTION PERMISSIONS:
 -----------------------------------------------------------------------------------------------:
 LAMBDA ENVIRONMENT VARIABLES:
   key value pairs that can be accessed within execution environment:
-  upn to 4kb in size, if bigger place data in the deployment package .zip file:
+  up to 4kb in size, if bigger size is needed, place data in the deployment package .zip file:
   are automatically encrypted by default with kms default encryption key:
   to have more control over the data, use your own key (encryption helper), to create, rotate, disable, and define access controls:
-  if they are associated with $LATEST they can be edited, and if they are associated with a version they are immutable
+  if they are associated with $LATEST they can be edited, and if they are associated with a version they are immutable:
 
 -----------------------------------------------------------------------------------------------:
 LAMBDA NETWORKING MODES: 
@@ -3017,24 +3003,24 @@ LAMBDA NETWORKING MODES:
 
 -----------------------------------------------------------------------------------------------:
 LAMBDA LOGGING:
-  lambda uses cloudwatch, cloudwatch logs, and for logging:
+  lambda uses cloudwatch, cloudwatch logs, and xray for logging:
   cloudwatch:
-    displays metrics (invocations, success/failure, retries, latency) :
+    displays metrics (invocations, success/failure, retries, latency)
     cloudwatch logs:
       any information printed to stdout or stderr will be logged and will be available:
       a log group is created for every function, /aws/lambda/functionname:
-      log stream will be grouped by execution data and time, YYYY/MM/DD/[$LATEST/version]:
+      log stream will be grouped by execution date and time, YYYY/MM/DD/[$LATEST/version]:
   x-ray:
     distributed tracing service
-    shows the flow of requests through your application:
-    enable xray for a function via 'active tracing' option in console:
+    shows the flow of requests through your application
+    enable xray for a function via 'active tracing' option in console
     command to enable active using CLI:
       aws lambda update-function-configuration --function-name functionName --tracing-config Mode=Active
     permissions:
-      include 'AWSXRayDaemonWriteAccess' managed policy in execution role:
+      include 'AWSXRayDaemonWriteAccess' managed policy in execution role
     use x-ray sdk within your function
     AWS_XRAY_DAEMON_ADDRESS:
-      env variable that provides connection details for the port of the xray daemon:
+      env variable that provides connection details for the port of the xray daemon
 
 
 -----------------------------------------------------------------------------------------------:
@@ -3042,33 +3028,26 @@ LAMBDA INVOCATIONS (need to know all lines):
 Three types of lambda invocations: synchronous, asynchronous, and event source mappings
   synchronous: 
     cli/api invokes a function, passing in data and waits for a response
-    EXAM: 
-      lambda returns response data, whether success or failure
-    EXAM:
-      errors or retries have to be handled within the client
+    lambda returns response data, whether success or failure
+    errors or retries have to be handled within the client
   asynchronous:
     typically used when aws services invoke lambda functions
     performs asynchronous communication, so client is not waiting for response
-    EXAM:
-     error handling: 
+    error handling: 
       incoming events are placed in the lambda service queue before being sent to the actual fn, if the fn returns an error to lambda service then lambda will retry fn twice by default or keep event in the lambda service queue for a certain time period.  If either are reached, the error is discarded or you can have error sent to DLQ, or Lambda destinations
-    EXAM:
-     need to be idempotent: reprocessing a result should have the same end state
-    EXAM:
-     lambda supports destinations (sqs, sns, lambda, eventbridge) where successful or failed events can be sent
+    need to be idempotent: reprocessing a result should have the same end state
+    lambda supports destinations (sqs, sns, lambda, eventbridge) where successful or failed events can be sent
   event source mapping: 
-    EXAM:
-      event source mapping within lambda service polls queues or streams for new data and gets batches of source data and sends to lambda functions
-      typically used on streams or queues which don't support event generation to invoke lambda (sqs, kinesis, Dynamodb streams) 
-    EXAM: 
-      permissions from the lambda execution role are used by the event source mapping to interact with event source
-    EXAM: 
-      lambda supports destinations (sqs, sns, lambda, eventbridge) where successful or failed batches can be sent
+    event source mapping within lambda service polls queues or streams for new data and gets batches of source data and sends to lambda functions
+    typically used on streams or queues which don't support event generation to invoke lambda (sqs, kinesis, Dynamodb streams) 
+    permissions from the lambda execution role are used by the event source mapping to interact with event source
+    lambda supports destinations (sqs, sns, lambda, eventbridge) where successful or failed batches can be sent
 
 -----------------------------------------------------------------------------------------------:
 LAMBDA ALIASES AND VERSIONS:
   Versions: 
-    publishing versions of a function allows you to manage the deployment of functions:
+    snapshots of a lambda function's code and configuration:
+    allows you to manage the deployment of functions:
     published fn is immutable (locked, no editing):
     has a qualified arn which points at a specific version:
     includes:
@@ -3083,7 +3062,7 @@ LAMBDA ALIASES AND VERSIONS:
     services within serverless architecture point to alias so that when a lambda fn changes, you only have to update alias to point to new published version istead of changing all references for your services to point to new published version
     alias routing (also known as traffic shifting):
       distributing percentage of requests to different aliases:
-      need same execution role, same/no DLQ, and need specific versions that are not $LATEST:
+      need same execution role, same DLQ or no DLQ, and need specific versions that are not $LATEST:
   
 -----------------------------------------------------------------------------------------------:
 LAMBDA EXECUTION CONTEXT REUSE(know all lines):
@@ -3150,7 +3129,8 @@ SNS, SIMPLE NOTIFICATION SERVICE:
 
 -----------------------------------------------------------------------------------------------:
 AWS STEP FUNCTIONS:
-  state manager that allows serverless workflow, has startpt, states, and endpt:
+  state manager that allows serverless workflow:
+  it has start point, states, and end point:
   problems/limitations with Lambda:
     15 min max execution time
     lambda chaining gets messy at scale, and not possible to transfer state
@@ -3158,10 +3138,11 @@ AWS STEP FUNCTIONS:
     states: 
       are things which occur inside state machine, input data, modify data, output data,
   maximum duration:
-    1 year:
+    1 year
   two different types of workflows:
     standard workflow:
-      default, has a 1 year maximum duration:
+      default workflow:
+      has a 1 year maximum duration:
     express workflow:
       designed for high volume event processing workloads and high transactions:
       has a 5 minute maximum duration:
@@ -3181,15 +3162,15 @@ AWS STEP FUNCTIONS:
       runs processes asynchronously:
       allows you to create parallel branches to perform multiple processes at same time:
     map: 
-      accepts a list of things, performs actions for each item:
+      accepts a list of things, and performs actions for each item:
     task:
       runs processes synchronously: 
       represents a single unit of work, coordinates with other services to actually perform that work, can be integrated with Lambda, batch, dynamodb, ecs, sns, sqs, glue, sagemaker, emr, step functions
       TaskToken:
-        allows you to pause step functions during a task until a task token is returned
-        append .waitForTaskToken to the resource field
-    error handling:
-      is done within state machine instead of application code:
+        allows you to pause step functions during a task until a task token is returned:
+        append .waitForTaskToken to the resource field:
+    error handling( KNOW ALL ):
+      is done within state machine instead of application code
       retry field (task or parallel state):
         retries failed state
       catch field (task or parallel state):
@@ -3228,7 +3209,7 @@ API GATEWAY:
   resource: 
     data that can be manipulated by an application, such as a file, object, database record, or a network connection. Resources are typically exposed by an API (application programming interface) or other interface that allows interaction with the application.:
   stage:
-    is a reference to a deployment.  It's another name for a version. every time you make a change to your api, you must deploy to a stage for it to go live.:
+    snapshot of an api. every time you make a change to your api, you must deploy changes to a stage for it to go live.:
     not immutable, can be overwritten and rolled back:
     each stage has its unique url as well as its own settings
       stage variables:
@@ -3236,7 +3217,7 @@ API GATEWAY:
         key value pairs that allow you to decouple your api code from stage specific settings:
     canary deployments: 
       Deployments are made to the canary (sub part of stage), not stage:
-      can be configured so a certain percentage of traffic is sent to the canary.  This can be adjusted over time, to eventually promoting canary to be new base stage (consuming all of traffic)
+      can be configured so a certain percentage of traffic is sent to the canary.  This can be adjusted over time, to eventually promoting canary to be new base stage (consuming all of traffic):
   3 phases in api gateway interactions:
     request phase: 
       client makes a request to api gateway:
@@ -3273,7 +3254,7 @@ SQS, SIMPLE QUEUE SERVICE:
     time period that a message is hidden from queue after is it received from client.  If client (does not delete message or processing fails) then after this time period is over, the message reappears back in the queue to be reprocessed:
     ChangeMessageVisibility:
       api call to change visibility timeout:
-    default is 30s and can be between 0 seconds and 12 hours
+    default is 30s and can be between 0 seconds and 12 hours:
   Dead Letter Queues (DLQ): 
     can be used for problem messages
   use cases:
@@ -3289,7 +3270,7 @@ SQS, SIMPLE QUEUE SERVICE:
       immediate response, if 0 messages are in queue then returns 0 messages:
     Long:
       response can be from 1-20s, if 0 messages are in queue then it waits for a message to appear before returning response:
-      can be enabled at queue levelel or ReceiveMessageWaitTimeSeconds api call:
+      can be enabled at queue level or set via ReceiveMessageWaitTimeSeconds api call:
   two types of queues: 
     Standard:
       at least once delivery, no guarantee on order:
@@ -3301,7 +3282,7 @@ SQS, SIMPLE QUEUE SERVICE:
       used for workflow ordering, command ordering, price adjustments:
       must have a .fifo suffix in name:
       implements the parameter, MessageDeduplicationId, with SendMessage API request that allows queue to discard any of the same messages it has received within the last 5 mins:
-      implements the parameter, MessageGroupId, that allows multiple messages belonging to the same group to be processed in order, and there can be as many consumers as groups that reads from queue:
+      implements the parameter, MessageGroupId, that allows multiple messages belonging to the same group to be processed in order, and there can be as many consumers as groups that reads from the queue:
   Policies:
     Queue policies: 
       (resource policy) grant access to queue only from external accounts
@@ -3335,10 +3316,12 @@ KINESIS DATA STREAMS:
   multiple producers can send data into a kinesis stream and multiple consumers can access data from the same stream: 
   streams can scale from low to near infinite data rates:
   streams data in the sequence of arrival:
-    PutRecord api call and SequenceNumberForOrdering parameter ensures ordering of records
-  no duplicates will be received:
-    assign a unique ID to each record and maintain a record of processed ids in dynamodb, skip record if there is a duplicate
-  enhanced fanout feature:
+    PutRecord api call
+    SequenceNumberForOrdering parameter
+  ensures no duplicates will be received:
+    assigns a unique ID to each record and maintains a record of processed ids in dynamodb
+    skips record if there is a duplicate
+  enhanced fan out feature:
     use if you have multiple consumers retrieving data from a stream in parallel to improve performance:
   public service and highly available
   kinesis data record:
@@ -3631,7 +3614,6 @@ ORIGIN TYPES AND ARCHITECTURE:
     custom headers available: 
       custom origins does not have origin access control like s3 buckets so if you want to ensure connections only from cf you can do so via custom headers
 
-jjj
 -----------------------------------------------------------------------------------------------:
 PRIVATE DISTRIBUTION AND BEHAVIORS:
   securing connection between edge locations and viewers:
@@ -4415,7 +4397,7 @@ CLOUDFORMATION OUTPUTS:
   EXAM: 
     output values can be exported, allowing cross stack references:
   EXAM: 
-    values can be declared in this outputs section which will be visible as outputs when using the CLI or console UI and can be accessed from a parent stack or cross stack references:
+    values can be declared in the outputs section which will be visible as outputs when using the CLI or console UI and can be accessed from a parent stack or cross stack references:
   optional within a template
 
 -----------------------------------------------------------------------------------------------:
@@ -4460,12 +4442,11 @@ CF WaitCondition, Creation Policy, and cfn-signal:
 NESTED STACKS AND CROSS REFERENCE STACKS:
   problem of single stack:
     500 resource limits per stack:
-    can't easily reuse resources, ex a VPC that you want to use in diff stacks:
+    can't easily reuse resources, ex a VPC:
     can't easily reference other stacks:
 
   NESTED STACKS:
     architecture:
-      EXAM: 
         whole templates can be reused in other stacks!:
         root stack:
           only stack to be created manually by entity
@@ -4481,15 +4462,13 @@ NESTED STACKS AND CROSS REFERENCE STACKS:
     
   CROSS STACK REFERENCES:
     allow one stack to reference another stacks outputs:
-    outputs can be exported, making them visible from other stacks:
-    exports must have a unique name in the region:
-    !ImportValue resourceName:  
-      can be used instead of Ref to reference region exported values:
-    export attribute: 
+    export section:
       used to export the output of a stack to that region's export list:
+      exports must have a unique name in the region:
+    !ImportValue resourceName:  
+      imports a value into a stack exported from a different stack:
     Use case:
-      EXAM: 
-        service oriented, different lifecycles, when you want to resuse stack outputs:
+      service oriented, different lifecycles, when you want to resuse stack outputs:
 
 -----------------------------------------------------------------------------------------------:
 CLOUDFORMATION STACK SETS:
@@ -4530,14 +4509,12 @@ CFN DELETION POLICY:
 
 -----------------------------------------------------------------------------------------------:
 CFN STACK ROLES:
-  EXAM: 
-    by default, cfn uses the permissions of the logged in identity so in order to create, update, or delete resources the identity needs those permissions:
+  by default, cfn uses the permissions of the logged in identity so in order to create, update, or delete resources the identity needs those permissions
 
   stack roles: 
-    allow an IAM role to be passed in stack via PassRole which allows role seperation:
+    allow an IAM role to be passed in stack via PassRole which allows role seperation
   PassRole: 
-    EXAM: 
-      allows stack to use this role rather than the identity's permissions interacting with the stack to create, update, and delete resources:
+    allows stack to use this role rather than the identity's permissions interacting with the stack to create, update, and delete resources
 
 -----------------------------------------------------------------------------------------------:
 CFN-INIT:
@@ -4555,9 +4532,9 @@ CFN-INIT:
 
 -----------------------------------------------------------------------------------------------:
 CFN-HUP:
-  daemon which can be installed that helps detect changes in resource metadata, so when a change in cfn::Init is updated, then cfn-init will be ran again:
+  daemon which can be installed that helps detect changes in resource metadata, so when a change in cfn::Init is updated, then cfn-init will be ran again
   without cfn-hup:
-    cfn-init is only run once, it doesn't rerun if cfn::init in stack is updated:
+    cfn-init is only run once, it doesn't rerun if cfn::init in stack is updated
 
 -----------------------------------------------------------------------------------------------:
 CFN CHANGE SETS:
@@ -4568,10 +4545,8 @@ CFN CHANGE SETS:
 -----------------------------------------------------------------------------------------------:
 CFN CUSTOM RESOURCES:
   allows you to write custom provisioning logic in templates that runs anytime CFN creates or updates a custom resource, or delete stacks:
-  EXAM: 
-    they are logical resources that allow CFN to integrate with anything it doesn't yet, or doesn't natively support:
-  EXAM: 
-    CFN passes event data to an endpoint that you define within custom resource, then custom resource passes some data back, called ResponseURL:
+  CFN passes event data to an endpoint that you define within custom resource, then custom resource passes some data back, called ResponseURL:
+  they are logical resources that allow CFN to integrate with anything it doesn't yet, or doesn't natively support
 
 -----------------------------------------------------------------------------------------------:
 -----------------------------------------------------------------------------------------------:
@@ -4589,8 +4564,7 @@ NOSQL DATABASES AND DYNAMODB:
   really fast, single digit milliseconds time for processing small data sets that dynamically grows and changes:
   event driven integration allow you to do things when data changes:
   some features are backups, point in time recovery, and encryption at rest:
-  EXAM: 
-    if you see NoSQL or key/value on exam, likely answer is DynamoDB:
+  if you see NoSQL or key/value on exam, likely answer is DynamoDB:
   access via console, CLI, API, but not SQL!
   Billed based on RCU, WCU, storage, and features
 
@@ -4603,17 +4577,15 @@ NOSQL DATABASES AND DYNAMODB:
       references speed:
       WCU: 
         write capacity units:
-        EXAM: 
-          ddb can write 1kb/s per 1 wcu:
-          to get required wcu, multiply the average item size by the required writes/s:
+        ddb can write 1kb/s per 1 wcu:
+        to get required wcu, multiply the average item size by the required writes/s:
       RCU:
         read capacity units:
-        exam: 
-          ddb can read 4kb/s per 1 rcu:
-          to get required rcu:
-            divide the average item size by 4kb. round up the result:
-            multiple number of reads/s by resulting value:
-            if eventually consistent then divide resulting value by 2:
+        ddb can read 4kb/s per 1 rcu:
+        to get required rcu:
+          divide the average item size by 4kb. round up the result:
+          multiple resulting value by number of reads/s:
+          if eventually consistent then divide resulting value by 2:
       on demand capacity: 
         capacity is managed for you:
         use when you have unknown, unpredictable, low admin workloads
@@ -4625,22 +4597,21 @@ NOSQL DATABASES AND DYNAMODB:
   backups:
     On-demand Backups:
       manual restore and delete is required:
-      full copy of table retained until removed:
-      restores can be same or cross region, with/out indexes, and you can adjust encryption:
+      full copy of table is retained until removed:
+      restores can be same region or cross region, with/out indexes, and you can adjust encryption:
     Point in time recovery, PITR:
       not enabled by default, but you can enable on a table basis:
       continuous record of changes allows replay to any point in the 35 day recovery window with 1 second granularity:
 
 -----------------------------------------------------------------------------------------------:
 DYNAMODB OPERATIONS, CONSISTENCY, AND PERFORMANCE:
-  EXAM: 
-    every operation consumes at least 1 RCU or WCU:
+  every operation consumes at least 1 RCU or WCU:
   every table has a RCU and WCU burst pool, 300 seconds, that is available if you run out of designated RCU or WCU:
   if you exceed this pool your table will output an error if R or W operation is performed:
 
   query operation:
-    requires you to query via partion key OR partition key and sort key, allows range for sort key:
-    you can create different indexes to make any attribute the partition key/sort key so you can query for any attribute:
+    requires you to query via partion key OR partition key and sort key:
+    allows range for sort key:
   scan operation:
     least efficient operation, but most flexible way to query data:
     consumes the capacity of every item in table:
@@ -4655,8 +4626,8 @@ DYNAMODB OPERATIONS, CONSISTENCY, AND PERFORMANCE:
       one leader storage node is selected out of all storage nodes
       writes are written to leader storage node, leader node replicates data to other nodes
       eventually consistent reads:
-        reads from any of the storage nodes, and price is 50% less because it uses less RCU:
         the data could be stale, but it is faster read:
+        reads from any of the storage nodes, and price is 50% less because it uses less RCU:
       strongly consistent reads:
         reads from leader storage node, and not as fast reads:
 
@@ -4664,7 +4635,8 @@ DYNAMODB OPERATIONS, CONSISTENCY, AND PERFORMANCE:
 DDB LOCAL SECONDARY INDEX AND GLOBAL SECONDARY INDEX, (LSI, GSI):
   indexes: 
     allow for more efficient data retrieval operations:
-    allow you to provide alternative views on table data(makes any attribute the pk, which allows alt key to search with):
+    allow you to provide alternative views on table data:
+    you can create different indexes to make any attribute the primary/sort key so you can query for any attribute:
 
   LSI (LOCAL SECONDARY INDEX) and GSI (GLOBAL SECONDARY INDEX) allow for an alternative presentation of data stored in a base table
   LSI (LOCAL SECONDARY INDEX):
@@ -4680,7 +4652,7 @@ DDB LOCAL SECONDARY INDEX AND GLOBAL SECONDARY INDEX, (LSI, GSI):
     are always eventually consistent:
     use as default, use LSI only when strong consistency is required:
     EXAM: 
-      allow for alternative PK AND SKS:
+      it allows alternative PK AND SKS:
     EXAM: 
       can be created at any time:
     EXAM: 
@@ -4692,7 +4664,7 @@ DDB LOCAL SECONDARY INDEX AND GLOBAL SECONDARY INDEX, (LSI, GSI):
     for both, some or all attributes can be projected onto view, KEYS_ONLY, INCLUDE, ALL:
 
 -----------------------------------------------------------------------------------------------:
-DYNAMODB STREAMS AND LAMBDA TRIGGERS (KNOW ALL):
+DYNAMODB STREAMS AND LAMBDA TRIGGERS:
   streams:
     time ordered list of item changes in a dynamodb table
     24 hour rolling window
@@ -4700,10 +4672,10 @@ DYNAMODB STREAMS AND LAMBDA TRIGGERS (KNOW ALL):
     4 view types:
       keys_only, new_image, old_image, new_and_old_images
   destinations:
-    lambda, kinesis data streams:
+    lambda, kinesis data streams
 
   triggers:
-    item changes added to stream automatically generate an event,  and triggers lambda fn that takes action using the event data
+    generate an event automatically when item changes are added to stream,  and triggers lambda fn that takes action using the event data
 
 -----------------------------------------------------------------------------------------------:
 DynamoDB GLOBAL TABLES:
@@ -4716,7 +4688,7 @@ DynamoDB GLOBAL TABLES:
   EXAM: 
     generally sub second replication between regions:
   EXAM: 
-    strongly consistent reads only in the same region as writes, everything else eventually consistent:
+    strongly consistent reads only in the same region as writes, everything else is eventually consistent:
   HA, fast performance, and global disaster recover/business continuity (DR/BC)
 
 -----------------------------------------------------------------------------------------------:
@@ -4753,62 +4725,6 @@ AMAZON ATHENA:
     via DDL language:
       create database in athena, create table schema to read data, and define src of data
     perform query on table
-
------------------------------------------------------------------------------------------------:
-ELASTICACHE:
-  in memory caching solution designed primarily for databases and applications running on ec2 instances:
-  not persistent:
-  use cases:
-      implement for read heavy workloads with low latency requirements:
-      allows externally hosted user session state, allowing stateless servers:
-  using elasticache requires application code changes:
-  can also be used with other aws services and applications as a caching layer:
-  designed for high performance (implements in memory vs using disk like rds does):
-  
-  supports redis or memcached engines:
-    redis:
-      advanced data structures:
-      multi AZ replication:
-      backup and restore features:
-      authenticate via using Redis AUTH command:
-      replication (scale reads)
-      transactions, multiple operations are treated as one
-    memcached:
-      simple data structures:
-      no replication:
-      no backups:
-      multi threaded, higher performance when doing multi core computations:
-      multiple nodes (sharding)
-
-  strategies:
-    lazy loading/ cache-aside/ lazy population:
-      app requests data from cache
-      if cache hit, then receives data
-      if cache miss, the cache reads from the db, then writes that data to cache
-      cons:
-        cache miss penalty is costly
-        stale data can be in cache because if data is updated in db, it is not updated in cache
-    write through:
-      whenever app writes to db:
-        app writes to cache as well
-      if cache hit, app then receives data
-      if cache miss, implement lazy loading
-      pros:
-        data in cache is never stale, reads are quick
-        write penalty vs read penalty with lazy loading is a better ux
-      cons:
-        cache churn:
-          a lot of the data will never be read if there are a lot of writes because everything will be written to cache as well
-        existing db data is missing in cache until it is written/updated to db
-
-  cache eviction:
-    you can delete item explicitly
-    if memory is full, the LRU (least recently used) items are deleted
-    you can set an item TTL
-
-  amazon memorydb for redis:
-    redis compabtible, durable, in memory database service
-    ultra fast performance, scales from 10 GBS to 100s TBs of storage
       
 -----------------------------------------------------------------------------------------------:
 REDSHIFT:
@@ -5090,13 +5006,13 @@ AWS PROTON:
     application specific container standardizations
   
 AWS SWF, simple workflow service:
-  web service that makes it easy to coordinate work across distributed application components
-  useful guarantee around task assignments because it ensures that a task is never duplicated and is assigned only once
+  web service that makes it easy to coordinate work across distributed application components:
+  useful guarantee around task assignments because it ensures that a task is never duplicated and is assigned only once:
   markers:
     records events in the workflow execution history for app specific purposes
 
 AWS EMR:
-  managed cluster platform that simplifies running big data frameworks, such as Apache Hadoop and Apache Spark, to process and analyze vast amounts of data
+  managed cluster platform that simplifies running big data frameworks, such as Apache Hadoop and Apache Spark, to process and analyze vast amounts of data:
   inputs and outputs include:
     dynamodb and s3
   many broad functions including: 
@@ -5110,13 +5026,6 @@ AWS IAM IDENTITY CENTER (NEWER VERSION OF SSO):
   provides single sign on access for all of your aws accounts and cloud apps
   connects with AD through aws Directory Service to allow users in that directory to sign in to a personalized aws access portal using their existing AD user names and password
 
-AWS APPSYNC:
-  serverless GraphQL and Pub/Sub API service that simplifies building modern web and mobile applications and allows you to securely access, manipulate, and combine data from one or more data sources
-  you specify the data for your app and appsync manages everything needed to keep the app updated in real time including websocket
-  allows you to create custom domains and allows you to integrate with ACM to enable HTTPS communication
-  can be integrated with DynamoDB to make is easy for you to build collaborative apps that keep shared data updated in real time
-  replaces cognito sync:
-
 RDS STORAGE AUTO SCALING:
   automatically scales storage capacity in response to growing database workloads
   free to enable, you only pay for the storage you use
@@ -5127,7 +5036,7 @@ HOW TO PRESERVE EBS VOLUMES TO BE PRESERVED IF AN INSTANCE TERMINATES:
 
 IAM CERTIFICATE STORE:
   by default, you should upload certificates to ACM, however you can import them to IAM certificate store as well
-  use when you must support HTTPS connections in a region that is not supported by ACM
+  use in a region that is not supported by ACM
 
 DYNAMODB AUTO SCALING:
   uses the AWS Application Auto Scaling service to dynamically adjust provisioned throughput capacity on your behalf, in response to actual traffic patterns
@@ -5175,7 +5084,7 @@ AWS CLOUDWATCH APPLICATION INSIGHTS:
   facilitates observability for your applications and underlying resources
   it correlates observations using a combination of classification algorithms and built in rules and then automatically creates dashboards that show the relevant observations and problem severity information to help you prioritize your actions
 
-IAM PERMISSIONS/IDENTITY BOUNDARY:
+IAM IDENTITY BOUNDARY PERMISSIONS:
   allows you to control the maximum permissions employees can grant to IAM principals that they create and manage
   implemented using AWS Organizations
 
@@ -5183,26 +5092,5 @@ VPN CLOUDHUB:
   you can provide secure communication between multiple site to site vpn connections sites using the aws vpn cloudhub
   there has to be infrastructure like direct connect or vpn already set up between the parent and children vpn connections and then vpn cloudhub allows children to communicate with each other 
 
-EC2 OPTMIZED INSTANCES:
-  compute:
-    great for compute intensive tasks that require high performance
-    HPC, batch processing workloads, gaming server
-  storage:
-    great for storage intensive tasks that require high, sequential io access to large data sets on local storage
-    implement for OLTP systems, relational databases cache for in memory databases, data warehousing apps, distributed file systems
-  general purpose:
-    implement for a diversity of workloads such as web servers or code repositories
-  memory optimized instances:
-    fast performance for workloads that process large data sets in memory (ram)
-    implement for high performance or non relational dbs, apps performing real time processing of big unstructured data
-
 data transferred between EC2, RDS, Redshift, Elasticache, S3, and ENIs is free if:
   services are in the same AZ
-
-
-
-
-
-
-
-
